@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Blocks,
   Bot,
+  BriefcaseBusiness,
   Camera,
   Check,
   CheckCircle2,
@@ -19,6 +20,7 @@ import {
   Globe2,
   KeyRound,
   Layers3,
+  LockKeyhole,
   Mail,
   Menu,
   MessageCircle,
@@ -36,7 +38,13 @@ import {
 import { appearanceLink, useAppearance } from "./i18n";
 import { AppearanceControls } from "./Brand";
 import { useStudioReveal } from "./useStudioReveal";
-import { categories, useCatalog, cdnImage, type Product } from "./catalog";
+import {
+  categories,
+  useCatalog,
+  cdnImage,
+  cdnImageSet,
+  type Product,
+} from "./catalog";
 import { getLocalizedProductContent } from "./catalog-en";
 import { documents, type DocumentPage } from "./documents";
 
@@ -98,6 +106,8 @@ export default function Storefront({
   const { language, tr, number } = useAppearance();
   const ar = language === "ar";
   const [menu, setMenu] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [inquiry, setInquiry] = useState<Inquiry | null>(null);
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   useStudioReveal(path);
@@ -131,14 +141,32 @@ export default function Storefront({
     document.title = `${title} | oneShot Brand Studio`;
   }, [title]);
   useEffect(() => {
+    if (!menu) return;
     const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenu(false);
+      if (event.key === "Escape") {
+        setMenu(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    const outside = (event: PointerEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) setMenu(false);
+    };
+    const desktop = window.matchMedia("(min-width: 1040px)");
+    const resize = () => {
+      if (desktop.matches) setMenu(false);
     };
     window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, []);
+    document.addEventListener("pointerdown", outside);
+    desktop.addEventListener("change", resize);
+    return () => {
+      window.removeEventListener("keydown", close);
+      document.removeEventListener("pointerdown", outside);
+      desktop.removeEventListener("change", resize);
+    };
+  }, [menu]);
 
   const nav = [
+    { href: "/", ar: "الرئيسية", en: "Home", Icon: Camera },
     {
       href: "/products",
       ar: "كتالوج الخدمات",
@@ -147,22 +175,22 @@ export default function Storefront({
     },
 
     {
-      href: "/api-integration",
-      ar: "ربط الـ API والداشبورد",
-      en: "API & Dashboard",
-      Icon: Code2,
-    },
-    {
-      href: "/#section-ai-staff",
-      ar: "كوادر الـ AI الذكية",
-      en: "AI Workforce",
-      Icon: Bot,
-    },
-    {
       href: "/#section-media",
       ar: "التصوير والإنتاج",
       en: "Media & Production",
       Icon: Video,
+    },
+    {
+      href: "/#section-ai-staff",
+      ar: "تخصصات AI",
+      en: "AI Workforce",
+      Icon: Bot,
+    },
+    {
+      href: "/api-integration",
+      ar: "حلول الربط",
+      en: "Integrations",
+      Icon: Code2,
     },
     {
       href: "/#section-contact",
@@ -176,50 +204,33 @@ export default function Storefront({
       <a className="store-skip" href="#store-main">
         {tr("انتقل إلى المحتوى", "Skip to content")}
       </a>
-      <header className="store-header">
+      <header
+        className="store-header"
+        ref={headerRef}
+        onBlur={(event) => {
+          if (
+            event.relatedTarget &&
+            !event.currentTarget.contains(event.relatedTarget)
+          )
+            setMenu(false);
+        }}
+      >
         <div className="store-header-inner">
           <Logo />
-          <nav
-            className={`store-nav ${menu ? "is-open" : ""}`}
-            id="store-navigation"
-            aria-label={tr("القائمة الرئيسية", "Main navigation")}
-          >
-            {nav.map(({ href, ar: labelAr, en, Icon }) => {
-              const isActive =
-                (href === "/products" && path.startsWith("/products")) ||
-                (href !== "/products" && path === href);
-              return (
-                <a
-                  key={href}
-                  className={isActive ? "active" : ""}
-                  href={appearanceLink(href)}
-                  onClick={() => setMenu(false)}
-                >
-                  <Icon size={13} />
-                  {tr(labelAr, en)}
-                </a>
-              );
-            })}
-          </nav>
           <div className="store-header-actions">
-            <a
-              className="store-ai-link"
-              href={appearanceLink("/products?category=AI")}
-              title={tr("خدمات الذكاء الاصطناعي", "AI services")}
-            >
-              <Sparkles size={13} />
-              <span>AI</span>
-            </a>
-            <AppearanceControls />
             <button
               className="store-icon"
-              onClick={onOrders}
+              onClick={() => {
+                setMenu(false);
+                onOrders();
+              }}
               aria-label={tr("طلباتي", "My orders")}
+              title={tr("طلباتي", "My orders")}
             >
-              <ShoppingBag size={18} />
+              <ShoppingBag size={19} />
             </button>
-            {accountControl}
             <button
+              ref={menuButtonRef}
               className="store-icon store-menu"
               aria-label={tr(
                 menu ? "إغلاق القائمة" : "فتح القائمة",
@@ -232,10 +243,81 @@ export default function Storefront({
               {menu ? <X size={21} /> : <Menu size={21} />}
             </button>
           </div>
+          <div
+            className={`store-navigation-panel ${menu ? "is-open" : ""}`}
+            id="store-navigation"
+          >
+            <nav
+              className="store-nav"
+              aria-label={tr("القائمة الرئيسية", "Main navigation")}
+            >
+              {nav.map(({ href, ar: labelAr, en, Icon }) => {
+                const isActive =
+                  (href === "/products" && path.startsWith("/products")) ||
+                  (href !== "/products" && path === href);
+                return (
+                  <a
+                    key={href}
+                    className={isActive ? "active" : ""}
+                    aria-current={isActive ? "page" : undefined}
+                    href={appearanceLink(href)}
+                    onClick={() => setMenu(false)}
+                  >
+                    <Icon size={16} />
+                    {tr(labelAr, en)}
+                  </a>
+                );
+              })}
+            </nav>
+            <div className="store-header-tools">
+              <AppearanceControls />
+              {accountControl}
+            </div>
+          </div>
         </div>
       </header>
 
       <main className="store-main" id="store-main">
+        <nav
+          className="store-workspaces"
+          aria-label={tr("مساحات ونشوت", "OneShot workspaces")}
+        >
+          <span className="store-workspaces-label">ONESHOT /</span>
+          <div className="store-workspace-links">
+            {[
+              { module: "store", ar: "المتجر", en: "Store", Icon: ShoppingBag },
+              {
+                module: "ai",
+                ar: "استوديو AI",
+                en: "AI Studio",
+                Icon: Sparkles,
+              },
+              {
+                module: "gateway",
+                ar: "بوابات الدفع",
+                en: "Payments",
+                Icon: CreditCard,
+              },
+              {
+                module: "ceo",
+                ar: "المكتب التنفيذي",
+                en: "Executive",
+                Icon: BriefcaseBusiness,
+              },
+              { module: "vault", ar: "الخزنة", en: "Vault", Icon: LockKeyhole },
+            ].map(({ module, ar: labelAr, en, Icon }) => (
+              <a
+                key={module}
+                href={appearanceLink(`/?module=${module}`)}
+                className={module === "store" ? "active" : ""}
+                aria-current={module === "store" ? "true" : undefined}
+              >
+                <Icon size={16} />
+                {tr(labelAr, en)}
+              </a>
+            ))}
+          </div>
+        </nav>
         {documentPage ? (
           <article className="store-document">
             <a className="store-back" href={appearanceLink("/")}>
@@ -309,164 +391,202 @@ export default function Storefront({
             <section className="store-hero" id="section-hero">
               <div className="store-hero-copy">
                 <span className="store-pill">
-                  <Sparkles size={15} />
+                  <Camera size={16} />
                   {tr(
-                    "OneShot • عصر الأتمتة والذكاء الاصطناعي وربط الـ API الموحد",
-                    "OneShot • The Era of AI Workforce & Payment API",
+                    "ونشوت · من الفكرة إلى الصورة",
+                    "ONESHOT · FROM IDEA TO IMAGE",
                   )}
                 </span>
                 <h1>
-                  {tr(
-                    "عصر الـ AI الجديد: طاقم موظفين أذكياء يمسك لك الشغل،",
-                    "The New AI Era: Intelligent Staff Running Your Business,",
-                  )}{" "}
-                  <span>
-                    {tr(
-                      "وربط API احترافي يوحد مدفوعاتك ويمنع الفوضى",
-                      "& A Unified API Dashboard Ending Payment Chaos",
-                    )}
-                  </span>
+                  {tr("كل أدواتك.", "All your tools.")}
+                  <span>{tr("في لقطة واحدة.", "One creative shot.")}</span>
                 </h1>
                 <p>
                   {tr(
-                    "خدمات التصوير والتصميم والتسويق والأتمتة من ونشوت، مع استوديو ذكاء اصطناعي ومكتب تنفيذي لتحليل بيانات المنظومة ومساعدتك في التخطيط.",
-                    "OneShot photography, design, marketing and automation services, alongside an AI studio and executive workspace for analysis and planning.",
+                    "تصوير، تصميم وتسويق يعبّر عن علامتك. ومع أدوات الأتمتة واستوديو AI، تجد خدماتك ومساحة عملك في مكان واحد.",
+                    "Photography, design and marketing for your brand. Explore creative services, automation and your AI workspace in one place.",
                   )}
                 </p>
-                <div className="store-plain">
-                  <strong>{tr("بكلمات بسيطة:", "In plain words:")}</strong>{" "}
-                  {tr(
-                    "اختر خدمتك، راجع نطاقها وسعرها، وتواصل مع الفريق لتأكيد التنفيذ. مساعد AI يقدم المشورة ولا ينفذ عمليات مالية نيابة عنك.",
-                    "Choose a service, review its scope and price, and contact our team to confirm delivery. AI provides advice and does not execute financial actions.",
-                  )}
-                </div>
                 <div className="store-actions">
                   <a
                     className="store-button"
-                    href={appearanceLink("/api-integration")}
+                    href={appearanceLink("/products")}
                   >
-                    <Code2 size={17} />
-                    {tr(
-                      "تفاصيل ومزايا ربط الـ API الموحد",
-                      "Unified API Details & Dashboard",
-                    )}
+                    <ShoppingBag size={18} />
+                    {tr("اكتشف الخدمات", "Explore services")}
                     <ArrowLeft size={16} />
                   </a>
                   <a
                     className="store-button secondary"
-                    href={appearanceLink("/sign-in")}
+                    href={appearanceLink("/?module=ai")}
                   >
-                    <Bot size={16} />
-                    {tr(
-                      "سوق كوادر الـ AI وتوظيف موظفيك",
-                      "AI Staff Marketplace",
-                    )}
-                  </a>
-                  <a
-                    className="store-button whatsapp"
-                    href="https://wa.me/966501234567"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <MessageCircle size={16} />
-                    {tr("استشارة فورية واتساب", "WhatsApp Consultation")}
+                    <Sparkles size={18} />
+                    {tr("افتح استوديو AI", "Open AI Studio")}
                   </a>
                 </div>
-                <div className="store-trust">
-                  {[
-                    ["ربط API موحد وداشبورد تنفيذي", "Unified API & Dashboard"],
-                    ["مساعدون للتحليل والتخطيط", "AI analysis and planning"],
-                    [
-                      "منع الفواتير الملخبطة والعشوائية",
-                      "Zero Chaotic Invoices",
-                    ],
-                    ["واجهة متجاوبة للجوال", "Responsive mobile experience"],
-                  ].map(([arabic, english]) => (
-                    <span key={english}>
-                      <CheckCircle2 size={15} />
-                      {tr(arabic, english)}
-                    </span>
-                  ))}
+                <div className="store-hero-note">
+                  <FileText size={17} />
+                  <span>
+                    {tr(
+                      "نطاق واضح وأسعار منشورة. نؤكد تفاصيل طلبك معك قبل التنفيذ.",
+                      "Clear scope and published prices. We confirm your brief before work begins.",
+                    )}
+                  </span>
                 </div>
               </div>
-              <div className="store-steps">
-                <span className="store-steps-title">
-                  {tr("تبدأ في 3 خطوات", "START IN 3 STEPS")}
+              <a className="store-hero-visual" href="#section-media">
+                <img
+                  src={cdnImage("/images/photography.jpg")}
+                  srcSet={cdnImageSet("/images/photography.jpg")}
+                  sizes="(max-width: 760px) calc(100vw - 64px), (max-width: 1320px) 40vw, 510px"
+                  alt={tr(
+                    "كاميرا وعدسات للتصوير الاحترافي",
+                    "Professional photography camera and lenses",
+                  )}
+                  width="800"
+                  height="1000"
+                  fetchPriority="high"
+                />
+                <span className="store-hero-visual-label" dir="ltr">
+                  ONESHOT / BRAND STUDIO
                 </span>
-                <ol>
-                  <li>
-                    <b>1</b>
+                <span className="store-hero-caption">
+                  <span>
+                    <small>{tr("من قلب الاستوديو", "FROM THE STUDIO")}</small>
+                    <strong>
+                      {tr("صورة تروي حكايتك.", "Your story, in focus.")}
+                    </strong>
+                  </span>
+                  <ArrowLeft size={22} />
+                </span>
+              </a>
+            </section>
+            <ol
+              className="store-journey"
+              aria-label={tr("خطوات طلب الخدمة", "How to request a service")}
+            >
+              {[
+                [
+                  "اختر خدمتك",
+                  "Choose your service",
+                  "تصفح الأعمال والحلول",
+                  "Explore services and solutions",
+                ],
+                [
+                  "راجع التفاصيل",
+                  "Review the details",
+                  "النطاق والسعر ووقت التسليم",
+                  "Scope, price and delivery",
+                ],
+                [
+                  "تواصل مع الفريق",
+                  "Talk to our team",
+                  "نؤكد معك تفاصيل التنفيذ",
+                  "Confirm your project brief",
+                ],
+              ].map(([labelAr, labelEn, textAr, textEn], index) => (
+                <li key={labelEn}>
+                  <b dir="ltr">0{index + 1}</b>
+                  <span>
+                    <strong>{tr(labelAr, labelEn)}</strong>
+                    <small>{tr(textAr, textEn)}</small>
+                  </span>
+                </li>
+              ))}
+            </ol>
+
+            <Catalog onOrder={setInquiry} preview />
+
+            <section className="store-section" id="section-media">
+              <div className="store-section-heading">
+                <div>
+                  <span className="store-kicker">
+                    <Camera size={16} />
                     {tr(
-                      "أنشئ حسابك ببريدك الإلكتروني",
-                      "Create your account with your email",
+                      "استوديو ونشوت للإنتاج المرئي",
+                      "ONESHOT CREATIVE PRODUCTION STUDIO",
                     )}
-                  </li>
-                  <li>
-                    <b>2</b>
+                  </span>
+                  <h2>
                     {tr(
-                      "اربط بوابة الدفع (PayTabs أو Telr)",
-                      "Connect your payment gateway (PayTabs / Telr)",
+                      "خدمات الميديا، الفيديو، والتصاميم الإبداعية",
+                      "Media, Video & Creative Design",
                     )}
-                  </li>
-                  <li>
-                    <b>3</b>
+                  </h2>
+                  <p>
                     {tr(
-                      "راجع بواباتك أو افتح استوديو AI",
-                      "Review your gateways or open the AI studio",
+                      "جلسات تصوير سينمائي، محتوى بصري وتصاميم إبداعية تبرز هوية علامتك التجارية.",
+                      "Cinematic photography, visual content and creative design that bring your brand into focus.",
                     )}
-                  </li>
-                </ol>
+                  </p>
+                </div>
+                <a className="store-button secondary" href="#section-contact">
+                  {tr("حجز باقة تصوير", "Book a Shoot")}
+                  <ArrowLeft size={16} />
+                </a>
               </div>
-              <div className="store-highlights">
-                <Highlight
-                  badge={tr(
-                    "الخدمة الأساسية الأولى",
-                    "CORE SERVICE · NO MORE CHAOS",
-                  )}
-                  title={tr(
-                    "بوابات الدفع في مساحة إدارة واحدة",
-                    "Payment gateways in one workspace",
-                  )}
-                  description={tr(
-                    "كتاجر، ربط الـ API الموحد يلغي الفوضى تماماً! يمنع العملاء من وضع فواتير عشوائية أو ملخبطة، ويمنحك داشبورد احترافي يربط PayTabs وTelr ومدى وApple Pay برقم مرجعي دقيق وتحقق فوري من الخادم.",
-                    "Manual invoices cause duplicate submissions and messy accounting. Unified API integration stops chaos, validates amounts, and unifies all gateways in one executive dashboard.",
-                  )}
-                  href={appearanceLink("/api-integration")}
-                  link={tr(
-                    "اقرأ صفحة تفاصيل ومزايا ربط الـ API",
-                    "Explore Full API Details",
-                  )}
-                />
-                <Highlight
-                  image="marketing"
-                  badge={tr("العصر الجديد في الـ AI", "AI WORKFORCE ERA")}
-                  title={tr(
-                    "موظفو AI يمسكون لك الشغل: وظّف فريقك التنفيذي",
-                    "AI Staff Running Your Entire Storefront",
-                  )}
-                  description={tr(
-                    "تخصصات استشارية للعمليات والتسويق والمخاطر وخدمة العملاء، تدعم فريقك في التحليل وصياغة الخطط.",
-                    "Advisory specializations for operations, marketing, risk and customer care, supporting analysis and planning.",
-                  )}
-                  href="#section-ai-staff"
-                  link={tr(
-                    "استكشف كوادر وموظفي الـ AI",
-                    "View AI Staff Profiles",
-                  )}
-                />
-                <Highlight
-                  badge={tr("بوابة الدفع السريع", "ONESHOT HUB CHECKOUT")}
-                  title={tr(
-                    "استوديو OneShot: أدواتك في مساحة واحدة",
-                    "OneShot Studio: Your Creative Workspace",
-                  )}
-                  description={tr(
-                    "محادثات محفوظة ومساعدة في الكتابة والتحليل والبرمجة ضمن حسابك في المنظومة.",
-                    "Saved conversations and assistance with writing, analysis and coding in your account.",
-                  )}
-                  href={appearanceLink("/?module=ai")}
-                  link={tr("افتح استوديو ونشوت", "Open OneShot Studio")}
-                />
+              <div className="store-media-grid">
+                {mediaPackages.map((item) => (
+                  <article className="store-media-card" key={item.sku}>
+                    <div className="store-media-image">
+                      <img
+                        src={cdnImage(`/images/${item.image}.jpg`)}
+                        srcSet={cdnImageSet(`/images/${item.image}.jpg`)}
+                        sizes="(max-width: 580px) calc(100vw - 32px), (max-width: 1200px) 46vw, 290px"
+                        alt={tr(item.nameAr, item.nameEn)}
+                        loading="lazy"
+                        width="800"
+                        height="540"
+                      />
+                      <span className="store-image-badge">
+                        {tr(item.badgeAr, item.badgeEn)}
+                      </span>
+                    </div>
+                    <div className="store-media-content">
+                      <small className="store-sku" dir="ltr">
+                        SKU: {item.sku}
+                      </small>
+                      <h3>{tr(item.nameAr, item.nameEn)}</h3>
+                      <p>{tr(item.descriptionAr, item.descriptionEn)}</p>
+                      <span className="store-delivery">
+                        <Clock3 size={14} />
+                        {item.days
+                          ? tr(
+                              `التسليم خلال ${item.days} أيام عمل`,
+                              `Delivery in ${item.days} business days`,
+                            )
+                          : tr("اشتراك شهري متجدد", "Monthly retainer")}
+                      </span>
+                      <div className="store-card-bottom">
+                        <div>
+                          <small>
+                            {tr(
+                              item.days ? "السعر" : "شهرياً",
+                              item.days ? "Price" : "Monthly",
+                            )}
+                          </small>
+                          <strong>
+                            {number(item.price)} <span>{tr("ر.س", "SAR")}</span>
+                          </strong>
+                        </div>
+                        <button
+                          className="store-button compact"
+                          onClick={() =>
+                            setInquiry({
+                              sku: item.sku,
+                              title: tr(item.nameAr, item.nameEn),
+                              amount: item.price,
+                              monthly: !item.days,
+                            })
+                          }
+                        >
+                          {tr("طلب الخدمة", "Request Service")}
+                          <ArrowLeft size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
               </div>
             </section>
 
@@ -553,162 +673,32 @@ export default function Storefront({
                   const ItemIcon = item.icon;
                   return (
                     <article
-                      className="store-media-card"
+                      className="store-media-card store-ai-card"
                       key={idx}
-                      style={{
-                        padding: "24px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "14px",
-                        background: "var(--store-card)",
-                        borderRadius: "16px",
-                        border: "1px solid rgba(255, 85, 0, 0.15)",
-                      }}
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            padding: "8px",
-                            background: "rgba(255, 85, 0, 0.1)",
-                            color: "#ff5500",
-                            borderRadius: "10px",
-                          }}
-                        >
+                      <div className="store-ai-card-heading">
+                        <span className="store-feature-icon">
                           <ItemIcon size={22} />
                         </span>
-                        <span
-                          className="store-image-badge"
-                          style={{ position: "static" }}
-                        >
+                        <span className="store-image-badge">
                           {tr(item.tagAr, item.tagEn)}
                         </span>
                       </div>
-                      <h3 style={{ margin: 0, fontSize: "1.15rem" }}>
-                        {tr(item.titleAr, item.titleEn)}
-                      </h3>
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "var(--text-muted, #94a3b8)",
-                          lineHeight: 1.6,
-                          fontSize: "0.95rem",
-                        }}
+                      <h3>{tr(item.titleAr, item.titleEn)}</h3>
+                      <p>{tr(item.descAr, item.descEn)}</p>
+                      <a
+                        className="store-button secondary compact"
+                        href={appearanceLink("/?module=ceo")}
                       >
-                        {tr(item.descAr, item.descEn)}
-                      </p>
-                      <div style={{ marginTop: "auto", paddingTop: "12px" }}>
-                        <a
-                          className="store-button compact full-width"
-                          href={appearanceLink("/sign-in")}
-                        >
-                          {tr(
-                            "إعداد التخصص في المكتب التنفيذي",
-                            "Configure in executive workspace",
-                          )}
-                          <ArrowLeft size={14} />
-                        </a>
-                      </div>
+                        {tr(
+                          "إعداد التخصص في المكتب التنفيذي",
+                          "Configure in executive workspace",
+                        )}
+                        <ArrowLeft size={14} />
+                      </a>
                     </article>
                   );
                 })}
-              </div>
-            </section>
-
-            <section className="store-section" id="section-media">
-              <div className="store-section-heading">
-                <div>
-                  <span className="store-kicker">
-                    <Camera size={16} />
-                    {tr(
-                      "استوديو ونشوت للإنتاج المرئي",
-                      "ONESHOT CREATIVE PRODUCTION STUDIO",
-                    )}
-                  </span>
-                  <h2>
-                    {tr(
-                      "خدمات الميديا، الفيديو، والتصاميم الإبداعية",
-                      "Media, Video & Creative Design",
-                    )}
-                  </h2>
-                  <p>
-                    {tr(
-                      "جلسات تصوير سينمائي، محتوى بصري وتصاميم إبداعية تبرز هوية علامتك التجارية.",
-                      "Cinematic photography, visual content and creative design that bring your brand into focus.",
-                    )}
-                  </p>
-                </div>
-                <a className="store-button secondary" href="#section-contact">
-                  {tr("حجز باقة تصوير", "Book a Shoot")}
-                  <ArrowLeft size={16} />
-                </a>
-              </div>
-              <div className="store-media-grid">
-                {mediaPackages.map((item) => (
-                  <article className="store-media-card" key={item.sku}>
-                    <div className="store-media-image">
-                      <img
-                        src={cdnImage(`/images/${item.image}.jpg`)}
-                        alt={tr(item.nameAr, item.nameEn)}
-                        loading="lazy"
-                        width="800"
-                        height="540"
-                      />
-                      <span className="store-image-badge">
-                        {tr(item.badgeAr, item.badgeEn)}
-                      </span>
-                    </div>
-                    <div className="store-media-content">
-                      <small className="store-sku" dir="ltr">
-                        SKU: {item.sku}
-                      </small>
-                      <h3>{tr(item.nameAr, item.nameEn)}</h3>
-                      <p>{tr(item.descriptionAr, item.descriptionEn)}</p>
-                      <span className="store-delivery">
-                        <Clock3 size={14} />
-                        {item.days
-                          ? tr(
-                              `التسليم خلال ${item.days} أيام عمل`,
-                              `Delivery in ${item.days} business days`,
-                            )
-                          : tr("اشتراك شهري متجدد", "Monthly retainer")}
-                      </span>
-                      <div className="store-card-bottom">
-                        <div>
-                          <small>
-                            {tr(
-                              item.days ? "السعر" : "شهرياً",
-                              item.days ? "Price" : "Monthly",
-                            )}
-                          </small>
-                          <strong>
-                            {number(item.price)} <span>{tr("ر.س", "SAR")}</span>
-                          </strong>
-                        </div>
-                        <button
-                          className="store-button compact"
-                          onClick={() =>
-                            setInquiry({
-                              sku: item.sku,
-                              title: tr(item.nameAr, item.nameEn),
-                              amount: item.price,
-                              monthly: !item.days,
-                            })
-                          }
-                        >
-                          {tr("طلب الخدمة", "Request Service")}
-                          <ArrowLeft size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                ))}
               </div>
             </section>
 
@@ -859,7 +849,6 @@ export default function Storefront({
             )}
 
             <IntegrationSection />
-            <Catalog onOrder={setInquiry} />
 
             <section
               className="store-contact store-section"
@@ -1050,67 +1039,25 @@ export default function Storefront({
       {inquiry && (
         <InquiryDialog inquiry={inquiry} onClose={() => setInquiry(null)} />
       )}
-      <a className="store-assistant-entry" href={appearanceLink("/?module=ai")}>
+      <a
+        className="store-assistant-entry"
+        href={appearanceLink("/?module=ai")}
+        aria-label={tr("افتح استوديو OneShot AI", "Open OneShot AI Studio")}
+      >
         <Sparkles size={20} />
-        {tr("استوديو OneShot AI", "OneShot AI Studio")}
+        <span>{tr("استوديو OneShot AI", "OneShot AI Studio")}</span>
       </a>
     </div>
   );
 }
 
-function Highlight({
-  image,
-  badge,
-  title,
-  description,
-  href,
-  link,
+function Catalog({
+  onOrder,
+  preview = false,
 }: {
-  image?: string;
-  badge: string;
-  title: string;
-  description: string;
-  href: string;
-  link: string;
+  onOrder: (item: Inquiry) => void;
+  preview?: boolean;
 }) {
-  return (
-    <article className="store-highlight">
-      <div className="store-highlight-image">
-        {image ? (
-          <img
-            src={cdnImage(`/images/${image}.jpg`)}
-            alt={title}
-            width="800"
-            height="400"
-          />
-        ) : (
-          <div className="store-payment-art" aria-hidden="true">
-            <span>
-              one<b>Shot</b>
-            </span>
-            <CreditCard size={60} strokeWidth={1} />
-            <div>
-              <span>PayTabs</span>
-              <span>Telr</span>
-              <ShieldCheck size={18} />
-            </div>
-          </div>
-        )}
-        <span className="store-image-badge">{badge}</span>
-      </div>
-      <div className="store-highlight-copy">
-        <h3>{title}</h3>
-        <p>{description}</p>
-        <a href={href}>
-          {link}
-          <ArrowLeft size={13} />
-        </a>
-      </div>
-    </article>
-  );
-}
-
-function Catalog({ onOrder }: { onOrder: (item: Inquiry) => void }) {
   const records = useCatalog();
   const products = useMemo(
     () => records.filter((p) => p.sourceKind === "catalog"),
@@ -1126,7 +1073,8 @@ function Catalog({ onOrder }: { onOrder: (item: Inquiry) => void }) {
       : "ALL",
   );
   const [search, setSearch] = useState("");
-  const [limit, setLimit] = useState(12);
+  const pageSize = preview ? 6 : 12;
+  const [limit, setLimit] = useState(pageSize);
   const filtered = useMemo(
     () =>
       products.filter(
@@ -1141,7 +1089,7 @@ function Catalog({ onOrder }: { onOrder: (item: Inquiry) => void }) {
   function reset() {
     setCategory("ALL");
     setSearch("");
-    setLimit(12);
+    setLimit(pageSize);
   }
   return (
     <section className="store-catalog store-section" id="section-catalog">
@@ -1174,7 +1122,7 @@ function Catalog({ onOrder }: { onOrder: (item: Inquiry) => void }) {
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);
-              setLimit(12);
+              setLimit(pageSize);
             }}
             placeholder={tr(
               "ابحث بالاسم أو رمز المنتج...",
@@ -1203,7 +1151,7 @@ function Catalog({ onOrder }: { onOrder: (item: Inquiry) => void }) {
                 className={category === item.id ? "active" : ""}
                 onClick={() => {
                   setCategory(item.id);
-                  setLimit(12);
+                  setLimit(pageSize);
                 }}
               >
                 <Icon size={17} />
@@ -1225,6 +1173,8 @@ function Catalog({ onOrder }: { onOrder: (item: Inquiry) => void }) {
                 >
                   <img
                     src={cdnImage(item.image)}
+                    srcSet={cdnImageSet(item.image)}
+                    sizes="(max-width: 580px) calc(100vw - 72px), (max-width: 760px) 42vw, (max-width: 1200px) 32vw, 290px"
                     alt=""
                     width={1280}
                     height={800}
@@ -1326,6 +1276,15 @@ function Catalog({ onOrder }: { onOrder: (item: Inquiry) => void }) {
                 .replace("{total}", String(filtered.length))
                 .replace("{catalog}", String(products.length))}
             </p>
+            {preview && (
+              <a
+                className="store-button secondary"
+                href={appearanceLink("/products")}
+              >
+                {tr("تصفح الكتالوج الكامل", "Browse the full catalog")}
+                <ArrowLeft size={16} />
+              </a>
+            )}
             {limit < filtered.length && (
               <button
                 className="store-button secondary"
