@@ -1,3 +1,4 @@
+import type { OriginalProduct } from "./storefront";
 export const gateways = [
   ["telr", "Telr"],
   ["paytabs", "PayTabs"],
@@ -35,6 +36,7 @@ export const regions = [
 ] as const;
 export type Module = "store" | "gateway" | "vault" | "ceo" | "ai";
 export interface Product {
+  catalogDetails?: OriginalProduct | null;
   id: string;
   name: string;
   description: string;

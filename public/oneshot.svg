@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="65 25 370 370" width="800" height="800">
+
+    <defs>
+      <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.45" />
+      </filter>
+      <filter id="orange-glow" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#FF5500" flood-opacity="0.6" />
+      </filter>
+      <linearGradient id="blade-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/>
+        <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.88"/>
+      </linearGradient>
+    </defs>
+
+
+
+  <rect x="65" y="25" width="370" height="370" rx="72" fill="#12141A" />
+  <g id="emblem-group">
+    <!-- Aperture Blades -->
+
+    <path
+      d="M 389.87 216.11 A 140 140 0 0 1 325.22 328.07 Q 327.87 283.90 301.18 238.95 A 58.8 58.8 0 0 0 301.18 181.05 Q 354.39 184.94 389.87 216.11 Z"
+      fill="url(#blade-grad)"
+      filter="url(#soft-shadow)"
+    />
+
+
+    <path
+      d="M 314.64 334.18 A 140 140 0 0 1 185.36 334.18 Q 224.94 314.39 250.51 268.80 A 58.8 58.8 0 0 0 300.66 239.84 Q 323.90 287.87 314.64 334.18 Z"
+      fill="url(#blade-grad)"
+      filter="url(#soft-shadow)"
+    />
+
+
+    <path
+      d="M 174.78 328.07 A 140 140 0 0 1 110.13 216.11 Q 147.07 240.49 199.34 239.84 A 58.8 58.8 0 0 0 249.49 268.80 Q 219.51 312.93 174.78 328.07 Z"
+      fill="url(#blade-grad)"
+      filter="url(#soft-shadow)"
+    />
+
+
+    <path
+      d="M 110.13 203.89 A 140 140 0 0 1 174.78 91.93 Q 172.13 136.10 198.82 181.05 A 58.8 58.8 0 0 0 198.82 238.95 Q 145.61 235.06 110.13 203.89 Z"
+      fill="url(#blade-grad)"
+      filter="url(#soft-shadow)"
+    />
+
+
+    <path
+      d="M 185.36 85.82 A 140 140 0 0 1 314.64 85.82 Q 275.06 105.61 249.49 151.20 A 58.8 58.8 0 0 0 199.34 180.16 Q 176.10 132.13 185.36 85.82 Z"
+      fill="url(#blade-grad)"
+      filter="url(#soft-shadow)"
+    />
+
+
+    <path
+      d="M 325.22 91.93 A 140 140 0 0 1 389.87 203.89 Q 352.93 179.51 300.66 180.16 A 58.8 58.8 0 0 0 250.51 151.20 Q 280.49 107.07 325.22 91.93 Z"
+      fill="url(#blade-grad)"
+      filter="url(#soft-shadow)"
+    />
+
+    <!-- Precision Target Reticle -->
+
+    <g id="reticle-group" filter="url(#orange-glow)" transform="rotate(0 250 210)">
+      <!-- Outer Reticle Ring -->
+      <circle
+        cx="250"
+        cy="210"
+        r="44.69"
+        fill="none"
+        stroke="#FF5500"
+        stroke-width="3.80"
+      />
+
+        <!-- Top Tick -->
+        <rect
+          x="247.90"
+          y="157.31"
+          width="4.20"
+          height="16.00"
+          rx="1"
+          fill="#FF5500"
+        />
+        <!-- Bottom Tick -->
+        <rect
+          x="247.90"
+          y="246.69"
+          width="4.20"
+          height="16.00"
+          rx="1"
+          fill="#FF5500"
+        />
+        <!-- Left Tick -->
+        <rect
+          x="197.31"
+          y="207.90"
+          width="16.00"
+          height="4.20"
+          rx="1"
+          fill="#FF5500"
+        />
+        <!-- Right Tick -->
+        <rect
+          x="286.69"
+          y="207.90"
+          width="16.00"
+          height="4.20"
+          rx="1"
+          fill="#FF5500"
+        />
+
+
+        <!-- Center Bullseye Dot -->
+        <circle
+          cx="250"
+          cy="210"
+          r="16.98"
+          fill="#FF5500"
+        />
+
+    </g>
+
+  </g>
+
+
+</svg>
