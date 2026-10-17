@@ -1,5 +1,7 @@
+import type { OriginalProduct } from "../shared/storefront";
 import {
   pgTable,
+  jsonb,
   text,
   integer,
   boolean,
@@ -17,6 +19,7 @@ export const products = pgTable("products", {
   priceCents: integer("price_cents").notNull(),
   currency: text("currency").notNull().default("USD"),
   image: text("image"),
+  catalogDetails: jsonb("catalog_details").$type<OriginalProduct>(),
   active: boolean("active").notNull().default(true),
 });
 export const vaultKeys = pgTable(
