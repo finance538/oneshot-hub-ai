@@ -9,3 +9,8 @@ export function useCatalog() {
 export function cdnImage(path: string, width = 800) {
   return `/.netlify/images?url=${encodeURIComponent(path)}&w=${width}&fit=contain`;
 }
+export function cdnImageSet(path: string) {
+  return [320, 480, 640, 800]
+    .map((width) => `${cdnImage(path, width)} ${width}w`)
+    .join(", ");
+}
