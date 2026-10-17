@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <script>
+      if ("serviceWorker" in navigator)
+        navigator.serviceWorker
+          .getRegistrations()
+          .then(function (items) {
+            items.forEach(function (item) {
+              item.unregister();
+            });
+          })
+          .catch(function () {});
+      if ("caches" in window)
+        caches
+          .keys()
+          .then(function (keys) {
+            keys.forEach(function (key) {
+              caches.delete(key);
+            });
+          })
+          .catch(function () {});
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f1115" />
+    <title>1SHOTCAM.COM — منظومة oneShot المتكاملة</title>
+    <meta name="siteName" content="1SHOTCAM.COM — منظومة oneShot المتكاملة" />
+    <meta
+      name="siteDescription"
+      content="مساحة واحدة للإبداع والتجارة والذكاء الاصطناعي. اكتشف منتجات oneShot وأدر مدفوعاتك وفريقك من منظومة عربية متكاملة."
+    />
+    <meta
+      name="description"
+      content="مساحة واحدة للإبداع والتجارة والذكاء الاصطناعي. اكتشف منتجات oneShot وأدر مدفوعاتك وفريقك من منظومة عربية متكاملة."
+    />
+    <meta
+      property="og:site_name"
+      content="1SHOTCAM.COM — منظومة oneShot المتكاملة"
+    />
+    <meta property="og:title" content="oneShot — كل أدواتك. في لقطة واحدة." />
+    <meta
+      property="og:description"
+      content="المتجر، المدفوعات، إدارة الأعمال والذكاء الاصطناعي في مساحة واحدة."
+    />
+    <link rel="icon" href="/brand/oneshot.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;450;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
