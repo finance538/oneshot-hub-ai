@@ -65,6 +65,12 @@ const navigation = [
 function initialModule(): Module {
   const query = new URLSearchParams(window.location.search).get("module");
   if (navigation.some((n) => n.id === query)) return query as Module;
+  if (
+    /^\/(products(?:\/.*)?|about|vision|privacy|refund|terms|support|accounts|api-integration)\/?$/.test(
+      window.location.pathname,
+    )
+  )
+    return "store";
   const sub = window.location.hostname.split(".")[0];
   return (
     (
@@ -164,6 +170,8 @@ function Workspace({
     setActive(id);
     setMenu(false);
     const u = new URL(window.location.href);
+    u.pathname = "/";
+    u.hash = "";
     u.searchParams.set("module", id);
     history.pushState({}, "", u);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -218,167 +226,199 @@ function Workspace({
   }
   const selected = navigation.find((n) => n.id === active)!;
   return (
-    <div className="app-shell">
-      <div className="top-ribbon">
-        <span>
-          <span className="orange-dot" /> ONESHOT ECOSYSTEM
-        </span>
-        <span>من أول فكرة، إلى أبعد احتمال.</span>
-        <span dir="ltr">CREATE. CONNECT. GROW.</span>
-      </div>
-      <header className="main-header">
-        <button
-          className="brand"
-          onClick={() => navigate("store")}
-          aria-label="oneShot — الصفحة الرئيسية"
-        >
-          <img src="/brand/oneshot.svg" alt="" width="44" height="44" />
-          <div>
-            <strong dir="ltr">
-              one<span>Shot</span>
-              <em>®</em>
-            </strong>
-            <small>المنظومة الموحدة الشاملة</small>
+    <>
+      {active === "store" ? (
+        <Store
+          products={products}
+          loading={loading}
+          error={error}
+          onRetry={loadProducts}
+          onLogin={onLogin}
+          onOrders={loadOrders}
+          accountControl={accountControl}
+        />
+      ) : (
+        <div className="app-shell">
+          <div className="top-ribbon">
+            <span>
+              <span className="orange-dot" /> ONESHOT ECOSYSTEM
+            </span>
+            <span>من أول فكرة، إلى أبعد احتمال.</span>
+            <span dir="ltr">CREATE. CONNECT. GROW.</span>
           </div>
-        </button>
-        <div
-          className={`backend-pill ${health?.core.connected && health?.database.connected ? "connected" : ""}`}
-          title={healthError || "حالة اتصال الباك إند وقاعدة بيانات المنظومة"}
-        >
-          <span className="status-dot" />
-          <span>
-            {checking
-              ? "جارٍ فحص اتصال المنظومة"
-              : health?.core.connected && health?.database.connected
-                ? "متصل بالباك إند وقاعدة المنظومة"
-                : "الاتصال الكامل بانتظار التحقق"}
-            <small dir="ltr">1SHOTCAM.COM · 187.7.65.45</small>
-          </span>
-        </div>
-        <div className="header-actions">
-          <span className="language">
-            <Globe2 size={15} /> العربية
-          </span>
-          <button
-            className="icon-button"
-            onClick={loadOrders}
-            title="طلباتي"
-            aria-label="طلباتي"
-          >
-            <ReceiptText size={19} />
-          </button>
-          {accountControl}
-          <button
-            className="icon-button mobile-menu"
-            aria-label="قائمة الوحدات"
-            onClick={() => setMenu(!menu)}
-          >
-            {menu ? <X size={21} /> : <Menu size={21} />}
-          </button>
-        </div>
-      </header>
-      <div className="page-width">
-        <nav
-          className={`module-nav ${menu ? "open" : ""}`}
-          aria-label="وحدات المنظومة"
-        >
-          {navigation.map((n, i) => (
+          <header className="main-header">
             <button
-              key={n.id}
-              aria-current={active === n.id ? "page" : undefined}
-              className={active === n.id ? "active" : ""}
-              onClick={() => navigate(n.id)}
+              className="brand"
+              onClick={() => navigate("store")}
+              aria-label="oneShot — الصفحة الرئيسية"
             >
-              <span className="module-icon">
-                <n.icon size={21} />
-              </span>
-              <span className="module-name">
-                {n.title}
-                <small>{n.subtitle}</small>
-              </span>
-              <span className="module-number">0{i + 1}</span>
-            </button>
-          ))}
-        </nav>
-        <div className="workspace-breadcrumb">
-          <div>
-            <span>منظومة oneShot</span>
-            <ChevronLeft size={13} />
-            <strong>{selected.title}</strong>
-          </div>
-          <span className="workspace-label">
-            YOUR ALL-IN-ONE WORKSPACE <span className="tiny-cross">+</span>
-          </span>
-        </div>
-        <div className="workspace-grid">
-          <main id="main-content" className="main-content">
-            {paymentError && (
-              <div className="payment-notice">
-                <Notice>{paymentError}</Notice>
-                {pendingPurchase && (
-                  <button
-                    className="button subtle small"
-                    disabled={buying}
-                    onClick={() =>
-                      buy(pendingPurchase.product, pendingPurchase.key)
-                    }
-                  >
-                    استعادة نتيجة الطلب السابق
-                  </button>
-                )}
-                <button
-                  className="icon-button"
-                  aria-label="إغلاق الرسالة"
-                  onClick={() => setPaymentError("")}
-                >
-                  <X size={16} />
-                </button>
+              <img src="/brand/oneshot.svg" alt="" width="44" height="44" />
+              <div>
+                <strong dir="ltr">
+                  one<span>Shot</span>
+                  <em>®</em>
+                </strong>
+                <small>المنظومة الموحدة الشاملة</small>
               </div>
-            )}
-            {active === "store" && (
-              <Store
-                products={products}
-                loading={loading}
-                error={error}
-                onRetry={loadProducts}
-                onBuy={buy}
-                busy={buying || !!pendingPurchase}
-                onStudio={() => navigate("ai")}
-              />
-            )}
-            {active === "gateway" &&
-              (isAdmin ? (
-                <Gateway onOrder={setOrder} />
-              ) : (
-                <AccessGate admin onLogin={onLogin} />
+            </button>
+            <div
+              className={`backend-pill ${health?.core.connected && health?.database.connected ? "connected" : ""}`}
+              title={
+                healthError || "حالة اتصال الباك إند وقاعدة بيانات المنظومة"
+              }
+            >
+              <span className="status-dot" />
+              <span>
+                {checking
+                  ? "جارٍ فحص اتصال المنظومة"
+                  : health?.core.connected && health?.database.connected
+                    ? "متصل بالباك إند وقاعدة المنظومة"
+                    : "الاتصال الكامل بانتظار التحقق"}
+                <small dir="ltr">1SHOTCAM.COM · 187.7.65.45</small>
+              </span>
+            </div>
+            <div className="header-actions">
+              <span className="language">
+                <Globe2 size={15} /> العربية
+              </span>
+              <button
+                className="icon-button"
+                onClick={loadOrders}
+                title="طلباتي"
+                aria-label="طلباتي"
+              >
+                <ReceiptText size={19} />
+              </button>
+              {accountControl}
+              <button
+                className="icon-button mobile-menu"
+                aria-label="قائمة الوحدات"
+                onClick={() => setMenu(!menu)}
+              >
+                {menu ? <X size={21} /> : <Menu size={21} />}
+              </button>
+            </div>
+          </header>
+          <div className="page-width">
+            <nav
+              className={`module-nav ${menu ? "open" : ""}`}
+              aria-label="وحدات المنظومة"
+            >
+              {navigation.map((n, i) => (
+                <button
+                  key={n.id}
+                  aria-current={active === n.id ? "page" : undefined}
+                  className={active === n.id ? "active" : ""}
+                  onClick={() => navigate(n.id)}
+                >
+                  <span className="module-icon">
+                    <n.icon size={21} />
+                  </span>
+                  <span className="module-name">
+                    {n.title}
+                    <small>{n.subtitle}</small>
+                  </span>
+                  <span className="module-number">0{i + 1}</span>
+                </button>
               ))}
-            {active === "vault" &&
-              (isAdmin ? <Vault /> : <AccessGate admin onLogin={onLogin} />)}
-            {active === "ceo" &&
-              (isAdmin ? (
-                <Executive />
-              ) : (
-                <AccessGate admin onLogin={onLogin} />
-              ))}
-            {active === "ai" &&
-              (user ? (
-                <Assistant />
-              ) : (
-                <>
-                  <div className="studio-preview">
-                    <Sparkles size={40} />
-                    <span className="eyebrow">ONESHOT AI STUDIO</span>
-                    <h1>
-                      مكان واحد.
-                      <br />
-                      <span>لأفكار لا تنتهي.</span>
-                    </h1>
-                    <p>كتابة، تحليل، برمجة وإبداع مع Gemini وOllama.</p>
+            </nav>
+            <div className="workspace-breadcrumb">
+              <div>
+                <span>منظومة oneShot</span>
+                <ChevronLeft size={13} />
+                <strong>{selected.title}</strong>
+              </div>
+              <span className="workspace-label">
+                YOUR ALL-IN-ONE WORKSPACE <span className="tiny-cross">+</span>
+              </span>
+            </div>
+            <div className="workspace-grid">
+              <main id="main-content" className="main-content">
+                {paymentError && (
+                  <div className="payment-notice">
+                    <Notice>{paymentError}</Notice>
+                    {pendingPurchase && (
+                      <button
+                        className="button subtle small"
+                        disabled={buying}
+                        onClick={() =>
+                          buy(pendingPurchase.product, pendingPurchase.key)
+                        }
+                      >
+                        استعادة نتيجة الطلب السابق
+                      </button>
+                    )}
+                    <button
+                      className="icon-button"
+                      aria-label="إغلاق الرسالة"
+                      onClick={() => setPaymentError("")}
+                    >
+                      <X size={16} />
+                    </button>
                   </div>
-                  <AccessGate onLogin={onLogin} />
-                </>
-              ))}
-          </main>
+                )}
+                {active === "gateway" &&
+                  (isAdmin ? (
+                    <Gateway onOrder={setOrder} />
+                  ) : (
+                    <AccessGate admin onLogin={onLogin} />
+                  ))}
+                {active === "vault" &&
+                  (isAdmin ? (
+                    <Vault />
+                  ) : (
+                    <AccessGate admin onLogin={onLogin} />
+                  ))}
+                {active === "ceo" &&
+                  (isAdmin ? (
+                    <Executive />
+                  ) : (
+                    <AccessGate admin onLogin={onLogin} />
+                  ))}
+                {active === "ai" &&
+                  (user ? (
+                    <Assistant />
+                  ) : (
+                    <>
+                      <div className="studio-preview">
+                        <Sparkles size={40} />
+                        <span className="eyebrow">ONESHOT AI STUDIO</span>
+                        <h1>
+                          مكان واحد.
+                          <br />
+                          <span>لأفكار لا تنتهي.</span>
+                        </h1>
+                        <p>كتابة، تحليل، برمجة وإبداع مع Gemini وOllama.</p>
+                      </div>
+                      <AccessGate onLogin={onLogin} />
+                    </>
+                  ))}
+              </main>
+              <Inspector
+                health={health}
+                refresh={refresh}
+                checking={checking}
+                order={order}
+                onOrder={setOrder}
+              />
+            </div>
+            <footer className="site-footer">
+              <div>
+                <span dir="ltr">
+                  one<span className="text-orange">Shot</span>
+                </span>
+                <small>كل أدواتك. في لقطة واحدة.</small>
+              </div>
+              <p>© {new Date().getFullYear()} 1SHOTCAM.COM</p>
+              <button onClick={() => navigate("ai")}>
+                لنصنع شيئاً استثنائياً <ArrowUpRight size={16} />
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
+      {active === "store" && order && (
+        <Modal title="متابعة الطلب والدفع" onClose={() => setOrder(null)}>
           <Inspector
             health={health}
             refresh={refresh}
@@ -386,20 +426,8 @@ function Workspace({
             order={order}
             onOrder={setOrder}
           />
-        </div>
-        <footer className="site-footer">
-          <div>
-            <span dir="ltr">
-              one<span className="text-orange">Shot</span>
-            </span>
-            <small>كل أدواتك. في لقطة واحدة.</small>
-          </div>
-          <p>© {new Date().getFullYear()} 1SHOTCAM.COM</p>
-          <button onClick={() => navigate("ai")}>
-            لنصنع شيئاً استثنائياً <ArrowUpRight size={16} />
-          </button>
-        </footer>
-      </div>
+        </Modal>
+      )}
       {showOrders && (
         <Modal title="طلباتي" onClose={() => setShowOrders(false)}>
           {ordersError && <Notice>{ordersError}</Notice>}
@@ -444,6 +472,6 @@ function Workspace({
           )}
         </Modal>
       )}
-    </div>
+    </>
   );
 }

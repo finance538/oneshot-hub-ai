@@ -1,6 +1,6 @@
 # 1SHOTCAM.COM — OneShot Ecosystem
 
-An Arabic, right-to-left workspace combining the OneShot store, payment gateway workspace, encrypted administrator vault, AI executive office, and Gemini/Ollama assistant. It uses the original OneShot aperture emblem and the requested charcoal/orange visual identity.
+An Arabic React/Vite ecosystem combining the original OneShot Brand Studio public storefront with the existing gateway workspace, encrypted administrator vault, advisory AI executive office and Gemini/Ollama assistant. The storefront supports Arabic/English and light/dark appearances.
 
 ## Technology and local development
 
@@ -19,7 +19,7 @@ The template service was unavailable, so the application was assembled directly 
 
 `db/schema.ts` defines products, orders, encrypted gateway credentials, conversations, messages, staff, audit events, webhook receipts and rate-limit counters. Migrations in `netlify/database/migrations` are applied automatically by Netlify during deployment. Never apply migrations manually. After a schema change, generate a migration using `npm run db:generate -- --name describe_change`.
 
-The catalog migration inserts the four products and exact USD prices specified for this project. It is business configuration, not a simulated API. No orders, payment successes, staff, conversations or revenue are fabricated. Revenue counts only live orders confirmed by a signed callback, grouped by currency. The UI shows actual loading, empty, authorization and service-error states.
+The original storefront import migration stores 48 services (45 ready to request and three marked in preparation/testing) across eight categories, four media packages and one Google Ads package (53 records), preserving original SKUs, SAR prices, fixed/starting prices, billing cycles, delivery windows, revisions, scope, exclusions and English copy. Complete source content is retained in the typed `products.catalog_details` JSONB column; names, amounts and currency in the existing product columns remain authoritative. The four superseded USD listings are deactivated, not deleted, preserving historical order references. This is public business catalog content, not simulated operational data. No orders, payment successes, staff, conversations or revenue are fabricated. Revenue counts only live orders confirmed by a signed callback, grouped by currency. The UI shows actual loading, empty, authorization and service-error states.
 
 Application records are stored in **Netlify Database**, not in the VPS PostgreSQL instance. The application does not claim to verify or administer the VPS database. The VPS remains an external payment/AI processing integration. Supplied database credentials were not copied into source files, build settings or the browser.
 
@@ -38,7 +38,7 @@ The admin vault includes a live readiness display for database access, core HTTP
 
 ## Payment flow and compatibility contract
 
-`POST /api/gateways/execute-live` requires an authenticated account and an `Idempotency-Key`. Arbitrary gateway workspace transactions require the administrator role; store checkout uses a database product ID and server-authoritative price. The client cannot override product prices. Store checkout currently uses Telr live hosted checkout; configure its live merchant credentials before enabling purchases.
+`POST /api/gateways/execute-live` requires an authenticated account and an `Idempotency-Key`. Arbitrary gateway workspace transactions require the administrator role. Imported catalog services retain the original request-and-confirm flow via the published email/WhatsApp channels. A request does not create a paid order. Direct financial execution for imported service IDs is rejected with `SERVICE_QUOTE_REQUIRED` until scope and price are confirmed through the team. Starting prices are not final quotes; monthly listings do not automatically create subscriptions. The existing gateway execution and callback integration remain in place.
 
 The function persists the order before contacting the core at `https://api.1shotcam.com`. It sends `orderId`, `merchantOrderId`, `productId`, `gatewayCode`, `executionMode`, `topologyMode`, `amount`, `currency`, `country`, `description`, `cardholder`, `deviceEnvironment`, `loaderSecurityOverrides`, optional `paymentToken`, `credentials`, `callbackUrl` and `idempotencyKey`. The `credentials` object is decrypted only in the function and transmitted only to that fixed, trusted HTTPS hostname. **Compatibility with the existing VPS implementation is not yet verified.** Do not interpret a persisted credential as evidence that the provider accepted it.
 
@@ -89,4 +89,14 @@ Follow [the deployment runbook](docs/deployment.md) after the platform publishes
 
 ## Images and reference
 
-The brand emblem comes from the supplied [OneShot repository](https://github.com/finance538/oneshot-ai-google-). Camera and studio-kit images are illustrative product concepts generated through Netlify AI Gateway, saved in `public/img/camera.png` and `public/img/studio-kit.png`. The exact prompts and generation method are retained in `scripts/generate-assets.mjs`. They are displayed through the Image CDN and described as concept images in product details.
+The storefront, seven company/legal pages, 48 product photographs, six editorial photographs and original emblem were imported from [finance538/oneshot-ai-google-](https://github.com/finance538/oneshot-ai-google-/tree/a9160bae7fcfb588dc35c6b532610ac97ca2b1be) at pinned revision `a9160bae7fcfb588dc35c6b532610ac97ca2b1be`. Photographs are served through Netlify Image CDN. Generated camera concepts from the earlier implementation remain unused by the new storefront. See [the import record](docs/original-site-import.md) for scope and integration limits.
+
+## Original storefront integration
+
+`src/storefront/Storefront.tsx` preserves the source storefront layout, responsive catalog, product detail routes, category/search filtering, pagination, service-brief downloads and inquiry dialogs. Catalog records are fetched by the existing `/api/products` handler from Netlify Database; no static catalog fallback substitutes for unavailable data. The component bridge is `src/components/store.tsx`. Original ordering and Arabic/English product descriptions are retained. Theme/language choices travel in the URL. Company and policy pages remain accessible if the catalog is unavailable.
+
+Public paths are `/`, `/products`, `/products/:sku`, `/about`, `/vision`, `/privacy`, `/refund`, `/terms`, `/support`, `/accounts`, and `/api-integration`. The last page documents the destination integration. Links to the gateway workspace, executive office and AI studio use the current authenticated modules. The existing account controls and owned-order history are available from the storefront; selecting an owned order opens its current status/checkout inspector.
+
+This is a storefront/content merge, not a migration of the original merchant backend. The source's wallets, commissions, invoice scheduler, licences, native Android delivery, payment providers and customer database were not replaced or copied into the destination backend. APK/install buttons and automatic-agent claims were adapted to the capabilities actually available. Public contact channels are preserved from the source and still require owner verification. No original customer records, balances, payments or purchased digital deliverable files are present in the public catalog import.
+
+Schema and content migrations were prepared but not applied manually. Files were inspected and formatted; build, typecheck, tests and dev servers were not run during the agent session. The deployment platform performs validation. VPS TLS, merchant configuration, callback compatibility, successful deployment and the conditional domain transition remain separate release requirements.

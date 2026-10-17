@@ -115,6 +115,12 @@ export async function executePayment(
       .from(products)
       .where(and(eq(products.id, productId), eq(products.active, true)));
     if (!product) throw new ApiError(404, "هذا المنتج غير متاح.");
+    if (product.catalogDetails)
+      throw new ApiError(
+        409,
+        "هذه الخدمة تتطلب تأكيد النطاق وعرض السعر من الفريق قبل الدفع.",
+        "SERVICE_QUOTE_REQUIRED",
+      );
     ({ priceCents: amountCents, currency, name: description } = product);
     country = "US";
   } else {
