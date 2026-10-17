@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ShoppingBag,
   Zap,
@@ -130,6 +130,18 @@ function Workspace({
     product: Product;
     key: string;
   } | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!menu) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenu(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [menu]);
   const isAdmin = !!user?.roles?.includes("admin");
   const refresh = useCallback(async () => {
     setChecking(true);
@@ -291,8 +303,11 @@ function Workspace({
               </button>
               {accountControl}
               <button
+                ref={menuButtonRef}
                 className="icon-button mobile-menu"
-                aria-label="قائمة الوحدات"
+                aria-label={menu ? "طي قائمة الوحدات" : "توسيع قائمة الوحدات"}
+                aria-expanded={menu}
+                aria-controls="workspace-navigation"
                 onClick={() => setMenu(!menu)}
               >
                 {menu ? <X size={21} /> : <Menu size={21} />}
@@ -301,6 +316,7 @@ function Workspace({
           </header>
           <div className="page-width">
             <nav
+              id="workspace-navigation"
               className={`module-nav ${menu ? "open" : ""}`}
               aria-label="وحدات المنظومة"
             >
