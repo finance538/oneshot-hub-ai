@@ -1,0 +1,506 @@
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  Sparkles,
+  ArrowUp,
+  Plus,
+  MessageSquare,
+  Trash2,
+  Copy,
+  Check,
+  Mic,
+  Square,
+  Search,
+  MapPin,
+  ChevronDown,
+  Bot,
+  Clock3,
+} from "lucide-react";
+import { api, callBackendApi } from "../lib/api";
+import {
+  endpoints,
+  type ChatMessage,
+  type Conversation,
+} from "../../shared/contracts";
+import { Busy, Notice, Modal, SectionHeading } from "./common";
+interface SpeechResult {
+  results: { [index: number]: { [index: number]: { transcript: string } } };
+  resultIndex: number;
+}
+interface SpeechRecognizer {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((e: SpeechResult) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+export function Assistant({
+  kind = "chat",
+  staffId,
+}: {
+  kind?: "chat" | "ceo";
+  staffId?: string;
+}) {
+  const [provider, setProvider] = useState(kind === "ceo" ? "core" : "gemini"),
+    [model, setModel] = useState("gemini-3-flash-preview"),
+    [persona, setPersona] = useState("studio"),
+    [search, setSearch] = useState(false),
+    [maps, setMaps] = useState(false);
+  const [history, setHistory] = useState<Conversation[]>([]),
+    [conversation, setConversation] = useState<string | undefined>(),
+    [messages, setMessages] = useState<ChatMessage[]>([]),
+    [input, setInput] = useState(""),
+    [busy, setBusy] = useState(false),
+    [loading, setLoading] = useState(false),
+    [error, setError] = useState(""),
+    [copied, setCopied] = useState(""),
+    [deleting, setDeleting] = useState<Conversation | null>(null);
+  const [recording, setRecording] = useState(false),
+    [voiceAvailable, setVoiceAvailable] = useState(false),
+    recognizer = useRef<SpeechRecognizer | null>(null),
+    end = useRef<HTMLDivElement>(null),
+    loadVersion = useRef(0);
+  async function refreshHistory() {
+    try {
+      const r = await api<{ conversations: Conversation[] }>(
+        `/api/conversations?kind=${kind}`,
+        undefined,
+        { quiet: true },
+      );
+      setHistory(r.conversations);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+  useEffect(() => {
+    void refreshHistory();
+    const w = window as unknown as {
+      SpeechRecognition?: new () => SpeechRecognizer;
+      webkitSpeechRecognition?: new () => SpeechRecognizer;
+    };
+    setVoiceAvailable(!!(w.SpeechRecognition || w.webkitSpeechRecognition));
+    return () => recognizer.current?.abort();
+  }, []);
+  useEffect(
+    () => end.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }),
+    [messages, busy],
+  );
+  function newChat() {
+    loadVersion.current++;
+    setConversation(undefined);
+    setMessages([]);
+    setInput("");
+    setError("");
+    setLoading(false);
+  }
+  async function loadChat(item: Conversation) {
+    const version = ++loadVersion.current;
+    setLoading(true);
+    setError("");
+    try {
+      const r = await api<{ messages: ChatMessage[] }>(
+        `/api/conversations/${item.id}`,
+        undefined,
+        { quiet: true },
+      );
+      if (version === loadVersion.current) {
+        setConversation(item.id);
+        setMessages(r.messages);
+      }
+    } catch (e) {
+      if (version === loadVersion.current) setError((e as Error).message);
+    } finally {
+      if (version === loadVersion.current) setLoading(false);
+    }
+  }
+  async function send(e: FormEvent) {
+    e.preventDefault();
+    if (!input.trim() || busy || loading) return;
+    setBusy(true);
+    setError("");
+    const prompt = input.trim();
+    try {
+      const r = await callBackendApi<{ reply: string; conversationId: string }>(
+        kind === "ceo" ? endpoints.ceo : endpoints.chat,
+        {
+          message: prompt,
+          provider,
+          model,
+          persona,
+          conversationId: conversation,
+          searchGrounding: provider === "gemini" && search,
+          mapsGrounding: provider === "gemini" && maps,
+          staffId,
+        },
+      );
+      setConversation(r.conversationId);
+      setInput("");
+      setMessages((old) => [
+        ...old,
+        {
+          id: crypto.randomUUID(),
+          role: "user",
+          content: prompt,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: r.reply,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      void refreshHistory();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function remove() {
+    if (!deleting) return;
+    setBusy(true);
+    try {
+      await api(`/api/conversations/${deleting.id}`, undefined, {
+        method: "DELETE",
+      });
+      if (conversation === deleting.id) newChat();
+      await refreshHistory();
+      setDeleting(null);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  function voice() {
+    if (recording) {
+      recognizer.current?.stop();
+      return;
+    }
+    const w = window as unknown as {
+        SpeechRecognition?: new () => SpeechRecognizer;
+        webkitSpeechRecognition?: new () => SpeechRecognizer;
+      },
+      Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!Ctor) {
+      setError("الإملاء الصوتي غير متاح في هذا المتصفح.");
+      return;
+    }
+    const r = new Ctor();
+    r.lang = "ar-SA";
+    r.continuous = false;
+    r.interimResults = false;
+    r.onresult = (e) =>
+      setInput((old) =>
+        (old + " " + e.results[e.resultIndex][0].transcript)
+          .trim()
+          .slice(0, 8000),
+      );
+    r.onerror = () => {
+      setError("تعذّر استخدام الميكروفون. تحقق من الإذن وحاول مجدداً.");
+      setRecording(false);
+    };
+    r.onend = () => setRecording(false);
+    recognizer.current = r;
+    try {
+      r.start();
+      setRecording(true);
+    } catch {
+      setError("تعذّر بدء الإملاء الصوتي.");
+    }
+  }
+  const prompts =
+    kind === "ceo"
+      ? [
+          "حلّل المبيعات حسب العملة وحالة الدفع",
+          "راجع جاهزية البوابات واقترح الخطوات التالية",
+          "اقترح توزيع المهام على الفريق",
+        ]
+      : [
+          "اكتب سيناريو فيديو لمنتج جديد",
+          "ساعدني في إعداد استوديو تصوير",
+          "ضع خطة محتوى للأسبوع القادم",
+        ];
+  return (
+    <>
+      {kind === "chat" && (
+        <SectionHeading
+          eyebrow="ONESHOT AI STUDIO"
+          title="فكرتك. والذكاء الذي يطلقها."
+          description="مساحة للعمل والإبداع مع Google Gemini ومحركات oneShot وOllama."
+        >
+          <span className="mode-badge">
+            <Sparkles size={15} /> مساحة الإبداع
+          </span>
+        </SectionHeading>
+      )}
+      <section className="ai-workspace">
+        <div className="ai-toolbar">
+          <div className="ai-provider">
+            <Bot size={19} />
+            <select
+              aria-label="محرك الذكاء الاصطناعي"
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+              disabled={busy}
+            >
+              <option value="gemini">Google Gemini</option>
+              <option value="core">OneShot Core</option>
+              <option value="ollama">Ollama</option>
+            </select>
+          </div>
+          {provider === "gemini" && (
+            <select
+              aria-label="نموذج Gemini"
+              value={model}
+              onChange={(e) => {
+                setModel(e.target.value);
+                if (e.target.value !== "gemini-2.5-flash") setMaps(false);
+              }}
+              disabled={busy}
+            >
+              <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+            </select>
+          )}
+          <button
+            className="button subtle small"
+            disabled={busy}
+            onClick={newChat}
+          >
+            <Plus size={15} /> محادثة جديدة
+          </button>
+        </div>
+        <div className="ai-body">
+          <div className="ai-chat">
+            <div className="chat-messages" aria-live="polite">
+              {loading ? (
+                <div className="empty-state">
+                  <Busy />
+                  <p>جارٍ فتح المحادثة...</p>
+                </div>
+              ) : messages.length ? (
+                messages.map((m) => (
+                  <div className={`chat-message ${m.role}`} key={m.id}>
+                    <div className="message-avatar">
+                      {m.role === "assistant" ? (
+                        <Sparkles size={16} />
+                      ) : (
+                        <span>أنت</span>
+                      )}
+                    </div>
+                    <div className="message-content">
+                      <strong>
+                        {m.role === "assistant" ? "oneShot AI" : "أنت"}
+                      </strong>
+                      <div>{m.content}</div>
+                      {m.role === "assistant" && (
+                        <button
+                          className="copy-message"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(m.content);
+                              setCopied(m.id);
+                              setTimeout(() => setCopied(""), 2000);
+                            } catch {
+                              setError("تعذّر النسخ من المتصفح.");
+                            }
+                          }}
+                        >
+                          {copied === m.id ? (
+                            <Check size={12} />
+                          ) : (
+                            <Copy size={12} />
+                          )}{" "}
+                          {copied === m.id ? "تم النسخ" : "نسخ"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="ai-welcome">
+                  <div className="ai-mark">
+                    <Sparkles size={36} strokeWidth={1.5} />
+                  </div>
+                  <span className="eyebrow">YOUR CREATIVE CO-PILOT</span>
+                  <h2>
+                    {kind === "ceo"
+                      ? "ما القرار التالي لأعمالك؟"
+                      : "كل فكرة كبيرة تبدأ بمحادثة."}
+                  </h2>
+                  <p>
+                    {kind === "ceo"
+                      ? "تقارير تستند إلى الطلبات والفريق المسجلين في المنظومة."
+                      : "اكتب، حلّل، خطّط. حوّل ما في بالك إلى خطوة واضحة."}
+                  </p>
+                  <div className="prompt-suggestions">
+                    {prompts.map((p) => (
+                      <button key={p} onClick={() => setInput(p)}>
+                        {p}
+                        <ArrowUp size={14} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {busy && !deleting && (
+                <div className="thinking">
+                  <span />
+                  <span />
+                  <span /> جارٍ إعداد الإجابة...
+                </div>
+              )}
+              <div ref={end} />
+            </div>
+            {error && <Notice>{error}</Notice>}
+            <form className="composer" onSubmit={send}>
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={
+                  kind === "ceo"
+                    ? "اكتب توجيهك التنفيذي..."
+                    : "اسأل، اكتب فكرة، أو ابدأ شيئاً جديداً..."
+                }
+                aria-label="رسالتك"
+                maxLength={8000}
+                required
+                rows={3}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    e.currentTarget.form?.requestSubmit();
+                  }
+                }}
+              />
+              <div className="composer-bottom">
+                <div className="composer-tools">
+                  {provider === "gemini" && (
+                    <>
+                      <button
+                        type="button"
+                        aria-pressed={search}
+                        className={search ? "active" : ""}
+                        onClick={() => setSearch(!search)}
+                        disabled={busy}
+                      >
+                        <Search size={14} /> بحث
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={maps}
+                        className={maps ? "active" : ""}
+                        onClick={() => {
+                          setMaps(!maps);
+                          if (!maps) setModel("gemini-2.5-flash");
+                        }}
+                        disabled={busy}
+                      >
+                        <MapPin size={14} /> خرائط
+                      </button>
+                    </>
+                  )}
+                  {voiceAvailable && (
+                    <button
+                      type="button"
+                      className={recording ? "recording" : ""}
+                      onClick={voice}
+                      disabled={busy}
+                      aria-label={recording ? "إيقاف الإملاء" : "إملاء صوتي"}
+                    >
+                      {recording ? <Square size={14} /> : <Mic size={16} />}
+                    </button>
+                  )}
+                </div>
+                <button
+                  className="send-button"
+                  disabled={busy || loading || !input.trim()}
+                  aria-label="إرسال الرسالة"
+                >
+                  {busy ? <Busy /> : <ArrowUp size={20} />}
+                </button>
+              </div>
+            </form>
+            <p className="ai-disclaimer">
+              {recording
+                ? "جارٍ الاستماع..."
+                : "راجع المعلومات المهمة. تُحفظ المحادثات في حسابك بعد وصول الإجابة."}
+            </p>
+          </div>
+          <aside className="chat-sidebar">
+            <label>
+              تخصص المساعد
+              <select
+                value={persona}
+                onChange={(e) => setPersona(e.target.value)}
+                disabled={busy}
+              >
+                <option value="studio">مدير الاستوديو</option>
+                <option value="developer">مساعد البرمجة</option>
+                <option value="marketing">خبير التسويق</option>
+                <option value="analyst">محلل البيانات</option>
+              </select>
+            </label>
+            <div className="history-heading">
+              <Clock3 size={14} /> محادثاتك السابقة
+            </div>
+            {history.length ? (
+              history.map((c) => (
+                <div
+                  className={`conversation-item ${conversation === c.id ? "active" : ""}`}
+                  key={c.id}
+                >
+                  <button disabled={busy} onClick={() => loadChat(c)}>
+                    <MessageSquare size={13} />
+                    <span>{c.title}</span>
+                  </button>
+                  <button
+                    className="delete-chat"
+                    disabled={busy}
+                    onClick={() => setDeleting(c)}
+                    aria-label={`حذف ${c.title}`}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="muted small-text">تظهر محادثاتك المحفوظة هنا.</p>
+            )}
+            <button
+              className="history-refresh"
+              disabled={busy}
+              onClick={refreshHistory}
+            >
+              تحديث السجل <ChevronDown size={13} />
+            </button>
+          </aside>
+        </div>
+      </section>
+      {deleting && (
+        <Modal title="حذف المحادثة" onClose={() => !busy && setDeleting(null)}>
+          <p>تُحذف هذه المحادثة ورسائلها نهائياً من حسابك.</p>
+          <p className="muted">{deleting.title}</p>
+          <div className="modal-actions">
+            <button className="button danger" onClick={remove} disabled={busy}>
+              {busy ? <Busy /> : <Trash2 size={16} />} حذف المحادثة
+            </button>
+            <button
+              className="button subtle"
+              onClick={() => setDeleting(null)}
+              disabled={busy}
+            >
+              إلغاء
+            </button>
+          </div>
+        </Modal>
+      )}
+    </>
+  );
+}
