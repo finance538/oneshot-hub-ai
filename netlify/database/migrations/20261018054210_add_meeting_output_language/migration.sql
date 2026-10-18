@@ -1,0 +1,1 @@
+ALTER TABLE "workforce_meetings" ADD COLUMN "output_language" text DEFAULT 'ar' NOT NULL;
