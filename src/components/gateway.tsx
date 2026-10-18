@@ -16,7 +16,6 @@ import {
 import {
   gateways,
   topologies,
-  securityControls,
   regions,
   endpoints,
   type Order,
@@ -29,9 +28,6 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
-  const [security, setSecurity] = useState<Record<string, boolean>>(
-    Object.fromEntries(securityControls.map(([key]) => [key, true])),
-  );
   const [lastAttempt, setLastAttempt] = useState<{
     key: string;
     body: Record<string, unknown>;
@@ -68,10 +64,6 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
       ...data,
       executionMode: mode,
       topologyMode: topology,
-      loaderSecurityOverrides:
-        mode === "PRODUCTION"
-          ? Object.fromEntries(securityControls.map(([key]) => [key, true]))
-          : security,
     };
     void execute(body, crypto.randomUUID());
   }
@@ -102,10 +94,14 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
           <div className="form-grid">
             <label>
               بوابة الدفع
-              <select name="gatewayCode">
+              <select name="gatewayCode" defaultValue="" required>
+                <option value="" disabled>
+                  اختر بوابة متاحة
+                </option>
                 {gateways.map(([code, name]) => (
-                  <option key={code} value={code}>
+                  <option key={code} value={code} disabled={code !== "stripe"}>
                     {name}
+                    {code !== "stripe" ? " — الربط المباشر قيد النقل" : ""}
                   </option>
                 ))}
               </select>
@@ -124,7 +120,15 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
                 onChange={(e) => setTopology(e.target.value)}
               >
                 {topologies.map(([code, name], i) => (
-                  <option key={code} value={code}>
+                  <option
+                    key={code}
+                    value={code}
+                    disabled={
+                      !["HOSTED_PAGE", "PAYMENT_LINK", "ALL_6_MODES"].includes(
+                        code,
+                      )
+                    }
+                  >
                     {i + 1}. {name} · {code}
                   </option>
                 ))}
@@ -213,63 +217,17 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
           <div className="panel-title">
             <span className="step-number">03</span>
             <div>
-              <h2>حمايات العملية</h2>
-              <p>
-                {mode === "PRODUCTION"
-                  ? "جميع الحمايات إلزامية في البيئة الحية"
-                  : "إعدادات اختبار تُرسل إلى الباك إند للتحقق من دعمه"}
-              </p>
+              <h2>حماية الدفع المستضاف</h2>
+              <p>بيانات البطاقة تبقى داخل صفحة Stripe</p>
             </div>
             <ShieldCheck size={19} />
           </div>
-          <div className="security-actions">
-            <span>٨ طبقات حماية</span>
-            <button
-              type="button"
-              disabled={mode === "PRODUCTION"}
-              onClick={() =>
-                setSecurity(
-                  Object.fromEntries(
-                    securityControls.map(([key]) => [key, true]),
-                  ),
-                )
-              }
-            >
-              تشغيل الكل
-            </button>
-            <button
-              type="button"
-              disabled={mode === "PRODUCTION"}
-              onClick={() =>
-                setSecurity(
-                  Object.fromEntries(
-                    securityControls.map(([key]) => [key, false]),
-                  ),
-                )
-              }
-            >
-              إيقاف الكل
-            </button>
-          </div>
-          <div className="security-grid">
-            {securityControls.map(([key, label]) => (
-              <label className="security-toggle" key={key}>
-                <span>
-                  {label}
-                  <small>{key}</small>
-                </span>
-                <input
-                  type="checkbox"
-                  checked={mode === "PRODUCTION" || security[key]}
-                  disabled={mode === "PRODUCTION"}
-                  onChange={(e) =>
-                    setSecurity((s) => ({ ...s, [key]: e.target.checked }))
-                  }
-                />
-                <span className="toggle-track" />
-              </label>
-            ))}
-          </div>
+          <p className="fine-print">
+            يطلب الربط تحقق 3D Secure من Stripe، ويحدّ محاولات الطلب ويحفظ مفتاح
+            العملية لمنع التكرار. قرار التحقق والموافقة لدى مزود الدفع والبنك.
+            لا يُعلن الموقع إجراء فحوص VPN أو بصمة الجهاز أو AVS دون تكامل
+            موثّق.
+          </p>
         </section>
         {topology === "ALL_6_MODES" && (
           <Notice>
@@ -365,13 +323,16 @@ export function Vault() {
     ? ([
         ["قاعدة بيانات المنظومة", readiness.database?.connected],
         [
-          "HTTPS للباك إند",
+          "خدمات Netlify وقاعدة البيانات",
           readiness.core?.connected && readiness.core?.secure,
         ],
         ["تشفير الخزنة", readiness.vaultEncryptionConfigured],
-        ["توقيع إشعارات الدفع", readiness.signedCallbacksConfigured],
+        [
+          "التحقق المباشر من الدفع",
+          readiness.confirmation === "authenticated_provider_query",
+        ],
         ["صلاحية المسؤول", readiness.adminVerified],
-        ["دفع حي مثبت بإشعار", readiness.livePaymentVerified],
+        ["دفع حي مثبت لدى المزود", readiness.livePaymentVerified],
       ] as const)
     : [];
   return (
@@ -418,7 +379,7 @@ export function Vault() {
         )}
         <p className="fine-print">
           نجاح اتصال الخدمات لا يعني نجاح دفع حي. يجب التحقق من مسار الدفع
-          والإشعار الموقّع قبل نقل النطاقات.
+          والتحقق لدى المزود قبل نقل النطاقات.
         </p>
       </section>
       <form onSubmit={submit} className="panel form-stack">

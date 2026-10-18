@@ -17,6 +17,7 @@ export async function workforceConversation(
   path: string,
   orgId: string,
   actor: string,
+  allowActions = true,
 ) {
   const db = database();
   if (path.endsWith("/voice/transcribe") && req.method === "POST") {
@@ -225,7 +226,7 @@ export async function workforceConversation(
     .returning();
   if (!turn) throw new ApiError(409, "الرسالة قيد المعالجة. حدّث المحادثة.");
   try {
-    if (!meetingId) {
+    if (!meetingId && allowActions) {
       const executed = await conversationAction(
         orgId,
         employeeId,
@@ -245,6 +246,22 @@ export async function workforceConversation(
         return { turn: saved };
       }
     }
+    // Only previously persisted contributions belong in this context. An empty
+    // list is truthful; do not fabricate a specialist conversation.
+    const collaboration = recentTasks
+      .filter(
+        (task) =>
+          task.employeeId !== employeeId &&
+          task.mode === "live" &&
+          task.output.trim() &&
+          ["ready", "draft_ready", "completed", "approved"].includes(
+            task.status,
+          ),
+      )
+      .map((task) => ({
+        employeeId: task.employeeId,
+        output: task.output.slice(0, 2000),
+      }));
     const result = await new GoogleGenAI({}).models.generateContent({
       model: "gemini-2.5-flash",
       contents: [

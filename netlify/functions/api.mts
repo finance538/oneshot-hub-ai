@@ -31,7 +31,10 @@ import {
   executePayment,
   publicOrder,
   paymentWebhook,
+  reconcilePayment,
 } from "../lib/payments.js";
+import { isLegacyCorePath, legacyCoreRoute } from "../lib/legacy-core.js";
+import { nativeGateways, nativeTopologies } from "../lib/payment-providers.js";
 import { workforceRoute } from "../lib/workforce.js";
 import { executiveChat, overview } from "../lib/ai.js";
 import { gateways, endpoints } from "../../shared/contracts.js";
@@ -59,12 +62,12 @@ export default async (req: Request) => {
     // Retired studio requests must stop before auth, database work or inference.
     if (
       path === "/api/ai/chat" ||
-      (path === "/api/conversations" &&
-        url.searchParams.get("kind") !== "ceo")
+      (path === "/api/conversations" && url.searchParams.get("kind") !== "ceo")
     )
       return json(
         {
-          error: "هذه الخدمة لم تعد متاحة. استخدم موظفي AI في مقر شركتك الرقمي.",
+          error:
+            "هذه الخدمة لم تعد متاحة. استخدم موظفي AI في مقر شركتك الرقمي.",
           code: "AI_STUDIO_RETIRED",
           destination: "/workforce",
           requestId,
@@ -88,6 +91,7 @@ export default async (req: Request) => {
     if (!["GET", "POST", "DELETE", "PATCH"].includes(method))
       throw new ApiError(405, "طريقة الطلب غير مدعومة.");
     if (method !== "GET") assertOrigin(req);
+    if (isLegacyCorePath(path)) return json(await legacyCoreRoute(req, path));
     if (path.startsWith("/api/workforce/"))
       return json(await workforceRoute(req, path));
     if (path === "/api/health" && method === "GET") {
@@ -112,6 +116,13 @@ export default async (req: Request) => {
           .from(products)
           .where(eq(products.active, true))
           .orderBy(asc(products.priceCents)),
+      });
+    if (path === "/api/payments/capabilities" && method === "GET")
+      return json({
+        runtime: "netlify",
+        gateways: nativeGateways,
+        topologies: nativeTopologies,
+        confirmation: "authenticated_provider_query",
       });
     if (path === "/api/session" && method === "GET") {
       const user = await resolveUser(req);
@@ -149,6 +160,12 @@ export default async (req: Request) => {
             .limit(50)
         ).map(publicOrder),
       });
+    }
+    const reconcileMatch = path.match(/^\/api\/orders\/([^/]+)\/reconcile$/);
+    if (reconcileMatch && method === "POST") {
+      const user = await authenticate(req);
+      await limit(user.id, "payment_reconciliation", 12);
+      return json(await reconcilePayment(uuid(reconcileMatch[1]), user.id));
     }
     if (/^\/api\/orders\/[^/]+$/.test(path) && method === "GET") {
       const user = await authenticate(req),
@@ -219,6 +236,8 @@ export default async (req: Request) => {
         .where(
           and(
             eq(orders.executionMode, "PRODUCTION"),
+            eq(orders.processor, "netlify"),
+            eq(orders.gateway, "stripe"),
             eq(orders.status, "paid"),
           ),
         )
@@ -228,6 +247,9 @@ export default async (req: Request) => {
         core,
         vaultEncryptionConfigured: vaultReady(),
         signedCallbacksConfigured: webhookReady(),
+        paymentProcessor: "netlify",
+        supportedGateways: nativeGateways,
+        confirmation: "authenticated_provider_query",
         adminVerified: true,
         livePaymentVerified: receipts.length > 0,
         domainTransfer: "after_successful_deployment_and_verification",
