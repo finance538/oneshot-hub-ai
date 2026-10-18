@@ -1,391 +1,454 @@
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  Crosshair,
+  HelpCircle,
+  Maximize2,
+  Mic,
+  Minimize2,
   Monitor,
+  MousePointer2,
+  PhoneOff,
+  RotateCcw,
   Users,
+  Volume2,
 } from "lucide-react";
 import type { Employee, Workspace } from "../../shared/workforce";
 import { useAppearance } from "../storefront/i18n";
 import { liveText } from "./liveCopy";
 import { wfText } from "./copy";
-const iso = (x: number, y: number, z = 0) => ({
-  x: 500 + (x - y) * 0.58,
-  y: 85 + (x + y) * 0.3 - z,
-});
-const polygon = (x: number, y: number, w: number, h: number, z = 0) =>
-  [
-    [x, y],
-    [x + w, y],
-    [x + w, y + h],
-    [x, y + h],
-  ]
-    .map(([a, b]) => {
-      const p = iso(a, b, z);
-      return `${p.x},${p.y}`;
-    })
-    .join(" ");
+import { officeText } from "./officeCopy";
+import type { LiveVoice } from "./useLiveVoice";
+import { AudioMeter } from "./VoiceControls";
+import type { OfficeEngine, OfficeFrame, OfficeState } from "./officeEngine";
+import "./office-scene.css";
+
 export function OfficeScene({
   catalog,
   workspace,
   selected,
-  speaker,
+  voice,
   onSelect,
   onMaster,
   onMeeting,
+  onStandard,
   meetingOpen,
+  paused,
 }: {
   catalog: Employee[];
   workspace: Workspace;
   selected: string;
-  speaker: string | null;
+  voice: LiveVoice;
   onSelect: (id: string) => void;
   onMaster: () => void;
   onMeeting: () => void;
+  onStandard: () => void;
   meetingOpen: boolean;
+  paused: boolean;
 }) {
-  const { language } = useAppearance(),
-    t = (key: string) => liveText(language, key);
-  const svg = useRef<SVGSVGElement>(null),
-    [position, setPosition] = useState({ x: 450, y: 470 });
-  const desks = catalog.map((employee, i) => ({
-    employee,
-    x: i === 0 ? 160 : 470 + ((i - 1) % 3) * 140,
-    y: i === 0 ? 155 : 125 + Math.floor((i - 1) / 3) * 100,
-  }));
-  function move(x: number, y: number) {
-    const next = {
-      x: Math.max(35, Math.min(865, x)),
-      y: Math.max(35, Math.min(565, y)),
-    };
-    setPosition(next);
-    const near = desks.find((d) => Math.hypot(d.x - next.x, d.y - next.y) < 80);
-    if (near && near.employee.id !== selected) onSelect(near.employee.id);
-  }
-  function navigate(event: KeyboardEvent<SVGSVGElement>) {
-    const deltas: Record<string, [number, number]> = {
-      ArrowUp: [0, -28],
-      KeyW: [0, -28],
-      ArrowDown: [0, 28],
-      KeyS: [0, 28],
-      ArrowLeft: [-28, 0],
-      KeyA: [-28, 0],
-      ArrowRight: [28, 0],
-      KeyD: [28, 0],
-    };
-    const delta = deltas[event.code];
-    if (delta) {
-      event.preventDefault();
-      move(position.x + delta[0], position.y + delta[1]);
-    }
-  }
-  function objectKey(event: KeyboardEvent<SVGGElement>, action: () => void) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      event.stopPropagation();
-      action();
-    }
-  }
-  const person = iso(position.x, position.y, 12);
-  return (
-    <section className="wf-office-scene" aria-label={t("headquarters")}>
-      <div className="wf-scene-heading">
-        <span className="wf-eyebrow">ONESHOT / HEADQUARTERS</span>
-        <span>2.5D</span>
-      </div>
-      <svg
-        ref={svg}
-        viewBox="0 0 1060 600"
-        tabIndex={0}
-        role="group"
-        aria-label={t("navigation")}
-        onKeyDown={navigate}
-        onClick={(event) => {
-          if (!svg.current) return;
-          const matrix = svg.current.getScreenCTM();
-          if (!matrix) return;
-          const point = new DOMPoint(
-            event.clientX,
-            event.clientY,
-          ).matrixTransform(matrix.inverse());
-          const a = (point.x - 500) / 0.58,
-            b = (point.y - 85) / 0.3;
-          move((a + b) / 2, (b - a) / 2);
-        }}
-      >
-        <defs>
-          <pattern
-            id="wf-floor-grid"
-            width="40"
-            height="40"
-            patternUnits="userSpaceOnUse"
-            patternTransform="matrix(.58 .30 -.58 .30 500 85)"
-          >
-            <path
-              d="M40 0H0V40"
-              fill="none"
-              stroke="currentColor"
-              strokeOpacity=".12"
-            />
-          </pattern>
-        </defs>
-        <polygon points={polygon(0, 0, 900, 600, -20)} fill="#1b2022" />
-        <polygon points={polygon(0, 0, 900, 600)} className="wf-floor" />
-        <polygon points={polygon(0, 0, 900, 600)} fill="url(#wf-floor-grid)" />
-        <polygon
-          points={polygon(25, 25, 300, 255)}
-          className="wf-executive-floor"
-        />
-        <polygon
-          points={polygon(350, 25, 525, 255)}
-          className="wf-staff-floor"
-        />
-        <polygon
-          points={polygon(25, 320, 480, 250)}
-          className="wf-board-floor"
-        />
-        <path
-          d="M500 85L1022 355V287L500 17L152 197V265L500 85"
-          className="wf-office-wall"
-        />
-        <path
-          d="M500 85V17M326 175V107M674 175V107M848 265V197"
-          stroke="#a5b2ac"
-          strokeOpacity=".25"
-        />
-        {[
-          [170, 70, "CEO"],
-          [600, 65, "TEAM"],
-          [260, 350, "BOARDROOM"],
-        ].map(([x, y, label]) => {
-          const p = iso(Number(x), Number(y));
-          return (
-            <text
-              key={label}
-              x={p.x}
-              y={p.y}
-              textAnchor="middle"
-              className="wf-room-label"
-            >
-              {label}
-            </text>
-          );
-        })}
-        <polygon
-          points={polygon(95, 400, 315, 95, 24)}
-          className="wf-meeting-table"
-        />
-        <g
-          role="button"
-          tabIndex={0}
-          aria-label={wfText(language, "meeting")}
-          className="wf-scene-object"
-          onClick={(event) => {
-            event.stopPropagation();
-            move(270, 480);
-            onMeeting();
-          }}
-          onKeyDown={(event) => objectKey(event, onMeeting)}
-        >
-          <rect
-            x={iso(250, 445, 24).x - 36}
-            y={iso(250, 445, 24).y - 18}
-            width="72"
-            height="34"
-            rx="8"
-            fill="#303c36"
-          />
-          <text
-            x={iso(250, 445, 24).x}
-            y={iso(250, 445, 24).y + 3}
-            textAnchor="middle"
-            fill="#b9d8c7"
-            fontSize="12"
-          >
-            {wfText(language, "meeting")}
-          </text>
-        </g>
-        {desks.map(({ employee: e, x, y }, i) => {
-          const p = meetingOpen ? iso(115 + i * 115, 400, 30) : iso(x, y, 58);
-          const status = workspace.tasks.find(
-            (task) => task.employeeId === e.id,
-          )?.status;
-          return (
-            <g key={e.id}>
-              <polygon
-                points={polygon(x - 55, y + 22, 110, 65)}
-                fill="#252b2d"
-              />
-              <polygon
-                points={polygon(x - 55, y + 22, 110, 65, 25)}
-                className="wf-desk-top"
-              />
-              <g
-                transform={`translate(${iso(x, y + 40, 25).x},${iso(x, y + 40, 25).y})`}
-                aria-hidden="true"
-              >
-                <rect
-                  x="-19"
-                  y="-30"
-                  width="38"
-                  height="25"
-                  rx="3"
-                  fill="#161c1e"
-                  stroke={status === "drafting" ? "#94bca8" : "#7d8983"}
-                />
-                <path
-                  d="M-12 -22H12M-12 -17H4M-12 -12H9"
-                  stroke="#7d8983"
-                  strokeWidth="2"
-                />
-                <path d="M0 -5V2M-9 2H9" stroke="#7d8983" />
-              </g>
-              <g
-                role="button"
-                tabIndex={0}
-                className={`wf-scene-object ${speaker === e.id ? "wf-speaking" : ""}`}
-                aria-label={e.title[language] || e.title.en}
-                aria-pressed={selected === e.id}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  move(x, y + 90);
-                  onSelect(e.id);
-                }}
-                onKeyDown={(event) => objectKey(event, () => onSelect(e.id))}
-              >
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r="29"
-                  className="wf-speaking-ring"
-                  fill="none"
-                  stroke={selected === e.id ? "#dfaa7e" : "#62706a"}
-                  strokeWidth="2"
-                />
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r="23"
-                  fill={i === 0 ? "#aa7855" : "#456255"}
-                />
-                <circle cx={p.x} cy={p.y - 6} r="7" fill="#f1e5d1" />
-                <path
-                  d={`M${p.x - 12} ${p.y + 14}q0 -16 12 -16t12 16`}
-                  fill="#f1e5d1"
-                />
-                <text
-                  x={p.x}
-                  y={p.y - 39}
-                  textAnchor="middle"
-                  className="wf-person-label"
-                >
-                  {e.title[language] || e.title.en}
-                </text>
-              </g>
-            </g>
-          );
-        })}
-        <g
-          role="button"
-          tabIndex={0}
-          className="wf-scene-object"
-          aria-label={t("master")}
-          onClick={(event) => {
-            event.stopPropagation();
-            move(230, 270);
-            onMaster();
-          }}
-          onKeyDown={(event) => objectKey(event, onMaster)}
-        >
-          <polygon points={polygon(110, 235, 160, 65, 28)} fill="#9e7657" />
-          <g
-            transform={`translate(${iso(190, 265, 30).x},${iso(190, 265, 30).y})`}
-          >
-            <rect
-              x="-38"
-              y="-42"
-              width="76"
-              height="40"
-              rx="4"
-              fill="#192322"
-              stroke="#d5aa7d"
-              strokeWidth="2"
-            />
-            <path
-              d="M-24 -30H24M-24 -23H8M-24 -16H18"
-              stroke="#b2ccba"
-              strokeWidth="2"
-            />
-            <text y="22" textAnchor="middle" className="wf-person-label">
-              {t("master")}
-            </text>
-          </g>
-        </g>
-        <g
-          transform={`translate(${person.x},${person.y})`}
-          className="wf-player"
-          pointerEvents="none"
-        >
-          <ellipse cy="15" rx="15" ry="7" fill="#111a1790" />
-          <circle r="13" fill="#e5b388" stroke="#faead9" strokeWidth="3" />
-          <text y="39" textAnchor="middle" className="wf-person-label">
-            {t("you")}
-          </text>
-        </g>
-        {[
-          { x: 60, y: 75 },
-          { x: 840, y: 520 },
-          { x: 540, y: 550 },
-        ].map(({ x, y }) => {
-          const p = iso(x, y);
-          return (
-            <g key={x} aria-hidden="true">
-              <ellipse cx={p.x} cy={p.y} rx="16" ry="8" fill="#797468" />
-              <path
-                d={`M${p.x} ${p.y}v-35m0 20q-28 -5 -18 -28q25 0 18 28m0 -10q28 -8 15 -26q-20 2 -15 26`}
-                fill="#5d7764"
-                stroke="#6b8a72"
-              />
-            </g>
-          );
-        })}
-      </svg>
-      <div className="wf-scene-footer">
-        <p>{t("navigation")}</p>
-        <div className="wf-direction-pad" dir="ltr">
-          {[
-            [ArrowLeft, -35, 0],
-            [ArrowUp, 0, -35],
-            [ArrowDown, 0, 35],
-            [ArrowRight, 35, 0],
-          ].map(([Icon, dx, dy], i) => {
-            const DirectionIcon = Icon as typeof ArrowLeft;
-            return (
-              <button
-                key={i}
-                aria-label={["←", "↑", "↓", "→"][i]}
-                onClick={() =>
-                  move(position.x + Number(dx), position.y + Number(dy))
+  const { language } = useAppearance();
+  const t = (key: string) => liveText(language, key);
+  const o = (key: string) => officeText(language, key);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const engine = useRef<OfficeEngine | null>(null);
+  const labels = useRef(new Map<string, HTMLButtonElement>());
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
+  const [expanded, setExpanded] = useState(false);
+  const [locked, setLocked] = useState(false);
+  const [help, setHelp] = useState(false);
+  const [room, setRoom] = useState<OfficeFrame["room"]>("executive");
+  const [nearest, setNearest] = useState<string | null>(null);
+  const lastFrame = useRef({
+    room: "executive",
+    nearest: null as string | null,
+  });
+  const state: OfficeState = {
+    selected,
+    speaker: voice.speaker,
+    meeting: meetingOpen,
+    paused,
+    activity: Object.fromEntries(
+      catalog.map((employee) => [
+        employee.id,
+        workspace.tasks.find((task) => task.employeeId === employee.id)
+          ?.status || "idle",
+      ]),
+    ),
+  };
+  const latest = useRef({ state, onSelect, onMaster, onMeeting });
+  latest.current = { state, onSelect, onMaster, onMeeting };
+  const ids = [...catalog]
+    .sort((a, b) =>
+      a.id === "ceo" ? -1 : b.id === "ceo" ? 1 : a.id.localeCompare(b.id),
+    )
+    .map((employee) => employee.id);
+  const catalogKey = JSON.stringify(ids);
+  const title = (id: string) =>
+    id === "@master"
+      ? t("master")
+      : id === "@meeting"
+        ? o("boardroom")
+        : catalog.find((employee) => employee.id === id)?.title[language] ||
+          catalog.find((employee) => employee.id === id)?.title.en ||
+          id;
+  useEffect(() => {
+    let cancelled = false;
+    setStatus("loading");
+    lastFrame.current = { room: "executive", nearest: null };
+    setRoom("executive");
+    setNearest(null);
+    // The WebGL dependency never enters the standard-chat startup path.
+    import("./officeEngine")
+      .then(({ createOffice }) => {
+        if (cancelled || !canvas.current) return;
+        try {
+          engine.current = createOffice(
+            canvas.current,
+            JSON.parse(catalogKey) as string[],
+            latest.current.state,
+            {
+              action(id) {
+                if (id === "@master") latest.current.onMaster();
+                else if (id === "@meeting") latest.current.onMeeting();
+                else latest.current.onSelect(id);
+              },
+              proximity(id) {
+                if (id !== latest.current.state.selected)
+                  latest.current.onSelect(id);
+              },
+              lock(value) {
+                if (!cancelled) setLocked(value);
+              },
+              error() {
+                if (!cancelled) setStatus("error");
+              },
+              frame(frame) {
+                if (cancelled) return;
+                for (const anchor of frame.anchors) {
+                  const label = labels.current.get(anchor.id);
+                  if (!label) continue;
+                  label.hidden = !anchor.visible;
+                  label.style.transform = `translate3d(${anchor.x}px, ${anchor.y}px, 0) translate(-50%, -100%)`;
+                  label.dataset.near = String(anchor.near);
                 }
-              >
-                <DirectionIcon size={16} />
-              </button>
-            );
-          })}
+                if (frame.room !== lastFrame.current.room) setRoom(frame.room);
+                if (frame.nearest !== lastFrame.current.nearest)
+                  setNearest(frame.nearest);
+                lastFrame.current = {
+                  room: frame.room,
+                  nearest: frame.nearest,
+                };
+              },
+            },
+          );
+          setStatus("ready");
+        } catch {
+          setStatus("error");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("error");
+      });
+    return () => {
+      cancelled = true;
+      engine.current?.dispose();
+      engine.current = null;
+    };
+  }, [catalogKey]);
+  useEffect(() => {
+    engine.current?.update(state);
+  }, [selected, voice.speaker, meetingOpen, paused, workspace.tasks, status]);
+  useEffect(() => {
+    if (status === "error") {
+      engine.current?.dispose();
+      engine.current = null;
+    }
+  }, [status]);
+  function move(event: PointerEvent<HTMLButtonElement>, code: string) {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    engine.current?.input(code, true);
+  }
+  function travel(id: string) {
+    engine.current?.navigate(id);
+    canvas.current?.focus({ preventScroll: true });
+  }
+  const currentEmployee = catalog.find((employee) => employee.id === selected);
+  return (
+    <section
+      className={`wf-pov ${expanded ? "is-expanded" : ""}`}
+      aria-label={t("headquarters")}
+    >
+      <header className="wf-pov-heading">
+        <div>
+          <span className="wf-eyebrow">ONESHOT / HEADQUARTERS</span>
+          <h2>{o("pov")}</h2>
         </div>
+        <span className="wf-pov-badge" dir="ltr">
+          FIRST PERSON / 3D
+        </span>
+      </header>
+      <div className="wf-pov-viewport">
+        <canvas
+          key={catalogKey}
+          ref={canvas}
+          className="wf-pov-canvas"
+          tabIndex={status === "ready" ? 0 : -1}
+          role="group"
+          aria-label={o("navigate")}
+          aria-describedby="wf-pov-help"
+        />
+        {status !== "ready" ? (
+          <div className="wf-pov-fallback" role="status">
+            <Crosshair size={32} />
+            <p>{o(status === "loading" ? "loading" : "unavailable")}</p>
+            {status === "loading" && <span className="wf-pov-loading" />}
+            <button onClick={onStandard}>{t("chat")}</button>
+          </div>
+        ) : (
+          <>
+            <div className="wf-pov-room">
+              <span className="wf-pov-dot" />
+              <span>{o(room)}</span>
+              <small>01 / ONESHOT</small>
+            </div>
+            <div className="wf-pov-tools">
+              <button
+                aria-label={o("reset")}
+                title={o("reset")}
+                onClick={() => {
+                  engine.current?.reset();
+                  canvas.current?.focus({ preventScroll: true });
+                }}
+              >
+                <RotateCcw size={16} />
+              </button>
+              <button
+                aria-label={o(expanded ? "collapse" : "expand")}
+                title={o(expanded ? "collapse" : "expand")}
+                aria-pressed={expanded}
+                onClick={() => setExpanded((value) => !value)}
+              >
+                {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+              <button
+                aria-label={o("help")}
+                title={o("help")}
+                aria-expanded={help}
+                onClick={() => setHelp((value) => !value)}
+              >
+                <HelpCircle size={16} />
+              </button>
+            </div>
+            <div className="wf-world-labels">
+              {[...ids, "@master", "@meeting"].map((id) => (
+                <button
+                  key={id}
+                  ref={(node) => {
+                    if (node) labels.current.set(id, node);
+                    else labels.current.delete(id);
+                  }}
+                  className={`wf-world-label ${voice.speaker === id ? "is-speaking" : ""} ${selected === id ? "is-selected" : ""}`}
+                  style={{ transform: "translate3d(-1000px, -1000px, 0)" }}
+                  tabIndex={-1}
+                  onClick={() => engine.current?.activate(id)}
+                >
+                  <span className="wf-world-label-icon">
+                    {id === "@master" ? (
+                      <Monitor size={18} />
+                    ) : id === "@meeting" ? (
+                      <Users size={18} />
+                    ) : voice.speaker === id ? (
+                      <Volume2 size={18} />
+                    ) : (
+                      <span>{id === "ceo" ? "C" : title(id).slice(0, 1)}</span>
+                    )}
+                  </span>
+                  <span>
+                    <strong>{title(id)}</strong>
+                    <small>
+                      {voice.speaker === id
+                        ? t("speaking")
+                        : id === "@master"
+                          ? "MASTER BOSS PC"
+                          : id === "@meeting"
+                            ? "BOARDROOM"
+                            : `AI · ${wfText(language, workspace.tasks.find((task) => task.employeeId === id)?.status || "available")}`}
+                    </small>
+                  </span>
+                  <span className="wf-label-wave" aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                </button>
+              ))}
+            </div>
+            <span className="wf-crosshair" aria-hidden="true">
+              <i />
+              <i />
+            </span>
+            {help && (
+              <div className="wf-pov-help">
+                <strong>{o("help")}</strong>
+                <p>{o("navigate")}</p>
+                <p>{o("drag")}</p>
+                <p>{o("unlock")}</p>
+              </div>
+            )}
+            <div className="wf-pov-hud">
+              {(voice.error || voice.interim) && (
+                <p className="wf-pov-caption" dir="auto">
+                  {voice.error || voice.interim}
+                </p>
+              )}
+              {meetingOpen ? (
+                <p className="wf-pov-seat">
+                  <Users size={16} />
+                  {o("seated")}
+                </p>
+              ) : (
+                nearest && (
+                  <button
+                    className="wf-pov-interact"
+                    onClick={() => engine.current?.activate(nearest)}
+                  >
+                    <kbd>E</kbd>
+                    <span>
+                      {o("interact")} · {title(nearest)}
+                    </span>
+                    <MousePointer2 size={15} />
+                  </button>
+                )
+              )}
+              <div className="wf-pov-bottom-row">
+                <div
+                  className="wf-pov-pad"
+                  dir="ltr"
+                  aria-label={o("navigate")}
+                >
+                  {(
+                    [
+                      ["KeyW", "forward", ArrowUp],
+                      ["KeyA", "left", ArrowLeft],
+                      ["KeyS", "back", ArrowDown],
+                      ["KeyD", "right", ArrowRight],
+                    ] as const
+                  ).map(([code, label, Icon]) => (
+                    <button
+                      key={code}
+                      className={code === "KeyW" ? "is-forward" : ""}
+                      aria-label={o(label)}
+                      disabled={meetingOpen}
+                      onPointerDown={(event) => move(event, code)}
+                      onPointerUp={() => engine.current?.input(code, false)}
+                      onPointerCancel={() => engine.current?.input(code, false)}
+                      onLostPointerCapture={() =>
+                        engine.current?.input(code, false)
+                      }
+                      onKeyDown={(event) => {
+                        if (event.code === "Space" || event.code === "Enter") {
+                          event.preventDefault();
+                          engine.current?.input(code, true);
+                        }
+                      }}
+                      onKeyUp={(event) => {
+                        if (event.code === "Space" || event.code === "Enter") {
+                          event.preventDefault();
+                          engine.current?.input(code, false);
+                        }
+                      }}
+                      onBlur={() => engine.current?.input(code, false)}
+                    >
+                      <Icon size={17} />
+                    </button>
+                  ))}
+                </div>
+                <div className="wf-pov-voice">
+                  <div>
+                    <strong>
+                      {currentEmployee?.title[language] ||
+                        currentEmployee?.title.en}
+                    </strong>
+                    <small>{t(voice.phase)}</small>
+                  </div>
+                  {voice.phase === "listening" && (
+                    <AudioMeter analyser={voice.analyser} />
+                  )}
+                  <button
+                    className={voice.active ? "is-calling" : ""}
+                    aria-label={t(voice.active ? "hangup" : "call")}
+                    title={t(voice.active ? "hangup" : "call")}
+                    aria-pressed={voice.active}
+                    onClick={voice.active ? voice.stop : voice.startCall}
+                  >
+                    {voice.active ? <PhoneOff size={20} /> : <Mic size={20} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
-      <div className="wf-actions">
-        <button onClick={onMaster}>
-          <Monitor size={16} />
-          {t("master")}
-        </button>
-        <button onClick={onMeeting}>
-          <Users size={16} />
-          {wfText(language, "meeting")}
-        </button>
-      </div>
+      <footer className="wf-pov-footer">
+        <div
+          className="wf-pov-destinations"
+          role="group"
+          aria-label={o("travel")}
+        >
+          {catalog.map((employee) => (
+            <button
+              key={employee.id}
+              disabled={status !== "ready"}
+              aria-pressed={selected === employee.id}
+              onClick={() => {
+                travel(employee.id);
+                onSelect(employee.id);
+              }}
+            >
+              {employee.title[language] || employee.title.en}
+            </button>
+          ))}
+          <button
+            disabled={status !== "ready" || meetingOpen}
+            onClick={() => {
+              travel("@master");
+              onMaster();
+            }}
+          >
+            <Monitor size={16} />
+            {t("master")}
+          </button>
+          <button
+            className="wf-pov-meeting"
+            disabled={meetingOpen}
+            onClick={onMeeting}
+          >
+            <Users size={16} />
+            {wfText(language, "meeting")}
+          </button>
+        </div>
+        <div className="wf-pov-instructions">
+          <p id="wf-pov-help">{o("navigate")}</p>
+          <button
+            disabled={status !== "ready"}
+            className="wf-pov-lock"
+            onClick={async () => {
+              if (!(await engine.current?.lockPointer())) setHelp(true);
+            }}
+          >
+            <MousePointer2 size={14} />
+            {o(locked ? "unlock" : "look")}
+          </button>
+        </div>
+      </footer>
     </section>
   );
 }
