@@ -2,6 +2,10 @@
 
 The owner requires preservation of all preview data. Do not reset either preview database, remove application records, or rewrite applied migration files to make validation pass.
 
+## Resolution
+
+The canonical history was established from the applied originals. The unapplied `20261018083007_restore_workforce_collaboration` and `20261018083019_restore_workforce_catalog` files were exact duplicates of the already-applied `20261018073311_workforce_collaboration` and `20261018073400_expand_workforce_catalog` migrations, so they were removed from disk without touching any applied migration or any database record. The pending `20261018075054_add_workforce_live_operations` Drizzle snapshot was rebased onto the applied collaboration snapshot (single `prevIds` parent, `collaboration` column merged into its DDL), restoring one linear history with a single leaf. No data was reset and no migration table was edited.
+
 ## Verified failure
 
 Project: `c7dc12f9-272f-4464-aad2-dd7917776515`  

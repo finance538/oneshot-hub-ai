@@ -673,7 +673,6 @@ export function useLiveVoice({
           v.voiceURI ===
           current.current.voiceChoices[`${item.employeeId}:${item.language}`],
       ) || available[profile.index % available.length];
-    const id = speechId.current;
     // Short chunks avoid long-utterance stalls in Chromium. Events drive the speaking ring.
     const chunks = item.text
       .replace(/[*#`]/g, "")
