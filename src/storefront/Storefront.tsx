@@ -166,6 +166,7 @@ export default function Storefront({
   }, [menu]);
 
   const nav = [
+    { href: "/workforce", ar: "موظفو AI", en: "AI Workforce", Icon: Bot },
     { href: "/", ar: "الرئيسية", en: "Home", Icon: Camera },
     {
       href: "/products",
@@ -590,6 +591,29 @@ export default function Storefront({
               </div>
             </section>
 
+            <section className="store-section" id="section-workforce">
+              <div className="store-section-heading">
+                <div>
+                  <span className="store-kicker">ONESHOT AI WORKFORCE</span>
+                  <h2>
+                    {tr(
+                      "مقر شركتك الرقمي. فريقك القادم يبدأ هنا.",
+                      "Your digital headquarters. Meet your next team.",
+                    )}
+                  </h2>
+                  <p>
+                    {tr(
+                      "اكتشف الموظفين، جرّب قدراتهم، وابدأ مع مدير تنفيذي مجاني. نموذج أولي بمسودات وموافقات ومحاضر محفوظة؛ ربط البريد والاشتراكات قيد الإعداد.",
+                      "Explore AI employees and start with a free CEO. A prototype with saved drafts, approvals and meeting minutes. Email connections and subscriptions are pending.",
+                    )}
+                  </p>
+                </div>
+                <a className="store-button" href={appearanceLink("/workforce")}>
+                  {tr("استكشف موظفي AI", "Explore AI employees")}
+                  <ArrowLeft size={18} />
+                </a>
+              </div>
+            </section>
             <section className="store-section" id="section-ai-staff">
               <div className="store-section-heading">
                 <div>
