@@ -117,7 +117,8 @@ export async function workforceRoute(req: Request, path: string) {
   const orgId = organization.id;
   if (
     path === "/api/workforce/chat" ||
-    path === "/api/workforce/voice/transcribe"
+    path === "/api/workforce/voice/transcribe" ||
+    path === "/api/workforce/voice/synthesize"
   )
     return workforceConversation(req, path, orgId, user.id);
   const eventsMatch = path.match(/^\/api\/workforce\/tasks\/([^/]+)\/events$/);

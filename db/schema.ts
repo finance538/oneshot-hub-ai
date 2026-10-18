@@ -234,6 +234,10 @@ export const workforceChatTurns = pgTable(
     requestKey: uuid("request_key").notNull().unique(),
     input: text("input").notNull(),
     output: text("output").notNull().default(""),
+    collaboration: jsonb("collaboration")
+      .$type<{ employeeId: string; output: string }[]>()
+      .notNull()
+      .default([]),
     outputLanguage: text("output_language").notNull(),
     status: text("status").notNull().default("generating"),
     createdAt: timestamp("created_at", { withTimezone: true })
