@@ -58,6 +58,7 @@ export function useLiveVoice({
 }) {
   const [phase, setPhase] = useState<VoicePhase>("idle"),
     [active, setActive] = useState(false);
+  const [spokenText, setSpokenText] = useState("");
   const [speaker, setSpeaker] = useState<string | null>(null),
     [interim, setInterim] = useState("");
   const [error, setError] = useState(""),
@@ -105,6 +106,119 @@ export function useLiveVoice({
   const playbackContext = useRef<AudioContext | null>(null);
   const settleSpeech = useRef<((completed: boolean) => void) | null>(null);
   const recognitionAttempts = useRef(0);
+  const playback = useRef<AudioBufferSourceNode | null>(null);
+  const [diagnostic, setDiagnostic] = useState("");
+  async function unlockAudio() {
+    if (!context.current || context.current.state === "closed")
+      context.current = new AudioContext();
+    await context.current.resume();
+    return context.current;
+  }
+  function tone(frequency = 660) {
+    const ctx = context.current;
+    if (!ctx || ctx.state !== "running" || current.current.muted) return;
+    const oscillator = ctx.createOscillator(),
+      gain = ctx.createGain();
+    oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.045, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.13);
+    oscillator.connect(gain).connect(ctx.destination);
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + 0.14);
+  }
+  async function testAudio() {
+    if (!current.current.enabled) return;
+    stop();
+    const epoch = session.current;
+    setMuted(false);
+    current.current.muted = false;
+    setError("");
+    setDiagnostic("جارٍ طلب إذن المايك وفحص الصوت…");
+    try {
+      await unlockAudio();
+      if (epoch !== session.current || !alive.current) return;
+      tone();
+      await microphone();
+      if (epoch !== session.current || !alive.current) return;
+      setStage("listening");
+      setDiagnostic(
+        "المايك متصل؛ تحدث لرؤية الموجة. جارٍ اختبار نطق لغة الرد…",
+      );
+      const ok = await speak({
+        employeeId: "ceo",
+        language: current.current.outputLanguage,
+        text:
+          current.current.outputLanguage === "ar"
+            ? "اختبار الصوت. الميكروفون متصل، وأهلاً بك في مقر الشركة."
+            : "Audio test. Welcome to your office.",
+      });
+      if (epoch !== session.current || !alive.current) return;
+      if (alive.current)
+        setDiagnostic(
+          ok
+            ? "اكتمل تشغيل الصوت. المايك متصل؛ الموجة تقيس دخله. اضغط المايك لبدء المحادثة."
+            : "المايك متصل، لكن النطق تعذر. راجع الرسالة أدناه؛ نغمة البدء تؤكد مسار التنبيه فقط.",
+        );
+      releaseMicrophone();
+      setStage("idle");
+    } catch {
+      if (epoch !== session.current || !alive.current) return;
+      setDiagnostic(
+        "تعذر الوصول إلى المايك. اسمح بالميكروفون من إعدادات المتصفح وتحقق من HTTPS.",
+      );
+      stop();
+    }
+  }
+  async function serverSpeech(item: SpokenTurn, id: number): Promise<boolean> {
+    try {
+      setError("");
+      setDiagnostic("لا يتوفر نطق محلي سليم؛ جارٍ توليد الصوت الاحتياطي…");
+      setStage("thinking");
+      const result = await api<{ audio: string; mimeType: string }>(
+        "/api/workforce/voice/synthesize",
+        {
+          text: item.text.slice(0, 4000),
+          language: item.language,
+          employeeId: item.employeeId,
+        },
+        { quiet: true },
+      );
+      if (id !== speechId.current || !alive.current) return false;
+      const ctx = await unlockAudio();
+      const bytes = Uint8Array.from(atob(result.audio), (c) => c.charCodeAt(0));
+      const buffer = await ctx.decodeAudioData(bytes.buffer);
+      if (id !== speechId.current || !alive.current) return false;
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      playback.current = source;
+      tone(880);
+      setSpeaker(item.employeeId);
+      setStage("speaking");
+      const completed = await new Promise<boolean>((resolve) => {
+        settleSpeech.current = resolve;
+        source.onended = () => {
+          if (settleSpeech.current === resolve) settleSpeech.current = null;
+          resolve(id === speechId.current);
+        };
+        source.start();
+      });
+      if (id === speechId.current && alive.current) {
+        setSpeaker(null);
+        setStage("idle");
+        setDiagnostic("اكتمل الرد بالصوت الاحتياطي.");
+      }
+      return completed;
+    } catch (err) {
+      if (id === speechId.current && alive.current) {
+        setSpeaker(null);
+        setStage("idle");
+        tone(330);
+        setError((err as Error).message || t("speechError"));
+      }
+      return false;
+    }
+  }
   const t = (key: string) => liveText(current.current.language, key);
   function setStage(next: VoicePhase) {
     if (alive.current) setPhase(next);
@@ -135,6 +249,12 @@ export function useLiveVoice({
   }
   function cancelSpeech() {
     speechId.current++;
+    try {
+      playback.current?.stop();
+    } catch {
+      /* already ended */
+    }
+    playback.current = null;
     settleSpeech.current?.(false);
     settleSpeech.current = null;
     window.speechSynthesis?.cancel();
@@ -196,8 +316,7 @@ export function useLiveVoice({
       };
     });
     try {
-      const ctx = new AudioContext();
-      context.current = ctx;
+      const ctx = await unlockAudio();
       await ctx.resume();
       if (epoch !== session.current || !alive.current) {
         void ctx.close().catch(() => {});
@@ -243,7 +362,10 @@ export function useLiveVoice({
       return;
     }
     if (epoch === session.current && alive.current) scheduleListen();
-    if (!call.current && !held.current) releaseMicrophone();
+    if (!call.current && !held.current) {
+      releaseMicrophone();
+      setActive(false);
+    }
   }
   async function listen() {
     if (
@@ -262,6 +384,7 @@ export function useLiveVoice({
       if (epoch !== session.current || (!call.current && !held.current)) return;
       listening.current = true;
       setStage("listening");
+      tone();
       if (current.current.route === "browser") {
         const Constructor = recognitionClass();
         if (!Constructor) {
@@ -327,13 +450,19 @@ export function useLiveVoice({
           recognition.current = null;
           listening.current = false;
           if (!heard && ++recognitionAttempts.current > 4) {
+            setDiagnostic(
+              "لم يُلتقط كلام واضح. تحقق من المايك واضغط للتحدث مجدداً.",
+            );
             stop();
             return;
           }
           if (final.trim()) void deliver(final, epoch);
           else {
             scheduleListen();
-            if (!call.current) releaseMicrophone();
+            if (!call.current) {
+              releaseMicrophone();
+              setActive(false);
+            }
           }
         };
         r.start();
@@ -465,6 +594,7 @@ export function useLiveVoice({
     }
   }
   function startCall() {
+    if (!current.current.enabled) return;
     stop();
     enableOutput();
     audioEpoch.current++;
@@ -487,7 +617,10 @@ export function useLiveVoice({
     stop();
     enableOutput();
     call.current = wasCall;
-    setActive(wasCall);
+    setActive(true);
+    setMuted(false);
+    current.current.muted = false;
+    void unlockAudio().catch(() => {});
     held.current = true;
     recognitionAttempts.current = 0;
     void listen();
@@ -511,9 +644,23 @@ export function useLiveVoice({
       return false;
     cancelListening();
     cancelSpeech();
+    setSpokenText(item.text);
+    void unlockAudio().catch(() => {});
     const synth = window.speechSynthesis;
     if (!synth) return cloudSpeak(item, speechId.current);
     synth.resume();
+    const id = speechId.current;
+    if (!synth.getVoices().length)
+      await new Promise<void>((resolve) => {
+        const done = () => {
+          clearTimeout(timer);
+          synth.removeEventListener("voiceschanged", done);
+          resolve();
+        };
+        const timer = setTimeout(done, 1000);
+        synth.addEventListener("voiceschanged", done);
+      });
+    if (id !== speechId.current || !alive.current) return false;
     const available = synth
       .getVoices()
       .filter((v) => v.lang.toLowerCase().split(/[-_]/)[0] === item.language)
@@ -544,9 +691,14 @@ export function useLiveVoice({
           if (finished) return;
           finished = true;
           clearTimeout(timeout);
+          clearTimeout(startTimeout);
           if (settleSpeech.current === finish) settleSpeech.current = null;
           resolve(value);
         };
+        const startTimeout = setTimeout(() => {
+          synth.cancel();
+          finish(false);
+        }, 5000);
         const timeout = setTimeout(() => {
           if (id === speechId.current) {
             synth.cancel();
@@ -556,7 +708,9 @@ export function useLiveVoice({
         }, 30000);
         settleSpeech.current = finish;
         utterance.onstart = () => {
+          clearTimeout(startTimeout);
           if (alive.current && id === speechId.current) {
+            if (chunk === chunks[0]) tone(880);
             setSpeaker(item.employeeId);
             setStage("speaking");
           }
@@ -711,8 +865,11 @@ export function useLiveVoice({
   }, [outputLanguage, enabled]);
   return {
     phase,
+    diagnostic,
+    testAudio,
     active,
     speaker,
+    spokenText,
     interim,
     error,
     muted,

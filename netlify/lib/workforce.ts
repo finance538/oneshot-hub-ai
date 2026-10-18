@@ -63,7 +63,7 @@ export async function workforceRoute(req: Request, path: string) {
         .orderBy(asc(aiEmployees.id)),
     };
   }
-  const user = await authenticate();
+  const user = await authenticate(req);
   let [organization] = await db
     .select()
     .from(organizations)
@@ -172,7 +172,8 @@ export async function workforceRoute(req: Request, path: string) {
   }
   if (
     path === "/api/workforce/chat" ||
-    path === "/api/workforce/voice/transcribe"
+    path === "/api/workforce/voice/transcribe" ||
+    path === "/api/workforce/voice/synthesize"
   )
     return workforceConversation(req, path, orgId, user.id);
   const eventsMatch = path.match(/^\/api\/workforce\/tasks\/([^/]+)\/events$/);
