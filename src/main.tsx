@@ -1,6 +1,7 @@
 import React, { Component, type ReactNode } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import "./design-tokens.css";
 import "./styles.css";
 class ErrorBoundary extends Component<
   { children: ReactNode },

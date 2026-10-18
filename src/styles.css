@@ -1,15 +1,15 @@
 :root {
   font-family: "IBM Plex Sans Arabic", sans-serif;
-  color: #eeeef0;
-  background: #0f1115;
+  color: var(--ui-text);
+  background: var(--ui-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --page: #0f1115;
-  --surface: #181b22;
-  --surface-deep: #13161c;
-  --line: #2a2f3a;
-  --muted: #9399a5;
+  --page: var(--ui-bg);
+  --surface: var(--ui-panel);
+  --surface-deep: var(--ui-bg);
+  --line: var(--ui-border);
+  --muted: var(--ui-muted);
   --orange: #f26522;
   --green: #10b981;
   --radius: 14px;
@@ -64,8 +64,8 @@ select {
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: var(--orange);
-  box-shadow: 0 0 0 3px #f2652215;
+  border-color: var(--ui-muted);
+  box-shadow: none;
 }
 input::placeholder,
 textarea::placeholder {
