@@ -58,6 +58,7 @@ export function isUnconfirmedRequest(error: unknown) {
       "VAULT_NOT_CONFIGURED",
       "PAYMENTS_NOT_CONFIGURED",
       "GATEWAY_NOT_CONFIGURED",
+      "GATEWAY_ENVIRONMENT_MISMATCH",
     ].includes(error.code || "")
   )
     return false;
@@ -74,7 +75,11 @@ export async function callBackendApi<T = Record<string, any>>(
   for (const path of endpoints) {
     const id = crypto.randomUUID();
     const record = (status: number, response: unknown) => {
-      if (!options.quiet && session === generation)
+      if (
+        !options.quiet &&
+        !/^\/api\/(workforce|ai-workforce)\//.test(path) &&
+        session === generation
+      )
         listeners.forEach((fn) =>
           fn({
             id,
@@ -132,26 +137,6 @@ export async function callBackendApi<T = Record<string, any>>(
       );
     }
     if (/^\s*<(?:!doctype|html)/i.test(raw)) {
-      // Read-only health may use the independent HTTPS origin. Never replay a financial mutation.
-      if (method === "GET" && path === "/api/health") {
-        try {
-          const fallback = await fetch("https://api.1shotcam.com/api/health", {
-            signal: AbortSignal.timeout(6000),
-            credentials: "omit",
-          });
-          const text = await fallback.text();
-          if (fallback.ok && !/^\s*</.test(text)) {
-            JSON.parse(text);
-            failure(
-              "الباك إند يستجيب، لكن توجيه API المحلي يحتاج إلى تصحيح.",
-              502,
-              "LOCAL_PROXY_UNAVAILABLE",
-            );
-          }
-        } catch (error) {
-          if (error instanceof RequestError) throw error;
-        }
-      }
       return failure(
         "مسار API يعيد صفحة HTML. لم يُكرر الطلب؛ راجع إعدادات النشر.",
         502,
