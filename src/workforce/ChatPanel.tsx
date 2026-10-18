@@ -52,10 +52,13 @@ export function ChatPanel({
     t = (key: string) => liveText(language, key),
     w = (key: string) => wfText(language, key);
   const [draft, setDraft] = useState("");
-  const end = useRef<HTMLDivElement>(null);
+  const messages = useRef<HTMLDivElement>(null);
   const employee = catalog.find((e) => e.id === selected);
   useEffect(() => {
-    end.current?.scrollIntoView({ behavior: "instant", block: "nearest" });
+    const pane = messages.current;
+    // Keep incoming voice replies inside the chat; do not scroll the merchant
+    // away from the first-person scene, especially on a stacked mobile layout.
+    if (pane) pane.scrollTo({ top: pane.scrollHeight, behavior: "instant" });
   }, [chat.turns.length, chat.busy]);
   useEffect(() => setDraft(""), [selected]);
   async function submit() {
@@ -101,7 +104,11 @@ export function ChatPanel({
           <RefreshCw size={16} />
         </button>
       </header>
-      <div className="wf-chat-messages" aria-busy={chat.busy || chat.loading}>
+      <div
+        ref={messages}
+        className="wf-chat-messages"
+        aria-busy={chat.busy || chat.loading}
+      >
         {chat.loading ? (
           <div className="wf-chat-loading" role="status">
             <i />
@@ -159,7 +166,6 @@ export function ChatPanel({
             <span>···</span>
           </p>
         )}
-        <div ref={end} />
       </div>
       {chat.error && (
         <p className="wf-error" role="alert">

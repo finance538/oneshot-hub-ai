@@ -57,7 +57,9 @@ function Dialog({
   title,
   onClose,
   children,
+  inline = false,
 }: {
+  inline?: boolean;
   title: string;
   onClose: () => void;
   children: ReactNode;
@@ -68,7 +70,19 @@ function Dialog({
     const node = ref.current;
     node?.showModal();
     return () => node?.close();
-  }, []);
+  }, [inline]);
+  if (inline)
+    return (
+      <section className="wf-dialog wf-meeting-panel" aria-label={title}>
+        <header>
+          <h2>{title}</h2>
+          <button aria-label={wfText(language, "close")} onClick={onClose}>
+            <X size={20} />
+          </button>
+        </header>
+        {children}
+      </section>
+    );
   return (
     <dialog
       ref={ref}
@@ -403,7 +417,7 @@ export default function Workforce({
       chat={conversation}
       voice={voice}
       onSend={sendChat}
-      keyboard={inMeeting === boardroom}
+      keyboard={inMeeting === boardroom && !masterOpen}
       compact={inMeeting || view === "headquarters"}
     />
   );
@@ -606,6 +620,125 @@ export default function Workforce({
       </select>
     </label>
   );
+  const meetingPanel = boardroom ? (
+    <Dialog
+      inline={view === "headquarters"}
+      title={t("boardroom")}
+      onClose={closeMeeting}
+    >
+      {error && (
+        <p className="wf-error" role="alert">
+          {error}
+        </p>
+      )}
+      <MeetingAudio
+        meeting={meeting}
+        catalog={catalog}
+        workspace={workspace}
+        voice={voice}
+        onSelect={selectPerson}
+      />
+      {chatPanel(true)}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void startMeeting();
+        }}
+      >
+        <label>
+          {t("topic")}
+          <textarea
+            required
+            maxLength={2000}
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+          />
+        </label>
+        <button className="wf-primary" disabled={busy}>
+          {busy ? t("busy") : t("meeting")}
+        </button>
+      </form>
+      {meeting && (
+        <>
+          <h3>{t("minutes")}</h3>
+          {["ready", "saved", "revision_requested"].includes(
+            meeting.status,
+          ) && <p role="status">{t(meeting.status)}</p>}
+          {meeting.revision && (
+            <p className="wf-text" dir="auto">
+              {meeting.revision}
+            </p>
+          )}
+          <details>
+            <summary>{t("full")}</summary>
+            <p className="wf-text" dir="auto">
+              {meeting.minutes}
+            </p>
+          </details>
+          {["ready", "saved", "revision_requested"].includes(meeting.status) ? (
+            <>
+              <fieldset>
+                <legend>{t("tasks")}</legend>
+                {meeting.proposals.map((p) => (
+                  <label key={p.id} className="wf-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedProposals.includes(p.id)}
+                      onChange={(e) =>
+                        setSelectedProposals((prev) =>
+                          e.target.checked
+                            ? [...prev, p.id]
+                            : prev.filter((id) => id !== p.id),
+                        )
+                      }
+                    />
+                    {p.title}
+                  </label>
+                ))}
+              </fieldset>
+              <label>
+                {t("revise")}
+                <textarea
+                  maxLength={2000}
+                  value={revision}
+                  onChange={(e) => setRevision(e.target.value)}
+                />
+              </label>
+              <div className="wf-actions">
+                <button
+                  disabled={busy}
+                  onClick={() => void meetingAction("save")}
+                >
+                  {t("save")}
+                </button>
+                <button
+                  disabled={busy || !revision.trim()}
+                  onClick={() => void meetingAction("revise")}
+                >
+                  {t("revise")}
+                </button>
+                <button
+                  className="wf-primary"
+                  disabled={busy || !selectedProposals.length}
+                  onClick={() => void meetingAction("approve")}
+                >
+                  {t("selected")}
+                </button>
+              </div>
+            </>
+          ) : (
+            <p role="status">
+              {meeting.status === "approved"
+                ? t("approved")
+                : meeting.status === "failed"
+                  ? t("failed")
+                  : t("busy")}
+            </p>
+          )}
+        </>
+      )}
+    </Dialog>
+  ) : null;
   return (
     <div className="wf-shell">
       <header className="wf-header">
@@ -858,7 +991,7 @@ export default function Workforce({
                   >
                     <Building2 size={18} />
                     {live("headquarters")}
-                    <small>2.5D</small>
+                    <small>3D POV</small>
                   </button>
                   <span className="wf-muted">
                     {voice.active ? live("call") : "ONESHOT / WORKSPACE"}
@@ -872,14 +1005,20 @@ export default function Workforce({
                       catalog={catalog}
                       workspace={workspace}
                       selected={selected}
-                      speaker={voice.speaker}
+                      voice={voice}
                       onSelect={selectPerson}
                       onMaster={() => setMasterOpen(true)}
                       onMeeting={openMeeting}
                       meetingOpen={boardroom}
+                      paused={masterOpen || !!trial}
+                      onStandard={() => changeView("chat")}
                     />
                   )}
-                  {!boardroom && chatPanel()}
+                  {boardroom
+                    ? view === "headquarters"
+                      ? meetingPanel
+                      : null
+                    : chatPanel()}
                 </div>
                 <details
                   className="wf-operations"
@@ -1132,123 +1271,7 @@ export default function Workforce({
           }}
         />
       )}
-      {boardroom && (
-        <Dialog title={t("boardroom")} onClose={closeMeeting}>
-          {error && (
-            <p className="wf-error" role="alert">
-              {error}
-            </p>
-          )}
-          <MeetingAudio
-            meeting={meeting}
-            catalog={catalog}
-            workspace={workspace}
-            voice={voice}
-            onSelect={selectPerson}
-          />
-          {chatPanel(true)}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void startMeeting();
-            }}
-          >
-            <label>
-              {t("topic")}
-              <textarea
-                required
-                maxLength={2000}
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-              />
-            </label>
-            <button className="wf-primary" disabled={busy}>
-              {busy ? t("busy") : t("meeting")}
-            </button>
-          </form>
-          {meeting && (
-            <>
-              <h3>{t("minutes")}</h3>
-              {["ready", "saved", "revision_requested"].includes(
-                meeting.status,
-              ) && <p role="status">{t(meeting.status)}</p>}
-              {meeting.revision && (
-                <p className="wf-text" dir="auto">
-                  {meeting.revision}
-                </p>
-              )}
-              <details>
-                <summary>{t("full")}</summary>
-                <p className="wf-text" dir="auto">
-                  {meeting.minutes}
-                </p>
-              </details>
-              {["ready", "saved", "revision_requested"].includes(
-                meeting.status,
-              ) ? (
-                <>
-                  <fieldset>
-                    <legend>{t("tasks")}</legend>
-                    {meeting.proposals.map((p) => (
-                      <label key={p.id} className="wf-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={selectedProposals.includes(p.id)}
-                          onChange={(e) =>
-                            setSelectedProposals((prev) =>
-                              e.target.checked
-                                ? [...prev, p.id]
-                                : prev.filter((id) => id !== p.id),
-                            )
-                          }
-                        />
-                        {p.title}
-                      </label>
-                    ))}
-                  </fieldset>
-                  <label>
-                    {t("revise")}
-                    <textarea
-                      maxLength={2000}
-                      value={revision}
-                      onChange={(e) => setRevision(e.target.value)}
-                    />
-                  </label>
-                  <div className="wf-actions">
-                    <button
-                      disabled={busy}
-                      onClick={() => void meetingAction("save")}
-                    >
-                      {t("save")}
-                    </button>
-                    <button
-                      disabled={busy || !revision.trim()}
-                      onClick={() => void meetingAction("revise")}
-                    >
-                      {t("revise")}
-                    </button>
-                    <button
-                      className="wf-primary"
-                      disabled={busy || !selectedProposals.length}
-                      onClick={() => void meetingAction("approve")}
-                    >
-                      {t("selected")}
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <p role="status">
-                  {meeting.status === "approved"
-                    ? t("approved")
-                    : meeting.status === "failed"
-                      ? t("failed")
-                      : t("busy")}
-                </p>
-              )}
-            </>
-          )}
-        </Dialog>
-      )}
+      {view !== "headquarters" && meetingPanel}
     </div>
   );
 }
