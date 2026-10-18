@@ -200,6 +200,7 @@ export const workforceMeetings = pgTable(
     requestKey: uuid("request_key").notNull().unique(),
     status: text("status").notNull().default("generating"),
     topic: text("topic").notNull(),
+    outputLanguage: text("output_language").notNull().default("ar"),
     minutes: text("minutes").notNull().default(""),
     reports: jsonb("reports")
       .$type<
@@ -215,4 +216,36 @@ export const workforceMeetings = pgTable(
       .notNull(),
   },
   (t) => [index("workforce_meetings_org").on(t.organizationId)],
+);
+
+export const workforceChatTurns = pgTable(
+  "workforce_chat_turns",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    employeeId: text("employee_id")
+      .notNull()
+      .references(() => aiEmployees.id),
+    meetingId: uuid("meeting_id").references(() => workforceMeetings.id, {
+      onDelete: "cascade",
+    }),
+    requestKey: uuid("request_key").notNull().unique(),
+    input: text("input").notNull(),
+    output: text("output").notNull().default(""),
+    outputLanguage: text("output_language").notNull(),
+    status: text("status").notNull().default("generating"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [
+    index("workforce_chat_scope").on(
+      t.organizationId,
+      t.employeeId,
+      t.meetingId,
+      t.createdAt,
+    ),
+  ],
 );
