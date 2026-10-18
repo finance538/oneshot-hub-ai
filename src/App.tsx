@@ -145,6 +145,30 @@ function Workspace({
   } | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
+    if (!user) return;
+    const id = new URL(window.location.href).searchParams.get("order");
+    if (
+      !id ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      )
+    )
+      return;
+    let alive = true;
+    // The return URL supplies only an identifier. Ownership and payment status
+    // are read from the authenticated server, never from redirect parameters.
+    void api<{ order: Order }>(`/api/orders/${id}`, undefined, { quiet: true })
+      .then((result) => {
+        if (alive) setOrder(result.order);
+      })
+      .catch(() => {
+        if (alive) setPaymentError("تعذّر استرجاع الطلب. راجع طلبات حسابك.");
+      });
+    return () => {
+      alive = false;
+    };
+  }, [user?.id]);
+  useEffect(() => {
     if (!menu) return;
     const close = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
