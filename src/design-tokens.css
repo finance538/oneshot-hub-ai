@@ -1,0 +1,39 @@
+/* Original storefront charcoal palette and compact control scale, shared by
+   the storefront and workforce. Orange is reserved for primary actions. */
+:root {
+  --ui-bg: #0b0d0f;
+  --ui-panel: #14181d;
+  --ui-raised: #1b2027;
+  --ui-text: #f6f7f9;
+  --ui-muted: #94a3b8;
+  --ui-border: #1e293b;
+  --ui-accent: #f26522;
+  --ui-on-accent: #16110d;
+  --ui-success: #10b981;
+  --ui-radius: 12px;
+  --ui-control-radius: 8px;
+  --ui-control-height: 36px;
+  --ui-body-size: 14px;
+  --ui-control-size: 12px;
+  --ui-title-size: clamp(28px, 3.4vw, 44px);
+  --ui-section-size: clamp(21px, 2.2vw, 28px);
+  --ui-gutter: clamp(16px, 3vw, 32px);
+  --ui-content-width: 1280px;
+}
+[data-theme="light"] {
+  --ui-bg: #f8fafc;
+  --ui-panel: #ffffff;
+  --ui-raised: #eef2f6;
+  --ui-text: #17202e;
+  --ui-muted: #526176;
+  --ui-border: #dce3ec;
+  --ui-success: #00785a;
+}
+@media (pointer: coarse) {
+  :root {
+    --ui-control-height: 44px;
+  }
+}
+body:has(dialog[open]) {
+  overflow: hidden;
+}

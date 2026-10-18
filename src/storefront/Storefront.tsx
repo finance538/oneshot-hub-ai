@@ -1,3 +1,4 @@
+import { Modal } from "../components/Modal";
 import { MarketingComparison } from "../marketing/MarketingComparison";
 import { marketingCopy } from "../marketing/copy";
 import type { ReactNode } from "react";
@@ -113,8 +114,6 @@ export default function Storefront({
   const { language, tr, number } = useAppearance();
   const ar = language === "ar";
   const [menu, setMenu] = useState(false);
-  const headerRef = useRef<HTMLElement>(null);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [inquiry, setInquiry] = useState<Inquiry | null>(null);
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   useStudioReveal(path);
@@ -147,30 +146,6 @@ export default function Storefront({
   useEffect(() => {
     document.title = `${title} | oneShot Brand Studio`;
   }, [title]);
-  useEffect(() => {
-    if (!menu) return;
-    const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setMenu(false);
-        menuButtonRef.current?.focus();
-      }
-    };
-    const outside = (event: PointerEvent) => {
-      if (!headerRef.current?.contains(event.target as Node)) setMenu(false);
-    };
-    const desktop = window.matchMedia("(min-width: 1040px)");
-    const resize = () => {
-      if (desktop.matches) setMenu(false);
-    };
-    window.addEventListener("keydown", close);
-    document.addEventListener("pointerdown", outside);
-    desktop.addEventListener("change", resize);
-    return () => {
-      window.removeEventListener("keydown", close);
-      document.removeEventListener("pointerdown", outside);
-      desktop.removeEventListener("change", resize);
-    };
-  }, [menu]);
 
   const nav = [
     { href: "/workforce", ar: "موظفو AI", en: "AI Workforce", Icon: Bot },
@@ -212,114 +187,134 @@ export default function Storefront({
       <a className="store-skip" href="#store-main">
         {tr("انتقل إلى المحتوى", "Skip to content")}
       </a>
-      <header
-        className="store-header"
-        ref={headerRef}
-        onBlur={(event) => {
-          if (
-            event.relatedTarget &&
-            !event.currentTarget.contains(event.relatedTarget)
-          )
-            setMenu(false);
-        }}
-      >
+      <header className="store-header">
         <div className="store-header-inner">
           <Logo />
-          <div className="store-header-actions">
-            <button
-              className="store-icon"
-              onClick={() => {
-                setMenu(false);
-                onOrders();
-              }}
-              aria-label={tr("طلباتي", "My orders")}
-              title={tr("طلباتي", "My orders")}
-            >
-              <ShoppingBag size={19} />
-            </button>
-            <button
-              ref={menuButtonRef}
-              className="store-icon store-menu"
-              aria-label={tr(
-                menu ? "إغلاق القائمة" : "فتح القائمة",
-                menu ? "Close menu" : "Open menu",
-              )}
-              aria-expanded={menu}
-              aria-controls="store-navigation"
-              onClick={() => setMenu(!menu)}
-            >
-              {menu ? <X size={21} /> : <Menu size={21} />}
-            </button>
-          </div>
-          <div
-            className={`store-navigation-panel ${menu ? "is-open" : ""}`}
-            id="store-navigation"
+          <nav
+            className="store-desktop-nav"
+            aria-label={tr("القائمة الرئيسية", "Main navigation")}
           >
-            <nav
-              className="store-nav"
-              aria-label={tr("القائمة الرئيسية", "Main navigation")}
-            >
-              {nav.map(({ href, ar: labelAr, en, Icon }) => {
-                const isActive =
-                  (href === "/products" && path.startsWith("/products")) ||
-                  (href !== "/products" && path === href);
+            {["/", "/products", "/workforce", "/#section-contact"].map(
+              (href) => {
+                const item = nav.find((entry) => entry.href === href)!;
+                const active =
+                  href === "/products" ? path.startsWith(href) : path === href;
                 return (
                   <a
                     key={href}
-                    className={isActive ? "active" : ""}
-                    aria-current={isActive ? "page" : undefined}
                     href={appearanceLink(href)}
-                    onClick={() => setMenu(false)}
+                    aria-current={active ? "page" : undefined}
                   >
-                    <Icon size={16} />
-                    {tr(labelAr, en)}
+                    {tr(item.ar, item.en)}
                   </a>
                 );
-              })}
-            </nav>
-            <div className="store-header-tools">
-              <AppearanceControls />
-              {accountControl}
-            </div>
+              },
+            )}
+          </nav>
+          <div className="store-header-actions">
+            <button
+              className="store-icon"
+              onClick={onOrders}
+              aria-label={tr("طلباتي", "My orders")}
+              title={tr("طلباتي", "My orders")}
+            >
+              <ShoppingBag size={17} />
+            </button>
+            <button
+              className="store-icon"
+              aria-label={tr("القائمة والحساب", "Menu & account")}
+              aria-haspopup="dialog"
+              onClick={() => setMenu(true)}
+            >
+              <Menu size={18} />
+            </button>
           </div>
         </div>
       </header>
-
-      <main className="store-main" id="store-main">
-        <nav
-          className="store-workspaces"
-          aria-label={tr("مساحات ونشوت", "OneShot workspaces")}
+      {menu && (
+        <Modal
+          title={tr("القائمة والحساب", "Menu & account")}
+          onClose={() => setMenu(false)}
+          drawer
         >
-          <span className="store-workspaces-label">ONESHOT /</span>
-          <div className="store-workspace-links">
-            {[
-              { module: "store", ar: "المتجر", en: "Store", Icon: ShoppingBag },
-              {
-                module: "gateway",
-                ar: "بوابات الدفع",
-                en: "Payments",
-                Icon: CreditCard,
-              },
-              {
-                module: "ceo",
-                ar: "المكتب التنفيذي",
-                en: "Executive",
-                Icon: BriefcaseBusiness,
-              },
-              { module: "vault", ar: "الخزنة", en: "Vault", Icon: LockKeyhole },
-            ].map(({ module, ar: labelAr, en, Icon }) => (
+          <nav
+            className="store-drawer-nav"
+            aria-label={tr("روابط الموقع", "Site navigation")}
+          >
+            {nav.map(({ href, ar: labelAr, en, Icon }) => (
               <a
-                key={module}
-                href={appearanceLink(`/?module=${module}`)}
-                className={module === "store" ? "active" : ""}
-                aria-current={module === "store" ? "true" : undefined}
+                key={href}
+                href={appearanceLink(href)}
+                aria-current={path === href ? "page" : undefined}
+                onClick={() => setMenu(false)}
               >
                 <Icon size={16} />
                 {tr(labelAr, en)}
               </a>
             ))}
+          </nav>
+          <div className="store-drawer-tools">
+            <AppearanceControls />
+            <div
+              onClick={(event) => {
+                if (
+                  event.target instanceof Element &&
+                  event.target.closest("button")
+                )
+                  setMenu(false);
+              }}
+            >
+              {accountControl}
+            </div>
           </div>
-        </nav>
+          <nav
+            className="store-workspaces"
+            aria-label={tr("مساحات ونشوت", "OneShot workspaces")}
+          >
+            <span className="store-workspaces-label">ONESHOT /</span>
+            <div className="store-workspace-links">
+              {[
+                {
+                  module: "store",
+                  ar: "المتجر",
+                  en: "Store",
+                  Icon: ShoppingBag,
+                },
+                {
+                  module: "gateway",
+                  ar: "بوابات الدفع",
+                  en: "Payments",
+                  Icon: CreditCard,
+                },
+                {
+                  module: "ceo",
+                  ar: "المكتب التنفيذي",
+                  en: "Executive",
+                  Icon: BriefcaseBusiness,
+                },
+                {
+                  module: "vault",
+                  ar: "الخزنة",
+                  en: "Vault",
+                  Icon: LockKeyhole,
+                },
+              ].map(({ module, ar: labelAr, en, Icon }) => (
+                <a
+                  key={module}
+                  href={appearanceLink(`/?module=${module}`)}
+                  className={module === "store" ? "active" : ""}
+                  aria-current={module === "store" ? "true" : undefined}
+                >
+                  <Icon size={16} />
+                  {tr(labelAr, en)}
+                </a>
+              ))}
+            </div>
+          </nav>
+        </Modal>
+      )}
+
+      <main className="store-main" id="store-main">
         {documentPage ? (
           <article className="store-document">
             <a className="store-back" href={appearanceLink("/")}>
@@ -398,10 +393,9 @@ export default function Storefront({
                 </span>
                 <h1>{marketingCopy[language].headline}</h1>
                 <p>{marketingCopy[language].intro}</p>
-                <p>{marketingCopy[language].examples}</p>
                 <div className="store-actions">
                   <a
-                    className="store-button"
+                    className="store-button secondary"
                     href={appearanceLink("/workforce")}
                   >
                     <ShoppingBag size={18} />
@@ -410,7 +404,7 @@ export default function Storefront({
                   </a>
                   <button
                     type="button"
-                    className="store-button secondary store-workforce-entry"
+                    className="store-button store-workforce-entry"
                     onClick={onWorkforce}
                     disabled={!authReady}
                   >
@@ -422,10 +416,6 @@ export default function Storefront({
                     </span>
                     {signedIn && <ArrowLeft size={16} aria-hidden="true" />}
                   </button>
-                </div>
-                <div className="store-hero-note">
-                  <FileText size={17} />
-                  <span>{marketingCopy[language].marketNote}</span>
                 </div>
               </div>
               <a className="store-hero-visual" href="#section-media">
@@ -564,7 +554,7 @@ export default function Storefront({
                           </strong>
                         </div>
                         <button
-                          className="store-button compact"
+                          className="store-button compact secondary"
                           onClick={() =>
                             setInquiry({
                               sku: item.sku,
@@ -605,8 +595,8 @@ export default function Storefront({
                   </h2>
                   <p>
                     {tr(
-                      "تخصصات استشارية في العمليات والتسويق والمخاطر وخدمة العملاء. يستطيع المسؤول إعداد فريقه وطلب تقارير؛ لا تنفذ المحادثات أوامر مالية أو حملات إعلانية تلقائياً.",
-                      "Advisory specializations in operations, marketing, risk and customer support. Administrators configure their team and request reports; conversations do not execute payments or ad campaigns.",
+                      "فريق استشاري للتخطيط والمحتوى وخدمة العملاء، تحت إشرافك.",
+                      "An advisory team for planning, content and customer care, with your oversight.",
                     )}
                   </p>
                 </div>
@@ -1189,16 +1179,18 @@ function Catalog({
                       .shortDescription
                   }
                 </p>
-                <ul dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
-                  {getLocalizedProductContent(item, language === "ar")
-                    .deliverables.slice(0, 2)
-                    .map((text) => (
-                      <li key={text}>
-                        <CheckCircle2 size={13} />
-                        {text}
-                      </li>
-                    ))}
-                </ul>
+                {!preview && (
+                  <ul dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
+                    {getLocalizedProductContent(item, language === "ar")
+                      .deliverables.slice(0, 2)
+                      .map((text) => (
+                        <li key={text}>
+                          <CheckCircle2 size={13} />
+                          {text}
+                        </li>
+                      ))}
+                  </ul>
+                )}
                 <div className="store-product-price">
                   <small>
                     {item.pricing.billingCycle === "monthly"
@@ -1219,7 +1211,7 @@ function Catalog({
                     {tr("التفاصيل", "Details")}
                   </a>
                   <button
-                    className="store-button compact"
+                    className="store-button compact secondary"
                     disabled={item.status !== "ready_to_sell"}
                     onClick={() =>
                       onOrder({

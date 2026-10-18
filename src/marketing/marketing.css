@@ -6,12 +6,11 @@
   --mk-accent: var(--wf-accent, var(--store-accent, #e2a06b));
   color: var(--mk-text);
   margin-block: clamp(24px, 5vw, 64px);
-  padding: clamp(16px, 3vw, 32px);
-  border: 1px solid var(--mk-border);
-  border-radius: 20px;
+  padding: 28px 0;
+  border-block: 1px solid var(--mk-border);
   min-width: 0;
   max-width: 100%;
-  background: var(--mk-panel);
+  background: transparent;
   overflow-wrap: anywhere;
 }
 .marketing-comparison * {
@@ -29,13 +28,14 @@
   min-width: 0;
 }
 .marketing-eyebrow {
-  color: var(--mk-accent);
+  color: var(--mk-muted);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 11px;
 }
 .marketing-comparison h2 {
   margin: 6px 0;
-  font-size: clamp(1.3rem, 2.7vw, 2rem);
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 500;
   line-height: 1.5;
 }
 .marketing-comparison .marketing-link {
@@ -44,8 +44,10 @@
   gap: 8px;
   color: var(--mk-text);
   text-decoration: none;
-  padding: 10px 14px;
-  border: 1px solid var(--mk-accent);
+  padding: 7px 14px;
+  font-size: 12px;
+  min-height: var(--ui-control-height);
+  border: 1px solid var(--mk-border);
   border-radius: 8px;
 }
 .marketing-market {
@@ -58,7 +60,7 @@
 .marketing-market svg {
   flex-shrink: 0;
   margin-top: 5px;
-  color: var(--mk-accent);
+  color: var(--mk-muted);
 }
 .marketing-filters {
   display: flex;
@@ -69,7 +71,7 @@
 .marketing-filters button {
   font: inherit;
   cursor: pointer;
-  min-height: 44px;
+  min-height: var(--ui-control-height);
   padding: 8px 16px;
   color: var(--mk-text);
   background: transparent;
@@ -77,17 +79,17 @@
   border-radius: 8px;
 }
 .marketing-filters button[aria-pressed="true"] {
-  background: var(--mk-accent);
-  border-color: var(--mk-accent);
-  color: #191b1d;
+  background: var(--ui-raised);
+  border-color: var(--mk-border);
+  color: var(--mk-text);
   font-weight: 700;
 }
 [data-theme="light"] .marketing-filters button[aria-pressed="true"] {
-  color: #fff;
-  background: #975522;
+  color: var(--mk-text);
+  background: var(--ui-raised);
 }
 .marketing-comparison :is(button, a, [tabindex]):focus-visible {
-  outline: 3px solid var(--mk-accent);
+  outline: 3px solid var(--mk-muted);
   outline-offset: 3px;
 }
 .marketing-comparison .marketing-table-scroll {
@@ -103,7 +105,7 @@
   table-layout: fixed;
   border-collapse: collapse;
   text-align: start;
-  font-size: 0.94rem;
+  font-size: 13px;
 }
 .marketing-comparison caption {
   padding: 10px 16px;
@@ -124,11 +126,11 @@
   font-weight: 700;
 }
 .marketing-comparison .marketing-featured {
-  background: color-mix(in srgb, var(--mk-accent) 10%, var(--mk-panel));
+  background: color-mix(in srgb, var(--mk-muted) 10%, var(--mk-panel));
   border-inline-end: 0;
 }
 .marketing-comparison th.marketing-featured {
-  color: var(--mk-accent);
+  color: var(--mk-muted);
 }
 .marketing-comparison .marketing-note {
   color: var(--mk-muted);
@@ -146,24 +148,24 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  border-block-start: 2px solid var(--mk-border);
+  border-block-start: 1px solid var(--mk-border);
   padding-block: 18px 8px;
   min-width: 0;
 }
 .marketing-trust article:first-child {
-  border-color: var(--mk-accent);
+  border-color: var(--mk-border);
 }
 .marketing-trust svg {
   flex-shrink: 0;
-  color: var(--mk-accent);
+  color: var(--mk-muted);
   margin-top: 5px;
 }
 .marketing-trust h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 14px;
 }
 .marketing-trust p {
-  font-size: 0.88rem;
+  font-size: 12px;
   color: var(--mk-muted);
   line-height: 1.8;
   margin: 8px 0 0;
@@ -191,4 +193,11 @@
     flex: 1 1 110px;
     padding-inline: 8px;
   }
+}
+
+.marketing-details {
+  font-size: 13px;
+}
+.marketing-heading .marketing-link {
+  flex-shrink: 0;
 }
