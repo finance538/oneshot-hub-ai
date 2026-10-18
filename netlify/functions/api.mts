@@ -14,6 +14,8 @@ import {
   ApiError,
   assertOrigin,
   authenticate,
+  resolveUser,
+  corsHeaders,
   payload,
   limit,
   encrypt,
@@ -36,6 +38,7 @@ import { gateways, endpoints } from "../../shared/contracts.js";
 
 export default async (req: Request) => {
   const requestId = crypto.randomUUID();
+  const cors = corsHeaders(req);
   const json = (value: unknown, status = 200) =>
     Response.json(value, {
       status,
@@ -43,6 +46,7 @@ export default async (req: Request) => {
         "Cache-Control": "no-store",
         "X-Request-Id": requestId,
         "X-Content-Type-Options": "nosniff",
+        ...cors,
       },
     });
   try {
@@ -52,6 +56,16 @@ export default async (req: Request) => {
       ? `/api/${route.replace(/^\/+/, "")}`
       : url.pathname.replace(/\/$/, "");
     const method = req.method;
+    if (method === "OPTIONS") {
+      assertOrigin(req);
+      return new Response(null, {
+        status: 204,
+        headers: {
+          ...cors,
+          "Cache-Control": "no-store",
+        },
+      });
+    }
     if (path === "/api/webhooks/callback") {
       if (method !== "POST") throw new ApiError(405, "طريقة الطلب غير مدعومة.");
       return json(await paymentWebhook(req));
@@ -85,7 +99,7 @@ export default async (req: Request) => {
           .orderBy(asc(products.priceCents)),
       });
     if (path === "/api/session" && method === "GET") {
-      const user = await getUser();
+      const user = await resolveUser(req);
       return json({
         user: user
           ? {
@@ -98,7 +112,7 @@ export default async (req: Request) => {
       });
     }
     if (endpoints.payment.includes(path) && method === "POST") {
-      const user = await authenticate();
+      const user = await authenticate(req);
       await limit(user.id, "payment", 8);
       return json(
         await executePayment(
@@ -109,7 +123,7 @@ export default async (req: Request) => {
       );
     }
     if (path === "/api/orders" && method === "GET") {
-      const user = await authenticate();
+      const user = await authenticate(req);
       return json({
         orders: (
           await database()
@@ -122,7 +136,7 @@ export default async (req: Request) => {
       });
     }
     if (/^\/api\/orders\/[^/]+$/.test(path) && method === "GET") {
-      const user = await authenticate(),
+      const user = await authenticate(req),
         id = uuid(path.split("/").pop()!);
       const [order] = await database()
         .select()
@@ -132,7 +146,7 @@ export default async (req: Request) => {
       return json({ order: publicOrder(order) });
     }
     if (endpoints.vault.includes(path)) {
-      const user = await authenticate(true),
+      const user = await authenticate(req, true),
         db = database();
       if (method === "GET")
         return json({
@@ -181,7 +195,7 @@ export default async (req: Request) => {
       }
     }
     if (path === "/api/admin/readiness" && method === "GET") {
-      await authenticate(true);
+      await authenticate(req, true);
       const core = await coreHealth();
       const receipts = await database()
         .select({ id: orders.id })
@@ -205,11 +219,11 @@ export default async (req: Request) => {
       });
     }
     if (path === "/api/admin/overview" && method === "GET") {
-      await authenticate(true);
+      await authenticate(req, true);
       return json(await overview());
     }
     if (path === "/api/admin/orders" && method === "GET") {
-      await authenticate(true);
+      await authenticate(req, true);
       return json({
         orders: (
           await database()
@@ -221,7 +235,7 @@ export default async (req: Request) => {
       });
     }
     if (path === "/api/admin/staff") {
-      const user = await authenticate(true);
+      const user = await authenticate(req, true);
       if (method === "GET")
         return json({
           staff: await database()
@@ -245,7 +259,7 @@ export default async (req: Request) => {
       }
     }
     if (/^\/api\/admin\/staff\/[^/]+$/.test(path) && method === "PATCH") {
-      const user = await authenticate(true),
+      const user = await authenticate(req, true),
         id = uuid(path.split("/").pop()!),
         body = await payload(req);
       if (typeof body.active !== "boolean")
@@ -264,12 +278,12 @@ export default async (req: Request) => {
       method === "POST"
     ) {
       const kind = path.includes("ceo") ? "ceo" : "chat",
-        user = await authenticate(kind === "ceo");
+        user = await authenticate(req, kind === "ceo");
       await limit(user.id, "ai", 10);
       return json(await aiChat(await payload(req), user.id, kind));
     }
     if (path === "/api/conversations" && method === "GET") {
-      const user = await authenticate(),
+      const user = await authenticate(req),
         kind = url.searchParams.get("kind") === "ceo" ? "ceo" : "chat";
       if (kind === "ceo" && !user.roles?.includes("admin"))
         throw new ApiError(403, "هذه المحادثات متاحة للمسؤول فقط.");
@@ -288,7 +302,7 @@ export default async (req: Request) => {
       });
     }
     if (/^\/api\/conversations\/[^/]+$/.test(path)) {
-      const user = await authenticate(),
+      const user = await authenticate(req),
         id = uuid(path.split("/").pop()!),
         db = database();
       const [conversation] = await db

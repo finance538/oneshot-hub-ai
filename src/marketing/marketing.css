@@ -1,0 +1,194 @@
+.marketing-comparison {
+  --mk-panel: var(--wf-panel, var(--store-card, #202326));
+  --mk-text: var(--wf-text, var(--store-text, #f0ede6));
+  --mk-muted: var(--wf-muted, var(--store-muted, #a8aaa7));
+  --mk-border: var(--wf-border, var(--store-border, #373b3e));
+  --mk-accent: var(--wf-accent, var(--store-accent, #e2a06b));
+  color: var(--mk-text);
+  margin-block: clamp(24px, 5vw, 64px);
+  padding: clamp(16px, 3vw, 32px);
+  border: 1px solid var(--mk-border);
+  border-radius: 20px;
+  min-width: 0;
+  max-width: 100%;
+  background: var(--mk-panel);
+  overflow-wrap: anywhere;
+}
+.marketing-comparison * {
+  box-sizing: border-box;
+}
+.marketing-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.marketing-heading > div {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+.marketing-eyebrow {
+  color: var(--mk-accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.marketing-comparison h2 {
+  margin: 6px 0;
+  font-size: clamp(1.3rem, 2.7vw, 2rem);
+  line-height: 1.5;
+}
+.marketing-comparison .marketing-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mk-text);
+  text-decoration: none;
+  padding: 10px 14px;
+  border: 1px solid var(--mk-accent);
+  border-radius: 8px;
+}
+.marketing-market {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--mk-muted);
+  line-height: 1.8;
+}
+.marketing-market svg {
+  flex-shrink: 0;
+  margin-top: 5px;
+  color: var(--mk-accent);
+}
+.marketing-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 22px 12px;
+}
+.marketing-filters button {
+  font: inherit;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 8px 16px;
+  color: var(--mk-text);
+  background: transparent;
+  border: 1px solid var(--mk-border);
+  border-radius: 8px;
+}
+.marketing-filters button[aria-pressed="true"] {
+  background: var(--mk-accent);
+  border-color: var(--mk-accent);
+  color: #191b1d;
+  font-weight: 700;
+}
+[data-theme="light"] .marketing-filters button[aria-pressed="true"] {
+  color: #fff;
+  background: #975522;
+}
+.marketing-comparison :is(button, a, [tabindex]):focus-visible {
+  outline: 3px solid var(--mk-accent);
+  outline-offset: 3px;
+}
+.marketing-comparison .marketing-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--mk-border);
+  border-radius: 12px;
+  overscroll-behavior-inline: contain;
+}
+.marketing-comparison table {
+  width: 100%;
+  min-width: 680px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  text-align: start;
+  font-size: 0.94rem;
+}
+.marketing-comparison caption {
+  padding: 10px 16px;
+  text-align: start;
+  color: var(--mk-muted);
+  border-bottom: 1px solid var(--mk-border);
+}
+.marketing-comparison :is(th, td) {
+  width: 25%;
+  padding: 18px;
+  text-align: start;
+  vertical-align: top;
+  border-inline-end: 1px solid var(--mk-border);
+  line-height: 1.9;
+}
+.marketing-comparison th {
+  border-bottom: 1px solid var(--mk-border);
+  font-weight: 700;
+}
+.marketing-comparison .marketing-featured {
+  background: color-mix(in srgb, var(--mk-accent) 10%, var(--mk-panel));
+  border-inline-end: 0;
+}
+.marketing-comparison th.marketing-featured {
+  color: var(--mk-accent);
+}
+.marketing-comparison .marketing-note {
+  color: var(--mk-muted);
+  font-size: 0.8rem;
+  line-height: 1.8;
+  margin-block: 14px 0;
+}
+.marketing-trust {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  margin-block: 28px 18px;
+  gap: 12px;
+}
+.marketing-trust article {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-block-start: 2px solid var(--mk-border);
+  padding-block: 18px 8px;
+  min-width: 0;
+}
+.marketing-trust article:first-child {
+  border-color: var(--mk-accent);
+}
+.marketing-trust svg {
+  flex-shrink: 0;
+  color: var(--mk-accent);
+  margin-top: 5px;
+}
+.marketing-trust h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.marketing-trust p {
+  font-size: 0.88rem;
+  color: var(--mk-muted);
+  line-height: 1.8;
+  margin: 8px 0 0;
+}
+.marketing-scroll-hint {
+  display: none;
+  color: var(--mk-muted);
+  font-size: 0.8rem;
+}
+@media (max-width: 720px) {
+  .marketing-scroll-hint {
+    display: block;
+  }
+  .marketing-trust {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .marketing-comparison :is(th, td) {
+    padding: 12px;
+  }
+  .marketing-comparison table {
+    min-width: 640px;
+  }
+  .marketing-filters button {
+    flex: 1 1 110px;
+    padding-inline: 8px;
+  }
+}

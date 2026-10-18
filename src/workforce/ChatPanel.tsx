@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Sparkles,
   Volume2,
+  KeyRound,
 } from "lucide-react";
 import type { Employee } from "../../shared/workforce";
 import type { Conversation } from "./useConversation";
@@ -38,6 +39,7 @@ export function ChatPanel({
   onSend,
   keyboard = true,
   compact = false,
+  onTools,
 }: {
   catalog: Employee[];
   selected: string;
@@ -47,6 +49,7 @@ export function ChatPanel({
   onSend: (text: string, audible?: boolean) => Promise<boolean>;
   keyboard?: boolean;
   compact?: boolean;
+  onTools?: (employeeId?: string, resourceId?: string) => void;
 }) {
   const { language, outputLanguage, setOutputLanguage } = useAppearance(),
     t = (key: string) => liveText(language, key),
@@ -85,17 +88,15 @@ export function ChatPanel({
             AI · {voice.speaker === selected ? t("speaking") : t("chat")}
           </small>
         </div>
-        <select
-          aria-label={w("team")}
-          value={selected}
-          onChange={(event) => onSelect(event.target.value)}
-        >
-          {catalog.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.title[language] || e.title.en}
-            </option>
-          ))}
-        </select>
+        {onTools && (
+          <button
+            title="البريد والبحث وخزنة الحسابات"
+            aria-label="البريد والبحث وخزنة الحسابات"
+            onClick={() => onTools?.()}
+          >
+            <KeyRound size={17} />
+          </button>
+        )}
         <button
           aria-label={w("refresh")}
           onClick={() => void chat.refresh()}
@@ -190,6 +191,18 @@ export function ChatPanel({
                     {t("read")}
                   </button>
                 )}
+                {turn.action && onTools && (
+                  <button
+                    className="wf-read-aloud"
+                    onClick={() =>
+                      onTools(turn.action?.employeeId, turn.action?.resourceId)
+                    }
+                  >
+                    {turn.action.kind === "research"
+                      ? "المصادر وصفحات البحث"
+                      : "فتح البريد والمراجعة"}
+                  </button>
+                )}
               </article>
             </div>
           ))
@@ -233,9 +246,21 @@ export function ChatPanel({
             }}
           />
           <div>
+            <select
+              className="wf-inline-employee"
+              aria-label={w("team")}
+              value={selected}
+              onChange={(event) => onSelect(event.target.value)}
+            >
+              {catalog.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.title[language] || e.title.en}
+                </option>
+              ))}
+            </select>
             <label className="wf-output-select">
-              {w("output")}
               <select
+                aria-label={w("output")}
                 value={outputLanguage}
                 onChange={(event) =>
                   setOutputLanguage(event.target.value as Language)
@@ -248,6 +273,12 @@ export function ChatPanel({
                 ))}
               </select>
             </label>
+            <VoiceControls
+              voice={voice}
+              employeeId={selected}
+              keyboard={keyboard}
+              compact
+            />
             <button
               className="wf-primary"
               disabled={!draft.trim() || chat.busy || chat.loading}
@@ -257,11 +288,12 @@ export function ChatPanel({
             </button>
           </div>
         </form>
-        <VoiceControls
-          voice={voice}
-          employeeId={selected}
-          keyboard={keyboard}
-        />
+        {(voice.phase !== "idle" || voice.interim || voice.error) && (
+          <div className="wf-inline-status" role="status">
+            <span>{t(voice.phase)}</span>
+            <span dir="auto">{voice.error || voice.interim}</span>
+          </div>
+        )}
       </div>
     </section>
   );

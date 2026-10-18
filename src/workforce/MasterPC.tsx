@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -14,6 +14,7 @@ import type { Employee, Workspace } from "../../shared/workforce";
 import { useAppearance } from "../storefront/i18n";
 import { liveText } from "./liveCopy";
 import { wfText } from "./copy";
+import { OperationsPanel } from "./OperationsPanel";
 export function MasterPC({
   catalog,
   workspace,
@@ -21,6 +22,9 @@ export function MasterPC({
   onClose,
   onSelect,
   onTask,
+  toolFocus,
+  conversationPanel,
+  onRevise,
 }: {
   catalog: Employee[];
   workspace: Workspace;
@@ -28,13 +32,41 @@ export function MasterPC({
   onClose: () => void;
   onSelect: (id: string) => void;
   onTask: (id: string) => void;
+  toolFocus?: { employeeId: string; resourceId?: string };
+  conversationPanel: ReactNode;
+  onRevise: (text: string) => Promise<boolean>;
 }) {
   const { language } = useAppearance(),
     t = (key: string) => liveText(language, key),
     w = (key: string) => wfText(language, key);
   const dialog = useRef<HTMLDialogElement>(null);
   const [screen, setScreen] = useState(selected),
-    [tab, setTab] = useState<"screens" | "browserTab">("screens");
+    [tab, setTab] = useState<
+      "screens" | "browserTab" | "operations" | "workstation"
+    >(
+      toolFocus
+        ? ["mail", "researcher"].includes(toolFocus.employeeId)
+          ? "operations"
+          : "workstation"
+        : "screens",
+    );
+  useEffect(() => {
+    if (!toolFocus) return;
+    setScreen(toolFocus.employeeId);
+    setTab(
+      ["mail", "researcher"].includes(toolFocus.employeeId)
+        ? "operations"
+        : "workstation",
+    );
+  }, [toolFocus?.employeeId, toolFocus?.resourceId]);
+  const [edited, setEdited] = useState("");
+  const [editorDirty, setEditorDirty] = useState(false);
+  useEffect(() => {
+    setScreen(selected);
+    setTaskId(undefined);
+  }, [selected]);
+  const [revising, setRevising] = useState(false);
+  const [revisionError, setRevisionError] = useState("");
   const [address, setAddress] = useState(""),
     [history, setHistory] = useState(["oneshot://team"]),
     [cursor, setCursor] = useState(0),
@@ -48,6 +80,14 @@ export function MasterPC({
   const employee = catalog.find((e) => e.id === screen),
     tasks = workspace.tasks.filter((row) => row.employeeId === screen);
   const task = tasks.find((row) => row.id === taskId) || tasks[0];
+  useEffect(() => {
+    setEdited(task?.output || "");
+    setEditorDirty(false);
+    setRevisionError("");
+  }, [task?.id, screen]);
+  useEffect(() => {
+    if (!editorDirty) setEdited(task?.output || "");
+  }, [task?.output, editorDirty]);
   const location = history[cursor],
     external = location.startsWith("https://");
   const term = location.startsWith("oneshot://search/")
@@ -104,18 +144,116 @@ export function MasterPC({
         </button>
       </header>
       <div className="wf-master-apps">
-        {(["screens", "browserTab"] as const).map((key) => (
-          <button
-            key={key}
-            aria-pressed={tab === key}
-            onClick={() => setTab(key)}
-          >
-            {key === "screens" ? <Monitor size={16} /> : <Globe size={16} />}{" "}
-            {t(key)}
-          </button>
-        ))}
+        {(["workstation", "operations", "screens", "browserTab"] as const).map(
+          (key) => (
+            <button
+              key={key}
+              aria-pressed={tab === key}
+              onClick={() => setTab(key)}
+            >
+              {key === "screens" ? <Monitor size={16} /> : <Globe size={16} />}{" "}
+              {key === "workstation"
+                ? "مساحة العمل"
+                : key === "operations"
+                  ? "البريد والبحث والخزنة"
+                  : t(key)}
+            </button>
+          ),
+        )}
       </div>
-      {tab === "screens" ? (
+      {tab === "workstation" ? (
+        <section className="hq-interactive-workstation">
+          <label>
+            الموظف
+            <select
+              value={selected}
+              onChange={(event) => {
+                setScreen(event.target.value);
+                onSelect(event.target.value);
+              }}
+            >
+              {catalog.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.title[language] || e.title.en}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="hq-workstation-columns">
+            {conversationPanel}
+            <div className="hq-output-editor">
+              <h3>المخرجات ومساحة التحرير</h3>
+              <p>
+                عدّل النص ثم أرسله للموظف للمراجعة. تبقى النسخة الأصلية محفوظة،
+                ولا ينفّذ هذا الإجراء نشراً أو تعديلاً على متجرك.
+              </p>
+              <label>
+                المهمة
+                <select
+                  value={task?.id || ""}
+                  onChange={(event) => setTaskId(event.target.value)}
+                >
+                  {!tasks.length && (
+                    <option value="">لا توجد مهمة محفوظة</option>
+                  )}
+                  {tasks.map((row) => (
+                    <option key={row.id} value={row.id}>
+                      {row.input.slice(0, 80)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                النص القابل للتحرير
+                <textarea
+                  rows={12}
+                  maxLength={3500}
+                  dir="auto"
+                  value={edited}
+                  onChange={(event) => {
+                    setEditorDirty(true);
+                    setEdited(event.target.value);
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                disabled={revising || !edited.trim()}
+                onClick={async () => {
+                  setRevising(true);
+                  setRevisionError("");
+                  try {
+                    const ok = await onRevise(
+                      `راجع هذه النسخة المعدلة وقدم المخرج النهائي دون تنفيذ إجراءات خارجية:\n${edited}`,
+                    );
+                    if (!ok)
+                      setRevisionError(
+                        "لم تُحفظ المراجعة. راجع حالة المحادثة قبل إعادة المحاولة.",
+                      );
+                  } catch {
+                    setRevisionError(
+                      "تعذرت المراجعة. النص ما زال متاحاً في المحرر.",
+                    );
+                  } finally {
+                    setRevising(false);
+                  }
+                }}
+              >
+                {revising ? "جارٍ العمل…" : "إرسال النسخة للمراجعة"}
+              </button>
+              {revisionError && <p role="alert">{revisionError}</p>}
+            </div>
+          </div>
+        </section>
+      ) : tab === "operations" ? (
+        <OperationsPanel
+          key={screen}
+          initial={screen}
+          resourceId={
+            toolFocus?.employeeId === screen ? toolFocus.resourceId : undefined
+          }
+        />
+      ) : tab === "screens" ? (
         <div className="wf-master-screens">
           <aside>
             <h3>{t("screens")}</h3>
@@ -125,6 +263,7 @@ export function MasterPC({
                 aria-pressed={screen === e.id}
                 onClick={() => {
                   setScreen(e.id);
+                  onSelect(e.id);
                   setTaskId(undefined);
                 }}
               >
@@ -136,10 +275,15 @@ export function MasterPC({
           <section>
             <div className="wf-screen-heading">
               <h3>{employee?.title[language] || employee?.title.en}</h3>
+              {["mail", "researcher"].includes(screen) && (
+                <button type="button" onClick={() => setTab("operations")}>
+                  فتح أدوات الموظف
+                </button>
+              )}
               <button
                 onClick={() => {
                   onSelect(screen);
-                  onClose();
+                  setTab("workstation");
                 }}
               >
                 {t("chat")}
