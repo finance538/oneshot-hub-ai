@@ -12,7 +12,7 @@ import {
 import type { Employee } from "../../shared/workforce";
 import type { Conversation } from "./useConversation";
 import type { LiveVoice } from "./useLiveVoice";
-import { VoiceControls, AudioMeter } from "./VoiceControls";
+import { VoiceControls } from "./VoiceControls";
 import {
   useAppearance,
   languageNames,
@@ -257,9 +257,6 @@ export function ChatPanel({
         {(voice.phase !== "idle" || voice.interim || voice.error) && (
           <div className="wf-inline-status" role="status">
             <span>{t(voice.phase)}</span>
-            {voice.phase === "listening" && (
-              <AudioMeter analyser={voice.analyser} />
-            )}
             <span dir="auto">{voice.error || voice.interim}</span>
           </div>
         )}

@@ -330,6 +330,9 @@ export default function Workforce({
       ? "headquarters"
       : "chat",
   );
+  const [chatCollapsed, setChatCollapsed] = useState(
+    () => window.matchMedia("(max-width: 900px)").matches,
+  );
   const [toolFocus, setToolFocus] = useState<{
     employeeId: string;
     resourceId?: string;
@@ -417,7 +420,7 @@ export default function Workforce({
     sendSequence.current++;
     voice.stop();
   }, [boardroom, meetingId]);
-  const chatPanel = (inMeeting = false) => (
+  const chatPanel = (inMeeting = false, inWorkstation = false) => (
     <ChatPanel
       catalog={catalog}
       selected={selected}
@@ -427,10 +430,15 @@ export default function Workforce({
       onSend={sendChat}
       onTools={(employeeId, resourceId) => {
         voice.stop();
+        if (employeeId) selectPerson(employeeId);
         setToolFocus({ employeeId: employeeId || selected, resourceId });
         setMasterOpen(true);
       }}
-      keyboard={inMeeting === boardroom && !masterOpen}
+      keyboard={
+        inMeeting === boardroom &&
+        (inWorkstation || !masterOpen) &&
+        (inWorkstation || view !== "headquarters" || !chatCollapsed)
+      }
       compact={inMeeting || view === "headquarters"}
     />
   );
@@ -943,7 +951,9 @@ export default function Workforce({
           </>
         ) : (
           <>
-            <div className="wf-office-title">
+            <div
+              className={`wf-office-title ${view === "headquarters" ? "is-cinematic" : ""}`}
+            >
               <div>
                 <span className="wf-eyebrow">YOUR EXECUTIVE OFFICE</span>
                 <h1>{workspace.organization?.name || t("office")}</h1>
@@ -1023,7 +1033,7 @@ export default function Workforce({
                   >
                     <Building2 size={18} />
                     {live("headquarters")}
-                    <small>3D POV</small>
+                    <small>EXECUTIVE HQ</small>
                   </button>
                   <button
                     onClick={() => {
@@ -1050,18 +1060,55 @@ export default function Workforce({
                       turns={conversation.turns}
                       chatBusy={conversation.busy}
                       onSelect={selectPerson}
-                      onMaster={() => setMasterOpen(true)}
+                      onMaster={() => {
+                        voice.stop();
+                        setToolFocus(undefined);
+                        setMasterOpen(true);
+                      }}
+                      onWorkstation={(id) => {
+                        voice.stop();
+                        selectPerson(id);
+                        setToolFocus({ employeeId: id });
+                        setMasterOpen(true);
+                      }}
                       onMeeting={openMeeting}
                       meetingOpen={boardroom}
                       paused={masterOpen || !!trial}
                       onStandard={() => changeView("chat")}
                     />
                   )}
-                  {boardroom
-                    ? view === "headquarters"
-                      ? meetingPanel
-                      : null
-                    : chatPanel()}
+                  {view === "headquarters" ? (
+                    <aside
+                      className={`hq-chat-shell ${chatCollapsed && !boardroom ? "is-collapsed" : ""}`}
+                    >
+                      <button
+                        className="hq-chat-toggle"
+                        type="button"
+                        aria-expanded={!chatCollapsed || boardroom}
+                        aria-controls="hq-chat-body"
+                        onClick={() => {
+                          if (boardroom) closeMeeting();
+                          voice.stop();
+                          setChatCollapsed((value) => !value);
+                        }}
+                      >
+                        <MessageSquare size={17} />
+                        <span>{live("chat")}</span>
+                        <span aria-hidden="true">
+                          {chatCollapsed && !boardroom ? "+" : "−"}
+                        </span>
+                      </button>
+                      <div
+                        id="hq-chat-body"
+                        className="hq-chat-body"
+                        inert={chatCollapsed && !boardroom}
+                      >
+                        {boardroom ? meetingPanel : chatPanel()}
+                      </div>
+                    </aside>
+                  ) : !boardroom ? (
+                    chatPanel()
+                  ) : null}
                 </div>
                 <details
                   className="wf-operations"
@@ -1302,7 +1349,10 @@ export default function Workforce({
           workspace={workspace}
           selected={selected}
           toolFocus={toolFocus}
+          conversationPanel={chatPanel(false, true)}
+          onRevise={async (text) => sendChat(text)}
           onClose={() => {
+            voice.stop();
             setMasterOpen(false);
             setToolFocus(undefined);
           }}
