@@ -14,6 +14,7 @@ import type { Employee, Workspace } from "../../shared/workforce";
 import { useAppearance } from "../storefront/i18n";
 import { liveText } from "./liveCopy";
 import { wfText } from "./copy";
+import { OperationsPanel } from "./OperationsPanel";
 export function MasterPC({
   catalog,
   workspace,
@@ -21,6 +22,7 @@ export function MasterPC({
   onClose,
   onSelect,
   onTask,
+  toolFocus,
 }: {
   catalog: Employee[];
   workspace: Workspace;
@@ -28,13 +30,16 @@ export function MasterPC({
   onClose: () => void;
   onSelect: (id: string) => void;
   onTask: (id: string) => void;
+  toolFocus?: { employeeId: string; resourceId?: string };
 }) {
   const { language } = useAppearance(),
     t = (key: string) => liveText(language, key),
     w = (key: string) => wfText(language, key);
   const dialog = useRef<HTMLDialogElement>(null);
   const [screen, setScreen] = useState(selected),
-    [tab, setTab] = useState<"screens" | "browserTab">("screens");
+    [tab, setTab] = useState<"screens" | "browserTab" | "operations">(
+      "operations",
+    );
   const [address, setAddress] = useState(""),
     [history, setHistory] = useState(["oneshot://team"]),
     [cursor, setCursor] = useState(0),
@@ -104,18 +109,23 @@ export function MasterPC({
         </button>
       </header>
       <div className="wf-master-apps">
-        {(["screens", "browserTab"] as const).map((key) => (
+        {(["operations", "screens", "browserTab"] as const).map((key) => (
           <button
             key={key}
             aria-pressed={tab === key}
             onClick={() => setTab(key)}
           >
             {key === "screens" ? <Monitor size={16} /> : <Globe size={16} />}{" "}
-            {t(key)}
+            {key === "operations" ? "البريد والبحث والخزنة" : t(key)}
           </button>
         ))}
       </div>
-      {tab === "screens" ? (
+      {tab === "operations" ? (
+        <OperationsPanel
+          initial={toolFocus?.employeeId || selected}
+          resourceId={toolFocus?.resourceId}
+        />
+      ) : tab === "screens" ? (
         <div className="wf-master-screens">
           <aside>
             <h3>{t("screens")}</h3>

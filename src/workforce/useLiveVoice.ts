@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { WorkforceLanguage } from "../../shared/workforce";
+import { voiceProfile } from "../../shared/workforce";
 import { api } from "../lib/api";
 import { liveText } from "./liveCopy";
 
@@ -100,6 +101,8 @@ export function useLiveVoice({
     recorder = useRef<MediaRecorder | null>(null);
   const delayed = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
     vad = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const cloudSource = useRef<AudioBufferSourceNode | null>(null);
+  const playbackContext = useRef<AudioContext | null>(null);
   const settleSpeech = useRef<((completed: boolean) => void) | null>(null);
   const recognitionAttempts = useRef(0);
   const t = (key: string) => liveText(current.current.language, key);
@@ -135,6 +138,12 @@ export function useLiveVoice({
     settleSpeech.current?.(false);
     settleSpeech.current = null;
     window.speechSynthesis?.cancel();
+    try {
+      cloudSource.current?.stop();
+    } catch {
+      /* already ended */
+    }
+    cloudSource.current = null;
     if (alive.current) setSpeaker(null);
   }
   function releaseMicrophone() {
@@ -154,6 +163,8 @@ export function useLiveVoice({
     cancelListening();
     cancelSpeech();
     releaseMicrophone();
+    void playbackContext.current?.close().catch(() => {});
+    playbackContext.current = null;
     if (alive.current) {
       setActive(false);
       setStage("idle");
@@ -289,6 +300,21 @@ export function useLiveVoice({
         r.onerror = (event) => {
           if (epoch !== session.current) return;
           if (event.error === "no-speech" || event.error === "aborted") return;
+          if (
+            [
+              "network",
+              "language-not-supported",
+              "service-not-allowed",
+            ].includes(event.error) &&
+            window.MediaRecorder
+          ) {
+            cancelListening();
+            opening.current = false;
+            current.current.route = "gateway";
+            setRouteState("gateway");
+            if (call.current || held.current) void listen();
+            return;
+          }
           stop();
           setError(
             event.error === "language-not-supported"
@@ -417,8 +443,30 @@ export function useLiveVoice({
       if (epoch === session.current) opening.current = false;
     }
   }
+  function enableOutput() {
+    current.current.muted = false;
+    setMuted(false);
+    // Unlock audio in the click/Space gesture, before any network await.
+    try {
+      if (
+        !playbackContext.current ||
+        playbackContext.current.state === "closed"
+      )
+        playbackContext.current = new AudioContext();
+      void playbackContext.current.resume().catch(() => {});
+      window.speechSynthesis?.resume();
+      if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
+        const unlock = new SpeechSynthesisUtterance(" ");
+        unlock.volume = 0;
+        window.speechSynthesis.speak(unlock);
+      }
+    } catch {
+      /* A truthful error is shown if playback is unavailable. */
+    }
+  }
   function startCall() {
     stop();
+    enableOutput();
     audioEpoch.current++;
     call.current = true;
     recognitionAttempts.current = 0;
@@ -427,6 +475,7 @@ export function useLiveVoice({
   }
   function interrupt() {
     stop();
+    enableOutput();
     call.current = true;
     setActive(true);
     recognitionAttempts.current = 0;
@@ -436,6 +485,7 @@ export function useLiveVoice({
     if (!current.current.enabled || held.current) return;
     const wasCall = call.current;
     stop();
+    enableOutput();
     call.current = wasCall;
     setActive(wasCall);
     held.current = true;
@@ -462,41 +512,34 @@ export function useLiveVoice({
     cancelListening();
     cancelSpeech();
     const synth = window.speechSynthesis;
-    if (!synth) {
-      setError(t("speechError"));
-      return false;
-    }
+    if (!synth) return cloudSpeak(item, speechId.current);
     synth.resume();
     const available = synth
       .getVoices()
       .filter((v) => v.lang.toLowerCase().split(/[-_]/)[0] === item.language)
       .sort((a, b) => a.voiceURI.localeCompare(b.voiceURI));
-    if (!available.length) {
-      setError(t("noVoice"));
-      return false;
-    }
-    const profile =
-      item.employeeId === "ceo" ? 0 : item.employeeId === "mail" ? 1 : 2;
+    if (!available.length) return cloudSpeak(item, speechId.current);
+    const profile = voiceProfile(item.employeeId);
     const chosen =
       available.find(
         (v) =>
           v.voiceURI ===
           current.current.voiceChoices[`${item.employeeId}:${item.language}`],
-      ) || available[profile % available.length];
+      ) || available[profile.index % available.length];
     const id = speechId.current;
     // Short chunks avoid long-utterance stalls in Chromium. Events drive the speaking ring.
     const chunks = item.text
       .replace(/[*#`]/g, "")
       .match(/[^.!?؟。\n]{1,180}(?:[.!?؟。\n]+|$)|.{1,180}/g) || [item.text];
-    for (const chunk of chunks) {
+    for (const [index, chunk] of chunks.entries()) {
       if (id !== speechId.current || !alive.current) return false;
       const ok = await new Promise<boolean>((resolve) => {
         let finished = false;
         const utterance = new SpeechSynthesisUtterance(chunk);
         utterance.lang = locales[item.language];
         utterance.voice = chosen;
-        utterance.pitch = [0.9, 1.12, 1.02][profile];
-        utterance.rate = [0.98, 1.04, 1.08][profile];
+        utterance.pitch = profile.pitch;
+        utterance.rate = profile.rate;
         const finish = (value: boolean) => {
           if (finished) return;
           finished = true;
@@ -531,6 +574,11 @@ export function useLiveVoice({
           setSpeaker(null);
           setStage("idle");
         }
+        if (id === speechId.current && alive.current)
+          return cloudSpeak(
+            { ...item, text: chunks.slice(index).join(" ") },
+            id,
+          );
         return false;
       }
     }
@@ -539,6 +587,80 @@ export function useLiveVoice({
       setStage("idle");
     }
     return id === speechId.current;
+  }
+  async function cloudSpeak(item: SpokenTurn, id: number): Promise<boolean> {
+    try {
+      setError("");
+      setStage("thinking");
+      const ctx =
+        playbackContext.current && playbackContext.current.state !== "closed"
+          ? playbackContext.current
+          : new AudioContext();
+      playbackContext.current = ctx;
+      await ctx.resume();
+      if (ctx.state !== "running") throw new Error(t("speechError"));
+      const chunks = item.text.match(
+        /[\s\S]{1,2800}(?:\s|$)|[\s\S]{1,2800}/g,
+      ) || [item.text];
+      for (const text of chunks) {
+        if (id !== speechId.current || !alive.current || current.current.muted)
+          return false;
+        const result = await api<{ audio: string }>(
+          "/api/workforce/voice/synthesize",
+          { text, language: item.language, employeeId: item.employeeId },
+          { quiet: true },
+        );
+        if (id !== speechId.current || !alive.current) return false;
+        const bytes = Uint8Array.from(atob(result.audio), (character) =>
+          character.charCodeAt(0),
+        );
+        const buffer = await ctx.decodeAudioData(bytes.buffer);
+        if (id !== speechId.current || !alive.current || current.current.muted)
+          return false;
+        const played = await new Promise<boolean>((resolve) => {
+          const source = ctx.createBufferSource();
+          source.buffer = buffer;
+          source.connect(ctx.destination);
+          cloudSource.current = source;
+          let ended = false;
+          const finish = (ok: boolean) => {
+            if (ended) return;
+            ended = true;
+            clearTimeout(timer);
+            source.disconnect();
+            if (settleSpeech.current === finish) settleSpeech.current = null;
+            resolve(ok);
+          };
+          const timer = setTimeout(
+            () => {
+              try {
+                source.stop();
+              } catch {
+                /* ended */
+              }
+              finish(false);
+            },
+            (buffer.duration + 3) * 1000,
+          );
+          settleSpeech.current = finish;
+          source.onended = () => finish(id === speechId.current);
+          setSpeaker(item.employeeId);
+          setStage("speaking");
+          source.start();
+        });
+        if (!played) return false;
+      }
+      return id === speechId.current;
+    } catch (error) {
+      if (alive.current && id === speechId.current)
+        setError((error as Error).message || t("speechError"));
+      return false;
+    } finally {
+      if (alive.current && id === speechId.current) {
+        setSpeaker(null);
+        setStage("idle");
+      }
+    }
   }
   function setRoute(value: "browser" | "gateway") {
     stop();
