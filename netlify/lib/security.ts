@@ -1,4 +1,4 @@
-import { getUser } from "@netlify/identity";
+import { getUser, type User } from "@netlify/identity";
 import {
   createCipheriv,
   createDecipheriv,
@@ -18,17 +18,171 @@ export class ApiError extends Error {
   }
 }
 export const env = (key: string) => Netlify.env.get(key);
-export async function authenticate(admin = false) {
-  const user = await getUser();
+
+const tokenUserCache = new Map<string, { user: User; expires: number }>();
+
+export async function resolveUserFromToken(req: Request): Promise<User | null> {
+  const authHeader =
+    req.headers.get("authorization") || req.headers.get("Authorization");
+  if (!authHeader || !authHeader.toLowerCase().startsWith("bearer ")) {
+    return null;
+  }
+  const token = authHeader.slice(7).trim();
+  if (!token) return null;
+
+  const now = Date.now();
+  const cached = tokenUserCache.get(token);
+  if (cached && cached.expires > now) {
+    return cached.user;
+  }
+
+  try {
+    const origin = new URL(req.url).origin;
+    const identityUrl = `${origin}/.netlify/identity/user`;
+    const res = await fetch(identityUrl, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      id?: string;
+      email?: string;
+      app_metadata?: { roles?: string[]; provider?: string };
+      user_metadata?: { full_name?: string; name?: string };
+      created_at?: string;
+      updated_at?: string;
+      confirmed_at?: string;
+    };
+    if (!data?.id) return null;
+
+    const appMeta = data.app_metadata || {};
+    const userMeta = data.user_metadata || {};
+    const roles = Array.isArray(appMeta.roles)
+      ? (appMeta.roles as string[])
+      : typeof appMeta.roles === "string"
+        ? [appMeta.roles]
+        : [];
+    const name =
+      typeof userMeta.full_name === "string"
+        ? userMeta.full_name
+        : typeof userMeta.name === "string"
+          ? userMeta.name
+          : undefined;
+
+    const user: User = {
+      id: data.id,
+      email: data.email,
+      name,
+      roles,
+      userMetadata: userMeta,
+      appMetadata: appMeta,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+      confirmedAt: data.confirmed_at,
+    };
+
+    if (tokenUserCache.size > 200) {
+      for (const [k, v] of tokenUserCache.entries()) {
+        if (v.expires <= now) tokenUserCache.delete(k);
+      }
+    }
+    tokenUserCache.set(token, { user, expires: now + 45000 });
+    return user;
+  } catch {
+    return null;
+  }
+}
+
+export async function resolveUser(req?: Request): Promise<User | null> {
+  const cookieUser = await getUser();
+  if (cookieUser) return cookieUser;
+  if (req) return resolveUserFromToken(req);
+  return null;
+}
+
+export async function authenticate(
+  arg1?: Request | boolean,
+  arg2?: Request | boolean,
+): Promise<User> {
+  const req =
+    arg1 instanceof Request ? arg1 : arg2 instanceof Request ? arg2 : undefined;
+  const admin =
+    typeof arg1 === "boolean"
+      ? arg1
+      : typeof arg2 === "boolean"
+        ? arg2
+        : false;
+  const user = await resolveUser(req);
   if (!user) throw new ApiError(401, "سجّل الدخول للمتابعة.", "AUTH_REQUIRED");
   if (admin && !user.roles?.includes("admin"))
     throw new ApiError(403, "هذه المساحة متاحة للمسؤول فقط.", "ADMIN_REQUIRED");
   return user;
 }
+
+const BUILTIN_ALLOWED_ORIGINS = new Set([
+  "https://1shotcam.com",
+  "https://www.1shotcam.com",
+  "https://ai.1shotcam.com",
+  "https://app.1shotcam.com",
+  "https://portal.1shotcam.com",
+  "https://pay.1shotcam.com",
+  "https://admin.1shotcam.com",
+  "https://1shotcam-ecosystem.netlify.app",
+]);
+
+export function isAllowedOrigin(origin: string | null, reqUrl: string): boolean {
+  if (!origin) return true;
+  try {
+    const originUrl = new URL(origin);
+    const selfOrigin = new URL(reqUrl).origin;
+    if (originUrl.origin === selfOrigin) return true;
+    if (BUILTIN_ALLOWED_ORIGINS.has(originUrl.origin)) return true;
+
+    const configured = env("ALLOWED_ORIGINS") || env("CORS_ALLOWED_ORIGINS");
+    if (configured) {
+      const list = configured.split(/[\s,]+/).filter(Boolean);
+      if (list.includes(originUrl.origin) || list.includes("*")) return true;
+    }
+
+    if (
+      originUrl.hostname.endsWith("--1shotcam-ecosystem.netlify.app") ||
+      originUrl.hostname === "1shotcam-ecosystem.netlify.app"
+    ) {
+      return true;
+    }
+
+    if (
+      originUrl.hostname === "localhost" ||
+      originUrl.hostname === "127.0.0.1"
+    ) {
+      return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 export function assertOrigin(req: Request) {
   const origin = req.headers.get("origin");
-  if (origin && origin !== new URL(req.url).origin)
+  if (origin && !isAllowedOrigin(origin, req.url))
     throw new ApiError(403, "مصدر الطلب غير مسموح.");
+}
+
+export function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin");
+  if (origin && isAllowedOrigin(origin, req.url)) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, Idempotency-Key, X-Request-Id",
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Max-Age": "86400",
+      Vary: "Origin",
+    };
+  }
+  return {};
 }
 export function stringField(value: unknown, name: string, max = 200) {
   if (typeof value !== "string" || !value.trim() || value.length > max)
