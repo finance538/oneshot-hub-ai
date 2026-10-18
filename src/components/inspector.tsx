@@ -84,8 +84,8 @@ export function Inspector({
       }
       try {
         const result = await api<{ order: Order }>(
-          `/api/orders/${order.id}`,
-          undefined,
+          `/api/orders/${order.id}${order.processor === "netlify" ? "/reconcile" : ""}`,
+          order.processor === "netlify" ? {} : undefined,
           { quiet: true },
         );
         if (alive) {
@@ -142,24 +142,24 @@ export function Inspector({
           </b>
         </div>
         <div>
-          <span>معالج الدفع الخارجي</span>
+          <span>خدمات التطبيق على Netlify</span>
           <b className={health?.core.connected ? "text-green" : "text-amber"}>
             {health
               ? health.core.connected
                 ? "متصل"
-                : "بانتظار الاتصال"
+                : "غير متاحة"
               : checking
                 ? "جارٍ الفحص"
                 : "غير متاح"}
           </b>
         </div>
         <div>
-          <span>HTTPS لمعالج الدفع</span>
-          <b>{health?.core.secure ? "موثوق" : "غير متحقق"}</b>
+          <span>اتصالات الدفع عبر HTTPS</span>
+          <b>{health?.core.secure ? "إلزامي" : "غير متحقق"}</b>
         </div>
         <div className="server-address">
           <Radio size={12} />
-          <span dir="ltr">api.1shotcam.com</span>
+          <span dir="ltr">Netlify Functions</span>
           <button
             className="icon-button"
             onClick={refresh}
@@ -258,14 +258,17 @@ export function Inspector({
             </div>
             {order.checkoutUrl && order.status !== "paid" && (
               <>
-                <iframe
-                  className="three-ds-frame"
-                  title="إتمام الدفع والتحقق البنكي"
-                  src={order.checkoutUrl}
-                  sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-top-navigation-by-user-activation"
-                  allow="payment"
-                  referrerPolicy="no-referrer"
-                />
+                {order.processor !== "netlify" && (
+                  <iframe
+                    className="three-ds-frame"
+                    title="إتمام الدفع والتحقق البنكي"
+                    src={order.checkoutUrl}
+                    sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-top-navigation-by-user-activation"
+                    allow="payment"
+                    referrerPolicy="no-referrer"
+                  />
+                )}
+
                 <a
                   className="button subtle small"
                   href={order.checkoutUrl}
@@ -285,7 +288,8 @@ export function Inspector({
               onClick={async () => {
                 try {
                   const r = await api<{ order: Order }>(
-                    `/api/orders/${order.id}`,
+                    `/api/orders/${order.id}${order.processor === "netlify" ? "/reconcile" : ""}`,
+                    order.processor === "netlify" ? {} : undefined,
                   );
                   onOrder(r.order);
                   setPollError("");
