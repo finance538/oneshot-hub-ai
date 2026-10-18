@@ -274,19 +274,20 @@ function Workspace({
               </div>
             </button>
             <div
-              className={`backend-pill ${health?.core.connected && health?.database.connected ? "connected" : ""}`}
+              className={`backend-pill ${health?.database.connected ? "connected" : ""}`}
               title={
-                healthError || "حالة اتصال الباك إند وقاعدة بيانات المنظومة"
+                healthError ||
+                "حالة اتصال قاعدة بيانات Netlify؛ استجابة الذكاء الاصطناعي تُتحقق عند إرسال رسالة."
               }
             >
               <span className="status-dot" />
               <span>
                 {checking
-                  ? "جارٍ فحص اتصال المنظومة"
-                  : health?.core.connected && health?.database.connected
-                    ? "متصل بالباك إند وقاعدة المنظومة"
-                    : "الاتصال الكامل بانتظار التحقق"}
-                <small dir="ltr">1SHOTCAM.COM · 187.7.65.45</small>
+                  ? "جارٍ فحص قاعدة البيانات"
+                  : health?.database.connected
+                    ? "قاعدة بيانات Netlify متصلة"
+                    : "اتصال قاعدة البيانات غير متحقق"}
+                <small dir="ltr">NETLIFY · ONESHOT</small>
               </span>
             </div>
             <div className="header-actions">
@@ -404,7 +405,7 @@ function Workspace({
                           <br />
                           <span>لأفكار لا تنتهي.</span>
                         </h1>
-                        <p>كتابة، تحليل، برمجة وإبداع مع Gemini وOllama.</p>
+                        <p>كتابة، تحليل، برمجة وإبداع مع Gemini عبر Netlify.</p>
                       </div>
                       <AccessGate onLogin={onLogin} />
                     </>
