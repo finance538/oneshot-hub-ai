@@ -16,6 +16,7 @@ const seats = [
 ];
 export function OfficeScene({
   catalog,
+  conversation,
   workspace,
   selected,
   voice,
@@ -29,6 +30,7 @@ export function OfficeScene({
   onWorkstation,
 }: {
   catalog: Employee[];
+  conversation: Conversation;
   workspace: Workspace;
   selected: string;
   voice: LiveVoice;

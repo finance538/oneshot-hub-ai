@@ -256,6 +256,14 @@ export function VoiceControls({
           <span role="status">{t(voice.phase)}</span>
         </div>
       </div>
+      <button
+        type="button"
+        onClick={voice.testAudio}
+        disabled={voice.phase !== "idle"}
+      >
+        اختبار الصوت والمايك
+      </button>
+      {voice.diagnostic && <p role="status">{voice.diagnostic}</p>}
       {voice.interim && (
         <p className="wf-transcript" dir="auto">
           {voice.interim}

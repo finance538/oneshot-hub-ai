@@ -29,6 +29,20 @@ Recheck the complete payment/AI/auth flows on the final domains, avoiding duplic
 
 If TLS, authentication, API routing or payment callbacks fail after the move, restore the recorded domain assignments and DNS, then restore the prior callback target. Keep this project's database and deployment for diagnosis; do not delete new orders or payment receipts. Reconcile every unconfirmed payment with the provider before retrying. A later retry of the transfer still follows the same verification gates.
 
+## Recovering missing applied migrations
+
+A "migrations have been removed after being applied" error blocks publication even when the application build succeeds. The cache-save warning is unrelated. Keep every applied migration under `netlify/database/migrations` with its original name and content, including the collaboration migration and the workforce catalog expansion:
+
+- `20261018073311_workforce_collaboration/migration.sql`
+- `20261018073311_workforce_collaboration/snapshot.json`
+- `20261018073400_expand_workforce_catalog.sql`
+
+Inspect the affected branch with `netlify db status --branch <affected-branch>`. Restore missing files from their original source revision. If that source is unavailable, use `netlify db migrations pull --branch <affected-branch>` in a separate, temporary copy linked to this project, then copy only the missing original SQL back to its original repository path. Pull overwrites the entire migration directory and does not restore Drizzle snapshots; preserve existing snapshots and recover any missing snapshots from the original source. Both top-level SQL files and directories containing `migration.sql` are supported. Do not rename existing migrations to match the layout returned by pull.
+
+Compare recovered SQL with the affected branch's stored migration content and check status again before redeploying through the normal pipeline. Do not reset the database, manually apply SQL, edit applied migrations or generate duplicate migrations to work around missing history. A successful recovery is confirmed only when the new deployment passes migration validation and reaches Ready.
+
+On 2026-10-18, all ten migrations were already present in the workspace and their SQL matched the applied preview history byte for byte. Status showed zero pending, missing or out-of-order migrations, so no restoration was needed in this checkout. Production history access returned HTTP 401; production migration integrity and the next deployment remained unverified.
+
 ## Recorded implementation-time findings
 
 The 2026-10-18 remote review found a published site whose `/api/health` returned HTTP 200 with degraded status: Netlify Database was connected and the external core was disconnected. The external API certificate failed trust verification as self-signed. This supersedes the earlier health-path 404 observation. Chat and executive requests have since been changed in source to use Netlify AI Gateway without calling the VPS. Deployment of this change and authenticated inference remain to be verified by the pipeline and a signed-in session. Identity activation had completed. No domains or DNS records were changed, and no live payment was verified. The external payment certificate and provider compatibility remain release requirements.
