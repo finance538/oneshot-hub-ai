@@ -3,7 +3,7 @@
   "dialect": "postgres",
   "id": "9d614854-d8cf-4496-bba1-16ed5becdfaf",
   "prevIds": [
-    "c6a005a9-8b2d-43ef-b41d-d3d76488dfe1"
+    "8d4adf72-2279-4a05-93f5-0638c918bd38"
   ],
   "ddl": [
     {
@@ -1137,6 +1137,19 @@
       "generated": null,
       "identity": null,
       "name": "output",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "workforce_chat_turns"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'[]'",
+      "generated": null,
+      "identity": null,
+      "name": "collaboration",
       "entityType": "columns",
       "schema": "public",
       "table": "workforce_chat_turns"
