@@ -50,6 +50,8 @@ export const orders = pgTable(
     gateway: text("gateway").notNull(),
     executionMode: text("execution_mode").notNull(),
     topology: text("topology").notNull(),
+    // Existing orders retain their original verifier during the transition.
+    processor: text("processor").notNull().default("legacy_core"),
     status: text("status").notNull().default("pending"),
     checkoutUrl: text("checkout_url"),
     upstreamId: text("upstream_id"),
@@ -145,6 +147,36 @@ export const aiEmployees = pgTable("workforce_employees", {
   instructions: text("instructions").notNull(),
   availability: text("availability").notNull().default("prototype"),
   createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+export const coreEmployeeSelections = pgTable(
+  "core_employee_selections",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    employeeId: text("employee_id")
+      .notNull()
+      .references(() => aiEmployees.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [
+    uniqueIndex("core_selection_org_employee").on(
+      t.organizationId,
+      t.employeeId,
+    ),
+  ],
+);
+
+export const corePolicies = pgTable("core_policies", {
+  id: text("id").primaryKey(),
+  policy: jsonb("policy").$type<Record<string, unknown>>().notNull(),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });
