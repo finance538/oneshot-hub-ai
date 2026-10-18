@@ -16,12 +16,13 @@
   max-width: 100%;
 }
 .wf-header {
-  height: 56px;
-  min-height: 56px;
-  padding: 0 clamp(10px, 3vw, 40px);
+  height: 60px;
+  min-height: 60px;
+  padding: 0 var(--ui-gutter);
   flex-wrap: nowrap;
   gap: clamp(8px, 2vw, 22px);
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 20;
 }
 .wf-brand {
@@ -46,50 +47,13 @@
 }
 .wf-header nav button {
   font-size: 12px;
-  min-height: 36px;
+  min-height: var(--ui-control-height);
   padding: 5px 12px;
+  border-color: transparent;
   white-space: nowrap;
 }
-.wf-global-menu {
-  position: relative;
-  flex-shrink: 0;
-}
-.wf-global-menu > summary {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--wf-border);
-  border-radius: 9px;
-  cursor: pointer;
-  list-style: none;
-}
-.wf-global-menu > summary::-webkit-details-marker {
-  display: none;
-}
-.wf-global-menu > div {
-  position: absolute;
-  inset-inline-end: 0;
-  top: 46px;
-  width: min(290px, calc(100vw - 24px));
-  padding: 16px;
-  display: grid;
-  gap: 14px;
-  background: var(--wf-panel);
-  border: 1px solid var(--wf-border);
-  border-radius: 12px;
-  box-shadow: 0 12px 40px #10131555;
-}
-.wf-global-menu .appearance-controls {
-  display: flex;
-  justify-content: space-between;
-}
-.wf-global-menu a {
-  font-size: 13px;
-  padding: 8px;
-}
 .wf-main {
-  padding-inline: clamp(10px, 3vw, 40px);
+  padding-inline: var(--ui-gutter);
 }
 .wf-office-top {
   gap: 12px;
@@ -122,7 +86,7 @@
 .wf-chat-form textarea {
   min-height: 42px;
   max-height: 120px;
-  font-size: 16px;
+  font-size: 14px;
   resize: vertical;
 }
 .wf-chat-form > div {
@@ -130,21 +94,6 @@
   gap: 5px;
   justify-content: flex-start;
   flex-wrap: nowrap;
-}
-.wf-chat-form .wf-inline-employee {
-  width: clamp(80px, 14vw, 180px);
-  flex: 1 1 90px;
-  font-size: 11px;
-  padding: 7px 5px;
-}
-.wf-chat-form .wf-output-select {
-  flex: 0 1 74px;
-  min-width: 0;
-}
-.wf-chat-form .wf-output-select select {
-  width: 100%;
-  font-size: 10px;
-  padding: 7px 3px !important;
 }
 .wf-chat-form > div > button {
   margin-inline-start: auto;
@@ -169,44 +118,6 @@
 .wf-inline-voice .wf-call-active {
   background: #a9c4b12b;
   color: #acd2b6;
-}
-.wf-inline-settings {
-  position: relative;
-}
-.wf-inline-settings summary {
-  list-style: none;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 36px;
-  cursor: pointer;
-}
-.wf-inline-settings summary::-webkit-details-marker {
-  display: none;
-}
-.wf-inline-settings > div {
-  position: absolute;
-  bottom: 44px;
-  inset-inline-end: -38px;
-  width: 260px;
-  max-width: calc(100vw - 36px);
-  z-index: 25;
-  padding: 14px;
-  border: 1px solid var(--wf-border, #45494a);
-  border-radius: 10px;
-  background: var(--wf-panel, #202326);
-  box-shadow: 0 12px 35px #1118;
-  display: grid;
-  gap: 12px;
-  font-size: 11px;
-}
-.wf-inline-settings label {
-  display: grid;
-  gap: 6px;
-}
-.wf-inline-settings p {
-  margin: 0;
-  line-height: 1.8;
 }
 .wf-inline-status {
   display: flex;
@@ -290,7 +201,7 @@
     flex-basis: auto;
   }
   .wf-header nav button {
-    font-size: 10px;
+    font-size: 11px;
     padding: 5px 8px;
   }
   .wf-main {
@@ -302,7 +213,7 @@
     gap: 22px;
   }
   .wf-hero h1 {
-    font-size: clamp(27px, 8vw, 40px);
+    font-size: 30px;
   }
   .wf-hero p {
     font-size: 13px;
@@ -333,18 +244,8 @@
   .wf-chat-form {
     padding: 6px;
   }
-  .wf-chat-form .wf-inline-employee {
-    width: 76px;
-    flex-basis: 76px;
-  }
-  .wf-chat-form .wf-output-select {
-    flex-basis: 58px;
-  }
   .wf-inline-voice button {
     width: 32px;
-  }
-  .wf-inline-settings summary {
-    width: 24px;
   }
   .wf-chat-form > div {
     gap: 2px;
@@ -442,7 +343,165 @@
   .wf-chat-header > div {
     flex: 1;
   }
-  .wf-chat-form .wf-inline-employee {
+}
+
+.wf-menu-button {
+  width: var(--ui-control-height);
+  height: var(--ui-control-height);
+  padding: 0 !important;
+  flex-shrink: 0;
+}
+.wf-chat-header button {
+  width: var(--ui-control-height);
+  height: var(--ui-control-height);
+  padding: 0;
+  border-color: transparent;
+}
+.wf-chat-form > div > button {
+  width: var(--ui-control-height);
+  height: var(--ui-control-height);
+  flex-basis: var(--ui-control-height);
+}
+.wf-inline-voice button {
+  width: var(--ui-control-height);
+  height: var(--ui-control-height);
+  min-height: var(--ui-control-height);
+}
+.wf-view-switch {
+  padding: 0 0 14px;
+  gap: 6px;
+}
+.wf-view-switch button {
+  min-height: var(--ui-control-height);
+  padding: 7px 12px;
+  font-size: 12px;
+}
+.wf-chat-messages {
+  height: clamp(280px, 48dvh, 540px);
+  padding: 24px;
+}
+.wf-office-title {
+  padding-block: 32px 24px;
+}
+.wf-office-title h1 {
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 500;
+}
+.wf-shell .appearance-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+.wf-shell .appearance-controls label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.wf-shell .account-controls {
+  flex-wrap: wrap;
+}
+.wf-shell .account-controls .account-label {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.ui-dialog-drawer:has(.wf-chat-panel) > .ui-dialog-body {
+  padding: 0;
+  height: calc(100% - 70px);
+}
+.ui-dialog-drawer > .ui-dialog-body > .wf-chat-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 0;
+  border-radius: 0;
+}
+.ui-dialog-drawer > .ui-dialog-body > .wf-chat-panel > .wf-chat-messages {
+  flex: 1;
+  min-height: 120px;
+  height: auto;
+}
+.ui-dialog-drawer > .ui-dialog-body > .wf-chat-panel > .wf-chat-bottom {
+  flex-shrink: 0;
+}
+.wf-shell .ui-dialog .wf-office-grid {
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 24px;
+}
+.ui-dialog .wf-office-grid .wf-activity {
+  grid-column: 1 / -1;
+}
+@media (max-width: 650px) {
+  .wf-header {
+    height: 56px;
+    min-height: 56px;
+  }
+  .wf-header nav {
+    justify-content: center;
+  }
+  .wf-header nav button {
+    flex: initial;
+    max-width: none;
+    min-height: var(--ui-control-height);
+  }
+  .wf-chat-form textarea {
+    font-size: 16px;
+  }
+  .wf-chat-messages {
+    padding: 16px;
+  }
+  .wf-office-title {
+    padding-block: 24px 18px;
+  }
+  .wf-office-title .wf-actions button {
+    font-size: 10px;
+  }
+  .wf-view-switch {
+    gap: 4px;
+  }
+  .wf-view-switch button {
+    font-size: 11px;
+    padding: 8px 7px;
+  }
+  .wf-view-switch button svg {
+    width: 15px;
+    height: 15px;
+  }
+  .wf-shell .ui-dialog .wf-office-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ui-dialog .wf-team {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .ui-dialog .wf-team h2 {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 650px) {
+  .wf-view-switch {
+    flex-wrap: nowrap;
+  }
+  .wf-view-switch button {
     min-width: 0;
+    overflow-wrap: normal;
+  }
+  .wf-shell .ui-dialog .wf-team .wf-desk {
+    min-width: 0;
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+  }
+  .wf-shell .ui-dialog .wf-team h2 {
+    display: flex;
+  }
+}
+
+@media (pointer: coarse) {
+  .wf-shell .ui-settings select {
+    font-size: 16px;
   }
 }

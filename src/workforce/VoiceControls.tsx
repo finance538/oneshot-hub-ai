@@ -1,13 +1,5 @@
 import { useEffect, useRef } from "react";
-import {
-  Mic,
-  MicOff,
-  Phone,
-  PhoneOff,
-  Volume2,
-  VolumeX,
-  Settings2,
-} from "lucide-react";
+import { Mic, MicOff, Phone, PhoneOff, Volume2, VolumeX } from "lucide-react";
 import type { LiveVoice } from "./useLiveVoice";
 import { useAppearance } from "../storefront/i18n";
 import { liveText } from "./liveCopy";
@@ -67,9 +59,18 @@ export function VoiceControls({
     const isInput = (target: EventTarget | null) =>
       target instanceof HTMLElement &&
       !!target.closest(
-        'input, textarea, select, button, a, [contenteditable="true"]',
+        'input, textarea, select, button, a, summary, [contenteditable="true"]',
       );
     const down = (event: KeyboardEvent) => {
+      if (
+        event.defaultPrevented ||
+        (document.querySelector(".ui-dialog[open]") &&
+          !(
+            event.target instanceof Element &&
+            event.target.closest(".wf-chat-panel")
+          ))
+      )
+        return;
       if (event.code === "Escape") {
         latest.current.stop();
         return;
@@ -136,51 +137,6 @@ export function VoiceControls({
         >
           {voice.muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
         </button>
-        <details className="wf-inline-settings">
-          <summary aria-label={t("voiceSettings")} title={t("voiceSettings")}>
-            <Settings2 size={16} />
-          </summary>
-          <div>
-            <label>
-              {t("voiceSettings")}
-              <select
-                value={voice.route}
-                onChange={(event) =>
-                  voice.setRoute(event.target.value as "browser" | "gateway")
-                }
-              >
-                <option value="browser" disabled={!voice.supportsRecognition}>
-                  {t("browser")}
-                </option>
-                <option value="gateway">{t("gateway")}</option>
-              </select>
-            </label>
-            <label>
-              {t("automatic")}
-              <select
-                value={
-                  voice.voiceChoices[`${employeeId}:${outputLanguage}`] || ""
-                }
-                onChange={(event) =>
-                  voice.selectVoice(employeeId, event.target.value)
-                }
-              >
-                <option value="">{t("automatic")}</option>
-                {matches.map((v) => (
-                  <option key={v.voiceURI} value={v.voiceURI}>
-                    {v.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <p>
-              {language === "ar"
-                ? "يتفعّل صوت الرد مع المايك. عند غياب صوت الجهاز يُستخدم النطق السحابي إذا كانت الخدمة مفعّلة."
-                : "The microphone enables spoken replies. Cloud speech is used when no local voice is available, if configured."}
-            </p>
-            <p>{t("shortcut")}</p>
-          </div>
-        </details>
       </div>
     );
   return (
@@ -315,5 +271,64 @@ export function VoiceControls({
         <p>{t("shortcut")}</p>
       </details>
     </div>
+  );
+}
+
+export function VoiceSettings({
+  voice,
+  employeeId,
+}: {
+  voice: LiveVoice;
+  employeeId: string;
+}) {
+  const { language, outputLanguage } = useAppearance();
+  const t = (key: string) => liveText(language, key);
+  const matches = voice.voices.filter(
+    (v) => v.lang.toLowerCase().split(/[-_]/)[0] === outputLanguage,
+  );
+  return (
+    <>
+      <label>
+        {t("voiceSettings")}
+        <select
+          value={voice.route}
+          onChange={(event) =>
+            voice.setRoute(event.target.value as "browser" | "gateway")
+          }
+        >
+          <option value="browser" disabled={!voice.supportsRecognition}>
+            {t("browser")}
+          </option>
+          <option value="gateway">{t("gateway")}</option>
+        </select>
+      </label>
+      <label>
+        {t("automatic")}
+        <select
+          value={voice.voiceChoices[`${employeeId}:${outputLanguage}`] || ""}
+          onChange={(event) =>
+            voice.selectVoice(employeeId, event.target.value)
+          }
+        >
+          <option value="">{t("automatic")}</option>
+          {matches.map((v) => (
+            <option key={v.voiceURI} value={v.voiceURI}>
+              {v.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p>{t("voiceNote")}</p>
+      <p>{t("shortcut")}</p>
+      <button
+        type="button"
+        onClick={voice.testAudio}
+        disabled={voice.phase !== "idle"}
+      >
+        {language === "ar" ? "اختبار الصوت والمايك" : "Test microphone & audio"}
+      </button>
+      {voice.diagnostic && <p role="status">{voice.diagnostic}</p>}
+      {voice.error && <p role="alert">{voice.error}</p>}
+    </>
   );
 }

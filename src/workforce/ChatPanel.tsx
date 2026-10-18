@@ -8,11 +8,13 @@ import {
   Sparkles,
   Volume2,
   KeyRound,
+  Settings2,
 } from "lucide-react";
 import type { Employee } from "../../shared/workforce";
 import type { Conversation } from "./useConversation";
 import type { LiveVoice } from "./useLiveVoice";
-import { VoiceControls } from "./VoiceControls";
+import { VoiceControls, VoiceSettings } from "./VoiceControls";
+import { Modal } from "../components/Modal";
 import {
   useAppearance,
   languageNames,
@@ -55,6 +57,11 @@ export function ChatPanel({
     t = (key: string) => liveText(language, key),
     w = (key: string) => wfText(language, key);
   const [draft, setDraft] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [collaborationTurn, setCollaborationTurn] = useState<string>();
+  const collaboration = chat.turns.find(
+    (turn) => turn.id === collaborationTurn,
+  );
   const messages = useRef<HTMLDivElement>(null);
   const employee = catalog.find((e) => e.id === selected);
   useEffect(() => {
@@ -63,7 +70,10 @@ export function ChatPanel({
     // away from the first-person scene, especially on a stacked mobile layout.
     if (pane) pane.scrollTo({ top: pane.scrollHeight, behavior: "instant" });
   }, [chat.turns.length, chat.busy]);
-  useEffect(() => setDraft(""), [selected]);
+  useEffect(() => {
+    setDraft("");
+    setCollaborationTurn(undefined);
+  }, [selected]);
   async function submit() {
     const text = draft;
     if (await onSend(text, voice.active))
@@ -88,21 +98,22 @@ export function ChatPanel({
             AI · {voice.speaker === selected ? t("speaking") : t("chat")}
           </small>
         </div>
-        {onTools && (
-          <button
-            title="البريد والبحث وخزنة الحسابات"
-            aria-label="البريد والبحث وخزنة الحسابات"
-            onClick={() => onTools?.()}
-          >
-            <KeyRound size={17} />
-          </button>
-        )}
         <button
-          aria-label={w("refresh")}
-          onClick={() => void chat.refresh()}
-          disabled={chat.loading}
+          type="button"
+          aria-label={
+            language === "ar"
+              ? "إعدادات المحادثة والصوت"
+              : "Conversation & voice"
+          }
+          title={
+            language === "ar"
+              ? "إعدادات المحادثة والصوت"
+              : "Conversation & voice"
+          }
+          aria-haspopup="dialog"
+          onClick={() => setSettingsOpen(true)}
         >
-          <RefreshCw size={16} />
+          <Settings2 size={17} />
         </button>
       </header>
       <div
@@ -122,7 +133,6 @@ export function ChatPanel({
             <MessageSquare size={34} />
             <span className="wf-eyebrow">ONE CONVERSATION. YOUR TEAM.</span>
             <h2>{t("chatIntro")}</h2>
-            <p>{employee?.bio[language] || employee?.bio.en}</p>
           </div>
         ) : (
           chat.turns.map((turn) => (
@@ -141,38 +151,17 @@ export function ChatPanel({
                     w(turn.status === "generating" ? "busy" : "failed")}
                 </p>
                 {!!turn.collaboration?.length && (
-                  <details className="wf-collaboration">
-                    <summary>
-                      مساهمات الفريق · {turn.collaboration.length}
-                    </summary>
-                    {turn.collaboration.map((part) => (
-                      <article key={part.employeeId}>
-                        <strong>
-                          {catalog.find((e) => e.id === part.employeeId)?.title[
-                            language
-                          ] ||
-                            catalog.find((e) => e.id === part.employeeId)?.title
-                              .en ||
-                            part.employeeId}
-                        </strong>
-                        <p dir="auto">{part.output}</p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            voice.stop();
-                            void voice.speak({
-                              employeeId: part.employeeId,
-                              text: part.output,
-                              language: turn.outputLanguage,
-                            });
-                          }}
-                        >
-                          <Volume2 size={14} />
-                          {t("read")}
-                        </button>
-                      </article>
-                    ))}
-                  </details>
+                  <button
+                    className="wf-read-aloud"
+                    type="button"
+                    aria-haspopup="dialog"
+                    onClick={() => setCollaborationTurn(turn.id)}
+                  >
+                    {language === "ar"
+                      ? "مساهمات الفريق"
+                      : "Team contributions"}{" "}
+                    · {turn.collaboration.length}
+                  </button>
                 )}
                 {turn.output && (
                   <button
@@ -246,37 +235,10 @@ export function ChatPanel({
             }}
           />
           <div>
-            <select
-              className="wf-inline-employee"
-              aria-label={w("team")}
-              value={selected}
-              onChange={(event) => onSelect(event.target.value)}
-            >
-              {catalog.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.title[language] || e.title.en}
-                </option>
-              ))}
-            </select>
-            <label className="wf-output-select">
-              <select
-                aria-label={w("output")}
-                value={outputLanguage}
-                onChange={(event) =>
-                  setOutputLanguage(event.target.value as Language)
-                }
-              >
-                {workforceLanguages.map((l) => (
-                  <option key={l} value={l}>
-                    {languageNames[l]}
-                  </option>
-                ))}
-              </select>
-            </label>
             <VoiceControls
               voice={voice}
               employeeId={selected}
-              keyboard={keyboard}
+              keyboard={keyboard && !settingsOpen && !collaborationTurn}
               compact
             />
             <button
@@ -295,6 +257,110 @@ export function ChatPanel({
           </div>
         )}
       </div>
+      {settingsOpen && (
+        <Modal
+          title={
+            language === "ar"
+              ? "إعدادات المحادثة والصوت"
+              : "Conversation & voice"
+          }
+          onClose={() => setSettingsOpen(false)}
+        >
+          <div className="ui-settings">
+            <label>
+              {w("team")}
+              <select
+                value={selected}
+                onChange={(event) => onSelect(event.target.value)}
+              >
+                {catalog.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.title[language] || e.title.en}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p>{employee?.bio[language] || employee?.bio.en}</p>
+            <label>
+              {w("output")}
+              <select
+                value={outputLanguage}
+                onChange={(event) =>
+                  setOutputLanguage(event.target.value as Language)
+                }
+              >
+                {workforceLanguages.map((l) => (
+                  <option key={l} value={l}>
+                    {languageNames[l]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <VoiceSettings voice={voice} employeeId={selected} />
+            <div className="ui-settings-actions">
+              <button
+                type="button"
+                disabled={chat.loading}
+                onClick={() => void chat.refresh()}
+              >
+                <RefreshCw size={16} />
+                {w("refresh")}
+              </button>
+              {onTools && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    onTools();
+                  }}
+                >
+                  <KeyRound size={16} />
+                  {language === "ar"
+                    ? "البريد والبحث والحسابات"
+                    : "Mail, research & accounts"}
+                </button>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
+      {collaboration && (
+        <Modal
+          title={language === "ar" ? "مساهمات الفريق" : "Team contributions"}
+          onClose={() => setCollaborationTurn(undefined)}
+        >
+          <div className="wf-contributions">
+            {collaboration.collaboration?.map((part) => (
+              <article key={part.employeeId}>
+                <h3>
+                  {catalog.find((e) => e.id === part.employeeId)?.title[
+                    language
+                  ] ||
+                    catalog.find((e) => e.id === part.employeeId)?.title.en ||
+                    part.employeeId}
+                </h3>
+                <p className="ui-detail-text" dir="auto">
+                  {part.output}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    voice.stop();
+                    void voice.speak({
+                      employeeId: part.employeeId,
+                      text: part.output,
+                      language: collaboration.outputLanguage,
+                    });
+                  }}
+                >
+                  <Volume2 size={14} />
+                  {t("read")}
+                </button>
+              </article>
+            ))}
+          </div>
+        </Modal>
+      )}
     </section>
   );
 }
