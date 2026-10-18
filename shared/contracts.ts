@@ -83,6 +83,6 @@ export const endpoints = {
     "/api/payment/execute",
   ],
   vault: ["/api/admin/vault/keys", "/api/vault/keys", "/api/gateways/keys"],
-  ceo: ["/api/ai/ceo", "/api/ceo/command", "/api/ai/chat"],
-  chat: ["/api/ai/chat", "/api/ai/ceo"],
+  ceo: ["/api/ai/ceo", "/api/ceo/command"],
+  chat: ["/api/ai/chat"],
 };
