@@ -142,7 +142,7 @@ export function Inspector({
           </b>
         </div>
         <div>
-          <span>الباك إند · VPS</span>
+          <span>معالج الدفع الخارجي</span>
           <b className={health?.core.connected ? "text-green" : "text-amber"}>
             {health
               ? health.core.connected
@@ -154,12 +154,12 @@ export function Inspector({
           </b>
         </div>
         <div>
-          <span>اتصال HTTPS</span>
+          <span>HTTPS لمعالج الدفع</span>
           <b>{health?.core.secure ? "موثوق" : "غير متحقق"}</b>
         </div>
         <div className="server-address">
           <Radio size={12} />
-          <span dir="ltr">187.7.65.45</span>
+          <span dir="ltr">api.1shotcam.com</span>
           <button
             className="icon-button"
             onClick={refresh}
