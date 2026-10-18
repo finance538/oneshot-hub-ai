@@ -21,6 +21,7 @@ import { useAppearance } from "../storefront/i18n";
 import { liveText } from "./liveCopy";
 import { wfText } from "./copy";
 import { officeText } from "./officeCopy";
+import type { Conversation } from "./useConversation";
 import type { LiveVoice } from "./useLiveVoice";
 import { AudioMeter } from "./VoiceControls";
 import type { OfficeEngine, OfficeFrame, OfficeState } from "./officeEngine";
@@ -28,6 +29,7 @@ import "./office-scene.css";
 
 export function OfficeScene({
   catalog,
+  conversation,
   workspace,
   selected,
   voice,
@@ -39,6 +41,7 @@ export function OfficeScene({
   paused,
 }: {
   catalog: Employee[];
+  conversation: Conversation;
   workspace: Workspace;
   selected: string;
   voice: LiveVoice;
@@ -67,16 +70,140 @@ export function OfficeScene({
     room: "executive",
     nearest: null as string | null,
   });
+  const [gyro, setGyro] = useState(false);
+  const [gyroStatus, setGyroStatus] = useState("");
+  const [exchange, setExchange] = useState<{
+    from: string;
+    to: string;
+    text: string;
+  } | null>(null);
+  const seenTurns = useRef(new Set<string>());
+  const bubbleTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const lastTurn = conversation.turns.at(-1);
+  const messages: Record<string, string> = Object.fromEntries(
+    catalog.map((e) => [
+      e.id,
+      workspace.tasks.find((t) => t.employeeId === e.id)?.output || "",
+    ]),
+  );
+  if (lastTurn?.output) messages[selected] = lastTurn.output;
+  if (conversation.busy) messages[selected] = "أراجع طلبك وأجهز الرد…";
+  if (voice.interim) messages[selected] = `أستمع: ${voice.interim}`;
+  if (voice.speaker && voice.spokenText)
+    messages[voice.speaker] = voice.spokenText;
+  if (exchange) {
+    messages[exchange.from] =
+      `مساهمة من ${titleFor(exchange.to)} في الطلب الحالي`;
+    messages[exchange.to] = exchange.text;
+  }
+  function titleFor(id: string) {
+    const e = catalog.find((e) => e.id === id);
+    return e?.title[language] || e?.title.en || id;
+  }
+  useEffect(() => {
+    if (!lastTurn || !lastTurn.collaboration?.length) return;
+    const revision = `${lastTurn.id}:${lastTurn.collaboration.length}`;
+    if (seenTurns.current.has(revision)) return;
+    // Never replay old conversations as new activity on initial load or employee changes.
+    seenTurns.current.add(revision);
+    bubbleTimers.current.forEach(clearTimeout);
+    if (Date.now() - Date.parse(lastTurn.createdAt) > 120000) return;
+    const contributions = lastTurn.collaboration || [];
+    contributions.forEach((part, index) => {
+      bubbleTimers.current.push(
+        setTimeout(
+          () =>
+            setExchange({
+              from: lastTurn.employeeId,
+              to: part.employeeId,
+              text: part.output,
+            }),
+          index * 40000,
+        ),
+      );
+    });
+    if (contributions.length)
+      bubbleTimers.current.push(
+        setTimeout(() => setExchange(null), contributions.length * 40000),
+      );
+  }, [lastTurn?.id, lastTurn?.collaboration?.length]);
+  useEffect(() => {
+    bubbleTimers.current.forEach(clearTimeout);
+    setExchange(null);
+    return () => bubbleTimers.current.forEach(clearTimeout);
+  }, [selected]);
+  useEffect(() => {
+    if (!gyro || paused) return;
+    let previous: { alpha: number; beta: number } | null = null;
+    let smoothX = 0,
+      smoothY = 0;
+    let received = false;
+    const watchdog = setTimeout(() => {
+      if (!received)
+        setGyroStatus(
+          "لم تصل بيانات حركة من الجهاز. تحقق من دعم الحساس أو استخدم السحب.",
+        );
+    }, 5000);
+    const orient = (event: DeviceOrientationEvent) => {
+      if (document.hidden) return;
+      if (event.alpha === null || event.beta === null) return;
+      received = true;
+      const next = { alpha: event.alpha, beta: event.beta };
+      if (previous) {
+        const dx = ((next.alpha - previous.alpha + 540) % 360) - 180;
+        smoothX = smoothX * 0.6 - dx * 1.2;
+        smoothY = smoothY * 0.6 + (next.beta - previous.beta) * 0.8;
+        engine.current?.look(smoothX, smoothY);
+      }
+      previous = next;
+    };
+    window.addEventListener("deviceorientation", orient);
+    return () => {
+      clearTimeout(watchdog);
+      window.removeEventListener("deviceorientation", orient);
+    };
+  }, [gyro, paused]);
+  async function toggleGyro() {
+    if (gyro) {
+      setGyro(false);
+      return;
+    }
+    const device =
+      window.DeviceOrientationEvent as typeof DeviceOrientationEvent & {
+        requestPermission?: () => Promise<string>;
+      };
+    if (!device) {
+      setGyroStatus("الجيروسكوب غير مدعوم على هذا الجهاز.");
+      return;
+    }
+    try {
+      if (
+        device.requestPermission &&
+        (await device.requestPermission()) !== "granted"
+      ) {
+        setGyroStatus("لم يُمنح إذن الجيروسكوب.");
+        return;
+      }
+      setGyro(true);
+      setGyroStatus("حرّك الجهاز للنظر؛ اسحب المشهد لضبط الاتجاه.");
+    } catch {
+      setGyroStatus("تعذر تفعيل الجيروسكوب. استخدم السحب للنظر.");
+    }
+  }
   const state: OfficeState = {
     selected,
+    messages,
+    handoff: exchange ? { from: exchange.from, to: exchange.to } : null,
     speaker: voice.speaker,
     meeting: meetingOpen,
     paused,
     activity: Object.fromEntries(
       catalog.map((employee) => [
         employee.id,
-        workspace.tasks.find((task) => task.employeeId === employee.id)
-          ?.status || "idle",
+        conversation.busy && employee.id === selected
+          ? "generating"
+          : workspace.tasks.find((task) => task.employeeId === employee.id)
+              ?.status || "idle",
       ]),
     ),
   };
@@ -89,13 +216,15 @@ export function OfficeScene({
     .map((employee) => employee.id);
   const catalogKey = JSON.stringify(ids);
   const title = (id: string) =>
-    id === "@master"
-      ? t("master")
-      : id === "@meeting"
-        ? o("boardroom")
-        : catalog.find((employee) => employee.id === id)?.title[language] ||
-          catalog.find((employee) => employee.id === id)?.title.en ||
-          id;
+    id.startsWith("@screen:")
+      ? `شاشة ${titleFor(id.slice(8))}`
+      : id === "@master"
+        ? t("master")
+        : id === "@meeting"
+          ? o("boardroom")
+          : catalog.find((employee) => employee.id === id)?.title[language] ||
+            catalog.find((employee) => employee.id === id)?.title.en ||
+            id;
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
@@ -113,13 +242,16 @@ export function OfficeScene({
             latest.current.state,
             {
               action(id) {
-                if (id === "@master") latest.current.onMaster();
+                if (id.startsWith("@screen:")) {
+                  latest.current.onSelect(id.slice(8));
+                  latest.current.onMaster();
+                } else if (id === "@master") latest.current.onMaster();
                 else if (id === "@meeting") latest.current.onMeeting();
                 else latest.current.onSelect(id);
               },
               proximity(id) {
-                if (id !== latest.current.state.selected)
-                  latest.current.onSelect(id);
+                // Selection is explicit so walking past a desk cannot interrupt a voice reply.
+                void id;
               },
               lock(value) {
                 if (!cancelled) setLocked(value);
@@ -162,7 +294,19 @@ export function OfficeScene({
   }, [catalogKey]);
   useEffect(() => {
     engine.current?.update(state);
-  }, [selected, voice.speaker, meetingOpen, paused, workspace.tasks, status]);
+  }, [
+    selected,
+    voice.speaker,
+    voice.interim,
+    voice.spokenText,
+    conversation.busy,
+    lastTurn,
+    exchange,
+    meetingOpen,
+    paused,
+    workspace.tasks,
+    status,
+  ]);
   useEffect(() => {
     if (status === "error") {
       engine.current?.dispose();
@@ -216,9 +360,16 @@ export function OfficeScene({
             <div className="wf-pov-room">
               <span className="wf-pov-dot" />
               <span>{o(room)}</span>
-              <small>01 / ONESHOT</small>
+              <small>تجول بصري · النشاط من السجل</small>
             </div>
             <div className="wf-pov-tools">
+              <button
+                onClick={toggleGyro}
+                aria-pressed={gyro}
+                title="Gyro Look"
+              >
+                تحريك بالجيروسكوب
+              </button>
               <button
                 aria-label={o("reset")}
                 title={o("reset")}
@@ -256,7 +407,7 @@ export function OfficeScene({
                   }}
                   className={`wf-world-label ${voice.speaker === id ? "is-speaking" : ""} ${selected === id ? "is-selected" : ""}`}
                   style={{ transform: "translate3d(-1000px, -1000px, 0)" }}
-                  tabIndex={-1}
+                  tabIndex={0}
                   onClick={() => engine.current?.activate(id)}
                 >
                   <span className="wf-world-label-icon">
@@ -282,6 +433,11 @@ export function OfficeScene({
                             : `AI · ${wfText(language, workspace.tasks.find((task) => task.employeeId === id)?.status || "available")}`}
                     </small>
                   </span>
+                  {messages[id] && (
+                    <span className="wf-speech-bubble" dir="auto">
+                      {messages[id].slice(0, 240)}
+                    </span>
+                  )}
                   <span className="wf-label-wave" aria-hidden="true">
                     <i />
                     <i />
@@ -304,6 +460,11 @@ export function OfficeScene({
               </div>
             )}
             <div className="wf-pov-hud">
+              {gyroStatus && (
+                <p className="wf-pov-caption" role="status">
+                  {gyroStatus}
+                </p>
+              )}
               {(voice.error || voice.interim) && (
                 <p className="wf-pov-caption" dir="auto">
                   {voice.error || voice.interim}
@@ -329,6 +490,54 @@ export function OfficeScene({
                 )
               )}
               <div className="wf-pov-bottom-row">
+                <div
+                  className="wf-joystick"
+                  role="group"
+                  aria-label="عصا الحركة: اسحب للتنقل"
+                  onPointerDown={(event) => {
+                    event.currentTarget.setPointerCapture(event.pointerId);
+                  }}
+                  onPointerMove={(event) => {
+                    if (
+                      !event.currentTarget.hasPointerCapture(event.pointerId) ||
+                      meetingOpen
+                    )
+                      return;
+                    const r = event.currentTarget.getBoundingClientRect();
+                    const x =
+                        (event.clientX - r.left - r.width / 2) / (r.width / 2),
+                      y =
+                        (event.clientY - r.top - r.height / 2) / (r.height / 2);
+                    const threshold = 0.15;
+                    engine.current?.input("KeyA", x < -threshold);
+                    engine.current?.input("KeyD", x > threshold);
+                    engine.current?.input("KeyW", y < -threshold);
+                    engine.current?.input("KeyS", y > threshold);
+                    event.currentTarget.style.setProperty(
+                      "--stick-x",
+                      `${Math.max(-28, Math.min(28, x * 28))}px`,
+                    );
+                    event.currentTarget.style.setProperty(
+                      "--stick-y",
+                      `${Math.max(-28, Math.min(28, y * 28))}px`,
+                    );
+                  }}
+                  onLostPointerCapture={(event) => {
+                    ["KeyA", "KeyD", "KeyW", "KeyS"].forEach((code) =>
+                      engine.current?.input(code, false),
+                    );
+                    event.currentTarget.style.setProperty("--stick-x", "0px");
+                    event.currentTarget.style.setProperty("--stick-y", "0px");
+                  }}
+                  onPointerUp={(event) =>
+                    event.currentTarget.releasePointerCapture(event.pointerId)
+                  }
+                  onPointerCancel={(event) =>
+                    event.currentTarget.releasePointerCapture(event.pointerId)
+                  }
+                >
+                  <span />
+                </div>
                 <div
                   className="wf-pov-pad"
                   dir="ltr"

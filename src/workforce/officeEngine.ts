@@ -1,14 +1,16 @@
 import * as THREE from "three";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
-// Loaded only when the merchant opens headquarters. No models, HDR maps,
-// post-processing, real-time shadows, or additional network requests.
+// Lazy-loaded procedural executive office; textures and rigs stay local.
 export type OfficeState = {
   selected: string;
   speaker: string | null;
   meeting: boolean;
   paused: boolean;
   activity: Record<string, string>;
+  messages: Record<string, string>;
+  handoff?: { from: string; to: string } | null;
 };
 export type OfficeAnchor = {
   id: string;
@@ -35,6 +37,8 @@ type Avatar = {
   body: THREE.Group;
   head: THREE.Group;
   arm: THREE.Group;
+  limbs: THREE.Group[];
+  route: Position[];
   ring: THREE.Mesh;
   bars: THREE.Mesh[];
   home: Position;
@@ -68,7 +72,9 @@ export function createOffice(
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.3;
+  renderer.toneMappingExposure = 1.15;
+  renderer.shadowMap.enabled = !window.matchMedia("(pointer: coarse)").matches;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#272a2b");
   scene.fog = new THREE.Fog("#272a2b", 17, 40);
@@ -79,6 +85,16 @@ export function createOffice(
   scene.add(new THREE.HemisphereLight("#f4e3cf", "#444b53", 2.3));
   const keyLight = new THREE.DirectionalLight("#ffe0b8", 2.8);
   keyLight.position.set(3, 6, 4);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.set(1024, 1024);
+  Object.assign(keyLight.shadow.camera, {
+    left: -12,
+    right: 12,
+    top: 8,
+    bottom: -18,
+    far: 45,
+  });
+  keyLight.shadow.bias = -0.001;
   scene.add(keyLight);
   const fill = new THREE.DirectionalLight("#c2d5db", 1.3);
   fill.position.set(-8, 4, -7);
@@ -87,10 +103,20 @@ export function createOffice(
   const materials = new Set<THREE.Material>();
   const geometries = new Set<THREE.BufferGeometry>();
   const textures = new Set<THREE.Texture>();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const roomEnvironment = new RoomEnvironment();
+  const reflection = pmrem.fromScene(roomEnvironment, 0.04);
+  scene.environment = reflection.texture;
+  roomEnvironment.dispose();
+  pmrem.dispose();
   const mat = (color: string, glow = false) => {
     const material = glow
       ? new THREE.MeshBasicMaterial({ color })
-      : new THREE.MeshLambertMaterial({ color });
+      : new THREE.MeshStandardMaterial({
+          color,
+          roughness: 0.38,
+          metalness: 0.22,
+        });
     materials.add(material);
     return material;
   };
@@ -137,6 +163,8 @@ export function createOffice(
     rotation = 0,
   ) {
     const object = new THREE.Mesh(geo, material);
+    object.castShadow = true;
+    object.receiveShadow = true;
     object.position.set(x, y, z);
     object.scale.set(sx, sy, sz);
     object.rotation.y = rotation;
@@ -178,7 +206,7 @@ export function createOffice(
   }
   const staff = employeeIds.filter((id) => id !== "ceo");
   // Extra catalog workstations extend the staff wing without overlapping desks.
-  const back = Math.min(-9, -6 - Math.max(0, staff.length - 2) * 4.4);
+  const back = -12 - Math.floor(Math.max(0, staff.length - 1) / 2) * 4.4;
   const depth = 7 - back;
   const mid = (7 + back) / 2;
   box(floor, 0, -0.12, mid, 23, 0.24, depth);
@@ -286,7 +314,6 @@ export function createOffice(
     box(orange, 0.12, 0.016, z, 0.035, 0.012, 0.34, scene, 0.7);
   }
   function chair(x: number, z: number, yaw = 0) {
-    solid(x, z, 0.68, 0.68);
     // Bake the chair transform into the static batch once.
     const pieces: [
       THREE.Material,
@@ -314,6 +341,12 @@ export function createOffice(
     }
   }
   const monitorMaterials = new Map<string, THREE.MeshBasicMaterial>();
+  const displays: {
+    id: string;
+    canvas: HTMLCanvasElement;
+    texture: THREE.CanvasTexture;
+  }[] = [];
+  let lastDisplay = 0;
   function monitor(x: number, z: number, id: string, large = false) {
     const group = new THREE.Group();
     scene.add(group);
@@ -325,20 +358,24 @@ export function createOffice(
     const display = new THREE.MeshBasicMaterial({ color: "#41645b" });
     materials.add(display);
     monitorMaterials.set(id, display);
-    box(screen, 0, 0.47, 0.04, width - 0.06, 0.56, 0.006, group);
-    // These are UI glyphs, not invented activity or customer records.
-    box(orange, -width * 0.34, 0.47, 0.05, 0.1, 0.45, 0.006, group);
-    for (let row = 0; row < 4; row++)
-      box(
+    const surface = document.createElement("canvas");
+    surface.width = 512;
+    surface.height = 320;
+    const texture = new THREE.CanvasTexture(surface);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    textures.add(texture);
+    display.map = texture;
+    display.color.set("#ffffff");
+    displays.push({ id, canvas: surface, texture });
+    for (const side of [-1, 1]) {
+      const plane = new THREE.Mesh(
+        geometry(new THREE.PlaneGeometry(width - 0.06, 0.56)),
         display,
-        0.06,
-        0.63 - row * 0.1,
-        0.05,
-        (width - 0.35) * (row % 2 ? 0.7 : 1),
-        0.023,
-        0.006,
-        group,
       );
+      plane.position.set(0, 0.47, side * 0.041);
+      plane.rotation.y = side === 1 ? 0 : Math.PI;
+      group.add(plane);
+    }
     box(charcoal, 0, 0.02, 0.43, 0.55, 0.035, 0.19, group);
     return group;
   }
@@ -371,10 +408,10 @@ export function createOffice(
     },
   ];
   // Boardroom: the merchant takes the near end; employees face the table.
-  box(wood, 7.7, 0.76, -2.0, 2.45, 0.14, 4.2);
-  box(trim, 7.7, 0.32, -2.0, 1.5, 0.64, 2.8);
-  box(orange, 7.7, 0.84, -2.0, 0.018, 0.008, 3.9);
-  solid(7.7, -2.0, 2.45, 4.2);
+  box(wood, 7.7, 0.76, -3.0, 2.45, 0.14, 6.8);
+  box(trim, 7.7, 0.32, -3.0, 1.5, 0.64, 5.4);
+  box(orange, 7.7, 0.84, -3.0, 0.018, 0.008, 6.5);
+  solid(7.7, -3.0, 2.45, 6.8);
   plaque("BOARDROOM", "ONESHOT / TEAM SESSION", 7.7, 2.5, back + 0.14, 3.1);
   const meetingObject = new THREE.Group();
   scene.add(meetingObject);
@@ -392,23 +429,45 @@ export function createOffice(
     const home =
       id === "ceo"
         ? { x: -2.7, z: -5.25 }
-        : { x: -7.75, z: 2.5 - staffIndex * 4.4 - (staffIndex > 0 ? 1.2 : 0) };
+        : {
+            x: staffIndex % 2 ? 7.75 : -7.75,
+            z: -8 - Math.floor(staffIndex / 2) * 4.4,
+          };
     if (id !== "ceo") {
-      desk(home.x, home.z + 0.35);
-      chair(home.x, home.z - 0.7);
-      monitor(home.x + 0.28, home.z + 0.35, id);
+      desk(home.x, home.z - 1.4);
+      chair(home.x, home.z + 0.15);
+      const station = monitor(home.x + 0.28, home.z - 1.4, id);
+      station.userData.target = PC;
+      box(brass, home.x - 0.7, 0.96, home.z - 1.3, 0.12, 0.16, 0.12);
+      for (let key = 0; key < 8; key++)
+        box(
+          steel,
+          home.x - 0.2 + key * 0.06,
+          0.925,
+          home.z - 0.97,
+          0.035,
+          0.012,
+          0.11,
+        );
+      box(light, home.x, 3.51, home.z - 1, 2.1, 0.03, 0.08);
+      targets.push({
+        id: `@screen:${id}`,
+        position: new THREE.Vector3(home.x + 0.28, 1.8, home.z - 1.4),
+        approach: { x: home.x, z: home.z + 0.7 },
+        objects: [station],
+      });
     }
     const seat =
       i === 0
-        ? { x: 7.7, z: -4.95 }
-        : { x: i % 2 ? 5.95 : 9.45, z: -3.2 + Math.floor((i - 1) / 2) * 1.4 };
+        ? { x: 7.7, z: -7.2 }
+        : { x: i % 2 ? 5.95 : 9.45, z: -5.4 + Math.floor((i - 1) / 2) * 1.25 };
     const yaw = i === 0 ? 0 : i % 2 ? Math.PI / 2 : -Math.PI / 2;
     chair(seat.x, seat.z, yaw);
     box(
       leather,
       seat.x < 7 ? 6.8 : seat.x > 8 ? 8.6 : 7.7,
       0.85,
-      i === 0 ? -3.6 : seat.z,
+      i === 0 ? -6 : seat.z,
       0.38,
       0.03,
       0.5,
@@ -416,14 +475,29 @@ export function createOffice(
     const body = new THREE.Group();
     scene.add(body);
     body.position.set(home.x, 0, home.z);
+    const limbs: THREE.Group[] = [];
     const skin = mat(i % 2 ? "#b18a70" : "#c4a18a");
     const suit = mat(suitColors[i % suitColors.length]);
-    mesh(cylinder, suit, 0, 1.05, 0, 0.27, 0.65, 0.17, body);
+    mesh(sphere, suit, 0, 1.08, 0, 0.26, 0.36, 0.145, body);
+    box(suit, 0, 0.83, 0, 0.4, 0.18, 0.27, body);
+    mesh(cylinder, skin, 0, 1.43, 0, 0.065, 0.12, 0.065, body);
+    for (const side of [-1, 1]) {
+      box(trim, side * 0.09, 1.24, 0.145, 0.09, 0.28, 0.025, body, side * 0.25);
+      box(brass, side * 0.075, 1.01, 0.149, 0.018, 0.018, 0.018, body);
+    }
     box(paper, 0, 1.23, 0.16, 0.14, 0.28, 0.03, body);
     box(brass, 0, 1.18, 0.184, 0.037, 0.28, 0.018, body);
     for (const x of [-0.115, 0.115]) {
-      box(suit, x, 0.42, 0, 0.18, 0.68, 0.2, body);
-      box(trim, x, 0.07, 0.055, 0.19, 0.12, 0.32, body);
+      const hip = new THREE.Group();
+      hip.position.set(x, 0.78, 0);
+      body.add(hip);
+      box(suit, 0, -0.18, 0, 0.17, 0.36, 0.19, hip);
+      const knee = new THREE.Group();
+      knee.position.y = -0.35;
+      hip.add(knee);
+      box(suit, 0, -0.17, 0, 0.15, 0.35, 0.17, knee);
+      box(trim, 0, -0.35, 0.065, 0.18, 0.12, 0.3, knee);
+      limbs.push(hip, knee);
     }
     const head = new THREE.Group();
     head.position.y = 1.59;
@@ -433,13 +507,24 @@ export function createOffice(
     for (const x of [-0.061, 0.061])
       mesh(sphere, trim, x, 0.025, 0.146, 0.015, 0.014, 0.009, head);
     box(skin, 0, -0.028, 0.164, 0.035, 0.06, 0.045, head);
+    box(trim, 0, -0.1, 0.145, 0.065, 0.008, 0.012, head);
+    for (const side of [-1, 1]) {
+      mesh(sphere, skin, side * 0.166, -0.015, 0, 0.028, 0.055, 0.035, head);
+      box(trim, side * 0.06, 0.065, 0.143, 0.048, 0.008, 0.012, head);
+    }
     let arm = new THREE.Group();
     for (const side of [-1, 1]) {
       const pivot = new THREE.Group();
       pivot.position.set(side * 0.29, 1.3, 0);
       body.add(pivot);
-      mesh(cylinder, suit, 0, -0.2, 0, 0.075, 0.44, 0.075, pivot);
-      mesh(sphere, skin, 0, -0.46, 0, 0.065, 0.09, 0.06, pivot);
+      mesh(sphere, suit, 0, -0.13, 0, 0.085, 0.19, 0.08, pivot);
+      const elbow = new THREE.Group();
+      elbow.position.y = -0.29;
+      pivot.add(elbow);
+      mesh(sphere, suit, 0, -0.11, 0, 0.065, 0.15, 0.065, elbow);
+      box(paper, 0, -0.24, 0, 0.105, 0.045, 0.1, elbow);
+      mesh(sphere, skin, 0, -0.29, 0.015, 0.055, 0.075, 0.045, elbow);
+      limbs.push(pivot, elbow);
       if (side === 1) arm = pivot;
     }
     const ring = new THREE.Mesh(ringGeo, mat("#acd2b6", true));
@@ -460,7 +545,19 @@ export function createOffice(
       bar.visible = false;
       return bar;
     });
-    avatars.push({ id, body, head, arm, ring, bars, home, seat, yaw });
+    avatars.push({
+      id,
+      body,
+      head,
+      arm,
+      limbs,
+      route: [],
+      ring,
+      bars,
+      home,
+      seat,
+      yaw,
+    });
     targets.push({
       id,
       position: new THREE.Vector3(home.x, 2.15, home.z),
@@ -544,7 +641,12 @@ export function createOffice(
   }
   for (const [material, parts] of batches) {
     const merged = mergeGeometries(parts, false);
-    if (merged) scene.add(new THREE.Mesh(geometry(merged), material));
+    if (merged) {
+      const architecture = new THREE.Mesh(geometry(merged), material);
+      architecture.receiveShadow = true;
+      architecture.castShadow = material !== floor;
+      scene.add(architecture);
+    }
     parts.forEach((part) => part.dispose());
   }
   batches.clear();
@@ -617,6 +719,7 @@ export function createOffice(
   }
   function look(dx: number, dy: number) {
     if (state.paused) return;
+    if (dx || dy) travelPath = [];
     camera.rotation.y -= dx * 0.0028;
     camera.rotation.x = clamp(camera.rotation.x - dy * 0.0028, -0.95, 0.95);
     dirty = true;
@@ -627,6 +730,76 @@ export function createOffice(
       dz = point.z - camera.position.z;
     camera.rotation.y = Math.atan2(-dx, -dz);
     camera.rotation.x = -0.035;
+  }
+  let travelPath: Position[] = [];
+  let travelTarget: Target | null = null;
+  let patrolAt = 0;
+  let patrolIndex = 0;
+  // A* across the same collision grid used by manual walking; glass doors remain mandatory.
+  function pathTo(start: Position, end: Position): Position[] {
+    const step = 0.5;
+    const cell = (p: Position) => ({
+      x: Math.round(p.x / step),
+      z: Math.round(p.z / step),
+    });
+    const a = cell(start),
+      b = cell(end);
+    const key = (p: Position) => `${p.x},${p.z}`;
+    const open = [a],
+      costs = new Map([[key(a), 0]]),
+      previous = new Map<string, Position>();
+    let reached: Position | null = null;
+    for (let n = 0; open.length && n < 18000; n++) {
+      open.sort(
+        (u, v) =>
+          costs.get(key(u))! +
+          Math.abs(u.x - b.x) +
+          Math.abs(u.z - b.z) -
+          (costs.get(key(v))! + Math.abs(v.x - b.x) + Math.abs(v.z - b.z)),
+      );
+      const p = open.shift()!;
+      if (Math.abs(p.x - b.x) + Math.abs(p.z - b.z) <= 1) {
+        reached = p;
+        break;
+      }
+      for (const [dx, dz] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ]) {
+        const q = { x: p.x + dx, z: p.z + dz },
+          k = key(q),
+          cost = costs.get(key(p))! + 1;
+        if (
+          obstructed({ x: q.x * step, z: q.z * step }) ||
+          cost >= (costs.get(k) ?? Infinity)
+        )
+          continue;
+        costs.set(k, cost);
+        previous.set(k, p);
+        open.push(q);
+      }
+    }
+    if (!reached) return [];
+    const route: Position[] = [];
+    for (let p = reached; key(p) !== key(a); p = previous.get(key(p))!)
+      route.unshift({ x: p.x * step, z: p.z * step });
+    return route;
+  }
+  function advance(position: THREE.Vector3, route: Position[], dt: number) {
+    const next = route[0];
+    if (!next) return false;
+    const dx = next.x - position.x,
+      dz = next.z - position.z,
+      distance = Math.hypot(dx, dz);
+    const amount = Math.min(distance, dt * 2.4);
+    if (distance > 0.001) {
+      position.x += (dx / distance) * amount;
+      position.z += (dz / distance) * amount;
+    }
+    if (distance <= amount + 0.02) route.shift();
+    return true;
   }
   function navigate(id: string) {
     if (state.paused) return;
@@ -643,7 +816,12 @@ export function createOffice(
     if (!target) return;
     clearInput();
     exitLock();
-    camera.position.set(target.approach.x, EYE, target.approach.z);
+    travelPath = pathTo(camera.position, target.approach);
+    travelTarget = target;
+    if (reduced.matches && travelPath.length) {
+      camera.position.set(target.approach.x, EYE, target.approach.z);
+      travelPath = [];
+    }
     face(target.position);
     dirty = true;
     schedule();
@@ -651,7 +829,7 @@ export function createOffice(
   function activate(id: string) {
     const target = targets.find((item) => item.id === id);
     if (!target || state.paused) return;
-    if (!canUse(target) && !state.meeting) {
+    if (!id.startsWith("@") && !canUse(target) && !state.meeting) {
       navigate(id);
       return;
     }
@@ -792,6 +970,8 @@ export function createOffice(
       savedPose = null;
       clearInput();
     }
+    const previousHandoff = state.handoff;
+    const previousMeeting = state.meeting;
     state = next;
     if (next.paused) {
       clearInput();
@@ -799,15 +979,42 @@ export function createOffice(
     }
     for (const avatar of avatars) {
       const pos = next.meeting ? avatar.seat : avatar.home;
-      avatar.body.position.set(pos.x, next.meeting ? -0.4 : 0, pos.z);
+      if (next.meeting !== previousMeeting || next.meeting) {
+        avatar.route = [];
+        avatar.body.position.set(pos.x, next.meeting ? -0.4 : 0, pos.z);
+      }
       avatar.body.rotation.y = next.meeting ? avatar.yaw : 0;
       const target = targets.find((item) => item.id === avatar.id)!;
       target.position.set(pos.x, next.meeting ? 1.85 : 2.15, pos.z);
-      const display = monitorMaterials.get(avatar.id);
-      const status = next.activity[avatar.id];
-      display?.color.set(
-        status === "drafting" || status === "queued" ? "#c28b55" : "#547b6c",
-      );
+    }
+    if (!next.handoff && !next.meeting) {
+      for (const avatar of avatars)
+        if (
+          avatar.id !== "ceo" &&
+          !avatar.route.length &&
+          avatar.body.position.distanceTo(
+            new THREE.Vector3(avatar.home.x, 0, avatar.home.z),
+          ) > 0.6
+        )
+          avatar.route = pathTo(avatar.body.position, avatar.home);
+    }
+    if (next.meeting || next.paused) {
+      travelPath = [];
+      travelTarget = null;
+    }
+    if (
+      next.handoff &&
+      !next.meeting &&
+      (next.handoff.from !== previousHandoff?.from ||
+        next.handoff.to !== previousHandoff?.to)
+    ) {
+      const walker = avatars.find((a) => a.id === next.handoff!.from);
+      const target = targets.find((t) => t.id === next.handoff!.to);
+      if (walker && target)
+        walker.route = pathTo(walker.body.position, {
+          x: target.approach.x + 0.6,
+          z: target.approach.z,
+        });
     }
     dirty = true;
     schedule();
@@ -822,6 +1029,14 @@ export function createOffice(
     }
     const dt = Math.min((time - lastTime) / 1000 || 0, 0.05);
     lastTime = time;
+    if (!state.paused && !state.meeting && travelPath.length) {
+      if (keys.size) travelPath = [];
+      else {
+        advance(camera.position, travelPath, dt);
+        if (travelTarget) face(travelTarget.position);
+        dirty = true;
+      }
+    }
     if (!state.paused && keys.size) {
       const axis = (a: string, b: string) =>
         Number(keys.has(a)) - Number(keys.has(b));
@@ -843,8 +1058,183 @@ export function createOffice(
     }
     const moving = !state.paused && !reduced.matches;
     if (moving || dirty) {
+      if (time - lastDisplay > 250 || dirty) {
+        lastDisplay = time;
+        for (const display of displays) {
+          const ctx = display.canvas.getContext("2d");
+          if (!ctx) continue;
+          ctx.fillStyle = "#152228";
+          ctx.fillRect(0, 0, 512, 320);
+          ctx.fillStyle = "#cc965f";
+          ctx.fillRect(0, 0, 512, 40);
+          ctx.fillStyle = "#152228";
+          ctx.font = "bold 20px sans-serif";
+          ctx.fillText(
+            `ONESHOT / ${display.id.replace("@", "").toUpperCase()}`,
+            18,
+            27,
+          );
+          ctx.fillStyle = "#8cbdaf";
+          ctx.font = "18px sans-serif";
+          ctx.fillText(
+            state.activity[display.id] || "WORKSPACE · READY",
+            18,
+            72,
+          );
+          const content =
+            state.messages[
+              display.id.startsWith("@") ? state.selected : display.id
+            ] || "No active task · Select screen to open workspace";
+          if (display.id === "finance" || display.id.startsWith("@")) {
+            const statuses = [
+              "idle",
+              "queued",
+              "drafting",
+              "awaiting_approval",
+            ];
+            const counts = statuses.map(
+              (status) =>
+                Object.values(state.activity).filter(
+                  (value) => value === status,
+                ).length,
+            );
+            const maximum = Math.max(1, ...counts);
+            ctx.font = "12px sans-serif";
+            statuses.forEach((status, index) => {
+              const x = 24 + index * 118,
+                h = 25 + (counts[index] / maximum) * 85;
+              ctx.fillStyle = "#8cbdaf";
+              ctx.fillRect(x, 220 - h, 60, h);
+              ctx.fillStyle = "#d3dfd8";
+              ctx.fillText(`${status}: ${counts[index]}`, x, 240);
+            });
+            ctx.fillStyle = "#b8c9c2";
+            ctx.fillText("WORKSPACE TASK STATES / RECORDED DATA", 18, 270);
+          } else if (display.id === "developer") {
+            ctx.font = "17px monospace";
+            ctx.fillStyle = "#d8b48a";
+            ctx.fillText("// LATEST SAVED OUTPUT", 18, 108);
+            ctx.fillStyle = "#8cbdaf";
+            for (let row = 0; row < 6; row++)
+              ctx.fillText(
+                `${row + 1}  ${content.slice(row * 42, (row + 1) * 42)}`,
+                18,
+                135 + row * 23,
+              );
+          } else {
+            ctx.direction = "rtl";
+            ctx.textAlign = "right";
+            for (let row = 0; row < 5; row++)
+              ctx.fillText(
+                content.slice(row * 42, (row + 1) * 42),
+                490,
+                110 + row * 29,
+              );
+          }
+          ctx.direction = "ltr";
+          ctx.textAlign = "left";
+          // A moving connection pulse, never fabricated business metrics.
+          ctx.fillStyle = "#cc965f";
+          ctx.fillRect(
+            18 + (reduced.matches ? 0 : (time / 24) % 450),
+            286,
+            20,
+            3,
+          );
+          ctx.fillStyle = "#a7b5b8";
+          ctx.font = "14px sans-serif";
+          ctx.fillText("WORKSPACE VIEW / CLICK TO OPEN", 18, 312);
+          display.texture.needsUpdate = true;
+        }
+      }
+      if (
+        moving &&
+        !state.meeting &&
+        !state.handoff &&
+        time > patrolAt &&
+        !avatars.find((a) => a.id === "ceo")?.route.length
+      ) {
+        const ceo = avatars.find((a) => a.id === "ceo");
+        const destinations = targets.filter(
+          (t) => t.id !== "ceo" && !t.id.startsWith("@"),
+        );
+        const stop =
+          destinations[patrolIndex++ % Math.max(1, destinations.length)];
+        if (ceo && stop)
+          ceo.route = pathTo(
+            ceo.body.position,
+            patrolIndex % 3 === 0 ? ceo.home : stop.approach,
+          );
+        patrolAt = time + 24000;
+      }
       for (let i = 0; i < avatars.length; i++) {
         const avatar = avatars[i];
+        const walking = moving && !state.meeting && avatar.route.length > 0;
+        if (walking) {
+          const next = avatar.route[0];
+          avatar.body.rotation.y = Math.atan2(
+            next.x - avatar.body.position.x,
+            next.z - avatar.body.position.z,
+          );
+          advance(avatar.body.position, avatar.route, dt * 0.6);
+        }
+        const working =
+          !walking &&
+          (state.activity[avatar.id] === "drafting" ||
+            state.activity[avatar.id] === "generating");
+        if (!walking && !state.meeting)
+          avatar.body.rotation.y = working ? Math.PI : avatar.body.rotation.y;
+        const seated =
+          !walking &&
+          avatar.id !== "ceo" &&
+          Math.hypot(
+            avatar.body.position.x - avatar.home.x,
+            avatar.body.position.z - avatar.home.z,
+          ) < 0.7;
+        avatar.body.position.y = state.meeting ? -0.4 : seated ? -0.22 : 0;
+        if (
+          !state.handoff &&
+          !walking &&
+          avatar.id !== "ceo" &&
+          Math.hypot(
+            avatar.body.position.x - avatar.home.x,
+            avatar.body.position.z - avatar.home.z,
+          ) > 0.7
+        )
+          avatar.route = pathTo(avatar.body.position, avatar.home);
+        avatar.limbs.forEach((limb, j) => {
+          const leg = j < 4;
+          limb.rotation.x = walking
+            ? Math.sin(time * 0.008 + (j < 2 || j === 6 ? 0 : Math.PI)) *
+              (leg ? 0.38 : 0.25)
+            : (state.meeting || seated) && leg
+              ? j % 2
+                ? 1.2
+                : -1.2
+              : !leg && working
+                ? (j % 2 ? -0.8 : -0.5) + Math.sin(time * 0.012 + j) * 0.045
+                : 0;
+        });
+        const anchor = targets.find((t) => t.id === avatar.id)!;
+        anchor.position.set(
+          avatar.body.position.x,
+          state.meeting ? 1.85 : 2.15,
+          avatar.body.position.z,
+        );
+        if (!walking && !state.meeting && state.handoff) {
+          const otherId =
+            avatar.id === state.handoff.from
+              ? state.handoff.to
+              : avatar.id === state.handoff.to
+                ? state.handoff.from
+                : null;
+          const other = avatars.find((a) => a.id === otherId);
+          if (other)
+            avatar.body.rotation.y = Math.atan2(
+              other.body.position.x - avatar.body.position.x,
+              other.body.position.z - avatar.body.position.z,
+            );
+        }
         const speaking = state.speaker === avatar.id;
         avatar.ring.visible = speaking;
         avatar.ring.rotation.y = camera.rotation.y - avatar.body.rotation.y;
@@ -854,8 +1244,8 @@ export function createOffice(
         avatar.head.rotation.y = moving
           ? Math.sin(time * 0.0005 + i) * 0.07
           : 0;
-        avatar.arm.rotation.x =
-          speaking && moving ? -0.35 + Math.sin(time * 0.004) * 0.17 : 0;
+        if (speaking && moving)
+          avatar.arm.rotation.x = -0.35 + Math.sin(time * 0.004) * 0.17;
         avatar.body.scale.y =
           moving && !speaking ? 1 + Math.sin(time * 0.0015 + i) * 0.002 : 1;
         avatar.bars.forEach((bar, j) => {
@@ -987,6 +1377,7 @@ export function createOffice(
       }
     },
     reset() {
+      travelPath = [];
       clearInput();
       exitLock();
       if (state.meeting) {
@@ -1010,6 +1401,7 @@ export function createOffice(
       geometries.forEach((item) => item.dispose());
       materials.forEach((item) => item.dispose());
       textures.forEach((item) => item.dispose());
+      reflection.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
     },

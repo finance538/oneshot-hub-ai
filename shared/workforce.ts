@@ -67,6 +67,7 @@ export interface Meeting {
   createdAt: string;
 }
 export interface ChatTurn {
+  collaboration: { employeeId: string; output: string }[];
   id: string;
   employeeId: string;
   meetingId: string | null;

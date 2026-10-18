@@ -1,0 +1,1 @@
+ALTER TABLE "workforce_chat_turns" ADD COLUMN "collaboration" jsonb DEFAULT '[]' NOT NULL;

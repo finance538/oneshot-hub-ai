@@ -675,3 +675,93 @@ html.wf-hidden .wf-pov * {
   overflow: auto;
   pointer-events: auto;
 }
+
+.wf-world-label {
+  position: absolute;
+}
+.wf-speech-bubble {
+  display: block;
+  position: absolute;
+  bottom: calc(100% + 12px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  width: clamp(190px, 22vw, 300px);
+  padding: 12px 15px;
+  border: 1px solid #bd936357;
+  border-radius: 15px 15px 15px 3px;
+  background: #202a2df5;
+  box-shadow: 0 8px 30px #111a1c66;
+  color: #f1e8d8;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: normal;
+  text-align: start;
+  max-height: 145px;
+  overflow: auto;
+}
+.wf-joystick {
+  display: none;
+  touch-action: none;
+  width: 100px;
+  height: 100px;
+  border: 1px solid #c4966166;
+  border-radius: 50%;
+  background: #1c282cbf;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.wf-joystick span {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #bd9363;
+  box-shadow: 0 4px 20px #0d1b2170;
+  transform: translate(var(--stick-x, 0px), var(--stick-y, 0px));
+  pointer-events: none;
+}
+@media (pointer: coarse) {
+  .wf-joystick {
+    display: flex;
+  }
+  .wf-pov-pad {
+    display: none;
+  }
+  .wf-pov-tools {
+    max-width: 75%;
+  }
+  .wf-pov-tools button {
+    min-height: 42px;
+    width: auto;
+    padding: 8px;
+  }
+}
+@media (max-width: 600px) {
+  .wf-speech-bubble {
+    width: 190px;
+    font-size: 11px;
+    max-height: 105px;
+  }
+  .wf-pov-voice {
+    max-width: 60%;
+  }
+}
+.wf-pov .wf-pov-tools button[title="Gyro Look"] {
+  width: auto;
+  height: auto;
+  min-height: 34px;
+  font-size: 11px;
+}
+.wf-collaboration {
+  margin-block: 12px;
+  padding: 10px;
+  border-inline-start: 2px solid #ba8e59;
+  background: #778b8210;
+}
+.wf-collaboration summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.wf-collaboration article {
+  margin-block: 12px;
+}

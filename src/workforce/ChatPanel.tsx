@@ -139,6 +139,40 @@ export function ChatPanel({
                   {turn.output ||
                     w(turn.status === "generating" ? "busy" : "failed")}
                 </p>
+                {!!turn.collaboration?.length && (
+                  <details className="wf-collaboration">
+                    <summary>
+                      مساهمات الفريق · {turn.collaboration.length}
+                    </summary>
+                    {turn.collaboration.map((part) => (
+                      <article key={part.employeeId}>
+                        <strong>
+                          {catalog.find((e) => e.id === part.employeeId)?.title[
+                            language
+                          ] ||
+                            catalog.find((e) => e.id === part.employeeId)?.title
+                              .en ||
+                            part.employeeId}
+                        </strong>
+                        <p dir="auto">{part.output}</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            voice.stop();
+                            void voice.speak({
+                              employeeId: part.employeeId,
+                              text: part.output,
+                              language: turn.outputLanguage,
+                            });
+                          }}
+                        >
+                          <Volume2 size={14} />
+                          {t("read")}
+                        </button>
+                      </article>
+                    ))}
+                  </details>
+                )}
                 {turn.output && (
                   <button
                     className="wf-read-aloud"
