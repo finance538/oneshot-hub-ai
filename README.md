@@ -69,6 +69,8 @@ Authenticated users can select Gemini, OneShot core or Ollama, choose assistant 
 
 Gemini uses Netlify AI Gateway with the official SDK default constructor. The platform injects provider configuration; no Gemini credentials are bundled in the client. Gateway availability requires a production deployment. Core and Ollama requests go through the fixed HTTPS API, not the public Ollama HTTP port.
 
+An AI connectivity review on 2026-10-18 found that the published site's `/api/health` returned HTTP 200 with a degraded status: Netlify Database was connected, while the external core was disconnected. A direct HTTPS health request to `api.1shotcam.com` failed with `DEPTH_ZERO_SELF_SIGNED_CERT`. This certificate failure blocks Core and Ollama requests, including the executive assistant's default Core provider. The VPS needs a publicly trusted certificate and complete certificate chain before those integrations can be verified. Gemini uses a separate connection through Netlify AI Gateway; its configured models and SDK initialization match the current gateway guidance, but authenticated inference was not verified during this review. Chat requires a signed-in account, and the executive workspace additionally requires the administrator role. Public health does not check Gemini inference. This review did not change application behavior, runtime settings, certificates or domains.
+
 Administrators can create/activate/deactivate named staff specializations. AI CEO requests receive actual database order totals and staff context. Reports are advisory and cannot execute financial or administrative mutations. AI model output is rendered as text, not executable HTML.
 
 ## Routing and cache behavior
@@ -83,7 +85,7 @@ Hostname defaults are: root/www → store, portal/pay → gateway, admin → vau
 
 ## Deployment and the approved domain transition
 
-The owner approved moving domains **only after a successful deployment and verification**. Existing sites must keep their domains until those conditions are met. No domain or DNS changes were made during this implementation. At the latest remote check, the target site's health path returned 404 and the external API certificate was still self-signed. These observations are point-in-time findings, not permanent configuration.
+The owner approved moving domains **only after a successful deployment and verification**. Existing sites must keep their domains until those conditions are met. No domain or DNS changes were made during this implementation. At the 2026-10-18 remote check, the published site's health path returned HTTP 200 with a degraded status and a connected Netlify Database; the external API still failed TLS verification because its certificate was self-signed. This supersedes the earlier health-path 404 observation. These observations do not establish full release readiness or authorize an immediate domain transfer.
 
 Follow [the deployment runbook](docs/deployment.md) after the platform publishes this project. Do not transfer domains solely because the static homepage renders. Preserve existing assignments and DNS records for rollback, and leave `api.1shotcam.com` pointing to the VPS.
 
