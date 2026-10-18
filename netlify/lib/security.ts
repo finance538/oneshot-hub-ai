@@ -44,11 +44,11 @@ export function uuid(value: string) {
     throw new ApiError(400, "المعرّف غير صالح.");
   return value;
 }
-export async function payload(req: Request) {
+export async function payload(req: Request, maxLength = 32000) {
   if (!req.headers.get("content-type")?.includes("application/json"))
     throw new ApiError(415, "يتطلب الطلب JSON.");
   const raw = await req.text();
-  if (raw.length > 32000)
+  if (raw.length > maxLength)
     throw new ApiError(413, "حجم الطلب أكبر من الحد المسموح.");
   try {
     const data = JSON.parse(raw);

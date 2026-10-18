@@ -17,6 +17,7 @@ import {
   limit,
 } from "./security.js";
 import { isLanguage, languageNames } from "../../shared/workforce.js";
+import { workforceConversation } from "./workforce-conversation.js";
 
 async function generate(instructions: string, input: string, language: string) {
   try {
@@ -114,6 +115,11 @@ export async function workforceRoute(req: Request, path: string) {
       "ORGANIZATION_REQUIRED",
     );
   const orgId = organization.id;
+  if (
+    path === "/api/workforce/chat" ||
+    path === "/api/workforce/voice/transcribe"
+  )
+    return workforceConversation(req, path, orgId, user.id);
   const eventsMatch = path.match(/^\/api\/workforce\/tasks\/([^/]+)\/events$/);
   if (eventsMatch && req.method === "GET") {
     const taskId = uuid(eventsMatch[1]);
@@ -322,7 +328,14 @@ export async function workforceRoute(req: Request, path: string) {
     ];
     const [meeting] = await db
       .insert(meetings)
-      .values({ organizationId: orgId, requestKey, topic, reports, proposals })
+      .values({
+        organizationId: orgId,
+        requestKey,
+        topic,
+        reports,
+        proposals,
+        outputLanguage: meetingLanguage,
+      })
       .onConflictDoNothing()
       .returning();
     if (!meeting) throw new ApiError(409, "الاجتماع قيد التحضير.");
