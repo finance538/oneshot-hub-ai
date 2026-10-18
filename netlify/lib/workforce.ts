@@ -7,6 +7,8 @@ import {
   workforceTasks as tasks,
   workforceEvents as events,
   workforceMeetings as meetings,
+  workforceMail as mail,
+  workforceResearch as research,
 } from "../../db/schema.js";
 import {
   authenticate,
@@ -18,6 +20,10 @@ import {
 } from "./security.js";
 import { isLanguage, languageNames } from "../../shared/workforce.js";
 import { workforceConversation } from "./workforce-conversation.js";
+import { connectionsRoute } from "./workforce-connections.js";
+import { mailRoute } from "./workforce-mail.js";
+import { researchRoute } from "./workforce-research.js";
+import { synthesizeSpeech } from "./workforce-speech.js";
 
 async function generate(instructions: string, input: string, language: string) {
   try {
@@ -81,31 +87,64 @@ export async function workforceRoute(req: Request, path: string) {
   if (path === "/api/workforce/workspace" && req.method === "GET") {
     if (!organization)
       return { organization: null, tasks: [], events: [], meetings: [] };
-    const [taskRows, eventRows, meetingRows] = await Promise.all([
-      db
-        .select()
-        .from(tasks)
-        .where(eq(tasks.organizationId, organization.id))
-        .orderBy(desc(tasks.createdAt))
-        .limit(60),
-      db
-        .select()
-        .from(events)
-        .where(eq(events.organizationId, organization.id))
-        .orderBy(desc(events.createdAt), desc(events.id))
-        .limit(200),
-      db
-        .select()
-        .from(meetings)
-        .where(eq(meetings.organizationId, organization.id))
-        .orderBy(desc(meetings.createdAt))
-        .limit(12),
-    ]);
+    const [taskRows, eventRows, meetingRows, mailRows, researchRows] =
+      await Promise.all([
+        db
+          .select()
+          .from(tasks)
+          .where(eq(tasks.organizationId, organization.id))
+          .orderBy(desc(tasks.createdAt))
+          .limit(60),
+        db
+          .select()
+          .from(events)
+          .where(eq(events.organizationId, organization.id))
+          .orderBy(desc(events.createdAt), desc(events.id))
+          .limit(200),
+        db
+          .select()
+          .from(meetings)
+          .where(eq(meetings.organizationId, organization.id))
+          .orderBy(desc(meetings.createdAt))
+          .limit(12),
+        db
+          .select({
+            status: mail.status,
+            text: mail.subject,
+            updatedAt: mail.updatedAt,
+          })
+          .from(mail)
+          .where(eq(mail.organizationId, organization.id))
+          .orderBy(desc(mail.updatedAt))
+          .limit(1),
+        db
+          .select({
+            status: research.status,
+            text: research.summary,
+            query: research.query,
+            updatedAt: research.updatedAt,
+          })
+          .from(research)
+          .where(eq(research.organizationId, organization.id))
+          .orderBy(desc(research.updatedAt))
+          .limit(1),
+      ]);
     return {
       organization,
       tasks: taskRows,
       events: eventRows,
       meetings: meetingRows,
+      activity: {
+        ...(mailRows[0] ? { mail: mailRows[0] } : {}),
+        ...(researchRows[0]
+          ? {
+              researcher: {
+                ...researchRows[0],
+                text: researchRows[0].text || researchRows[0].query,
+              },
+            }
+          : {}),
+      },
     };
   }
   if (!organization)
@@ -115,6 +154,22 @@ export async function workforceRoute(req: Request, path: string) {
       "ORGANIZATION_REQUIRED",
     );
   const orgId = organization.id;
+  if (path.startsWith("/api/workforce/connections")) {
+    if (req.method !== "GET") await limit(user.id, "workforce_connections", 12);
+    return connectionsRoute(req, path, orgId);
+  }
+  if (path.startsWith("/api/workforce/mail")) {
+    if (req.method !== "GET") await limit(user.id, "workforce_mail", 12);
+    return mailRoute(req, path, orgId);
+  }
+  if (path === "/api/workforce/research") {
+    if (req.method !== "GET") await limit(user.id, "workforce_research", 6);
+    return researchRoute(req, path, orgId);
+  }
+  if (path === "/api/workforce/voice/synthesize" && req.method === "POST") {
+    await limit(user.id, "workforce_speech", 18);
+    return synthesizeSpeech(req);
+  }
   if (
     path === "/api/workforce/chat" ||
     path === "/api/workforce/voice/transcribe" ||
@@ -268,7 +323,8 @@ export async function workforceRoute(req: Request, path: string) {
       return { task };
     if (task.status !== "awaiting_approval")
       throw new ApiError(409, "المهمة غير جاهزة للاعتماد.");
-    // No mail connector is installed. Approval never impersonates provider delivery.
+    // Legacy freeform task approval cannot authorize email: a structured message
+    // with an explicit recipient is reviewed in the mailbox before SMTP sending.
     const status =
       task.mode === "demo"
         ? "demo_completed"

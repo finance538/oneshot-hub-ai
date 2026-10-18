@@ -675,93 +675,152 @@ html.wf-hidden .wf-pov * {
   overflow: auto;
   pointer-events: auto;
 }
-
-.wf-world-label {
-  position: absolute;
+/* Compact in-scene controls; the conversation owns microphone and output controls. */
+.wf-pov-heading {
+  padding: 10px 14px;
+  min-height: 48px;
 }
-.wf-speech-bubble {
-  display: block;
-  position: absolute;
-  bottom: calc(100% + 12px);
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
-  width: clamp(190px, 22vw, 300px);
-  padding: 12px 15px;
-  border: 1px solid #bd936357;
-  border-radius: 15px 15px 15px 3px;
-  background: #202a2df5;
-  box-shadow: 0 8px 30px #111a1c66;
-  color: #f1e8d8;
-  font-size: 12px;
-  line-height: 1.7;
-  white-space: normal;
-  text-align: start;
-  max-height: 145px;
-  overflow: auto;
+.wf-pov-heading h2 {
+  font-size: 13px;
 }
-.wf-joystick {
+.wf-pov-heading .wf-eyebrow {
+  font-size: 8px;
+}
+.wf-pov-tools {
+  inset: 12px 12px auto;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.wf-pov-tools select {
+  max-width: 160px;
+  min-width: 0;
+  height: 34px;
+  background: #20282de8;
+  color: #e8dece;
+  border: 1px solid #625b4b;
+  border-radius: 6px;
+  font-size: 11px;
+  padding: 4px 7px;
+  margin-inline-end: auto;
+}
+.wf-pov-room {
+  top: 60px;
+  font-size: 10px;
+  padding: 5px 8px;
+}
+.wf-pov-room small {
   display: none;
-  touch-action: none;
-  width: 100px;
-  height: 100px;
-  border: 1px solid #c4966166;
-  border-radius: 50%;
-  background: #1c282cbf;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }
-.wf-joystick span {
-  width: 44px;
-  height: 44px;
+.wf-pov .wf-pov-tools button[aria-pressed="true"] {
+  background: #b78c55;
+  color: #172124;
+}
+.wf-pov .wf-touch-stick {
+  position: relative;
+  width: 92px;
+  height: 92px;
   border-radius: 50%;
-  background: #bd9363;
-  box-shadow: 0 4px 20px #0d1b2170;
-  transform: translate(var(--stick-x, 0px), var(--stick-y, 0px));
+  border: 1px solid #bf996e80;
+  background: #192329b8;
+  padding: 0;
+  touch-action: none;
+  user-select: none;
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+.wf-touch-stick::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px dashed #b48b6055;
+  border-radius: 50%;
+}
+.wf-touch-stick > span {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #d9ae79;
+  border-radius: 50%;
+  background: #66503be8;
+  color: #f1d4ad;
+  display: grid;
+  place-items: center;
   pointer-events: none;
 }
-@media (pointer: coarse) {
-  .wf-joystick {
-    display: flex;
+.wf-world-label > span:nth-child(2) {
+  min-width: 0;
+}
+.wf-pov .wf-world-label {
+  flex-wrap: wrap;
+  max-width: 240px;
+}
+.wf-speech-bubble {
+  flex: 1 0 100%;
+  font-size: 11px;
+  line-height: 1.65;
+  padding-top: 7px;
+  border-top: 1px solid #a0825b50;
+  overflow-wrap: anywhere;
+  max-height: 100px;
+  overflow: auto;
+  color: #f3e9db;
+}
+.wf-pov-voice {
+  pointer-events: none;
+  padding: 8px 12px;
+  max-width: 52%;
+  font-size: 10px;
+}
+.wf-pov-help {
+  top: 96px;
+}
+@media (max-width: 650px) {
+  .wf-pov-viewport {
+    height: 52dvh;
+    min-height: 330px;
+    max-height: 520px;
   }
-  .wf-pov-pad {
-    display: none;
+  .wf-pov.is-expanded .wf-pov-viewport {
+    height: 76dvh;
+    min-height: 360px;
   }
   .wf-pov-tools {
-    max-width: 75%;
+    inset: 8px 8px auto;
+    gap: 3px;
   }
-  .wf-pov-tools button {
-    min-height: 42px;
-    width: auto;
-    padding: 8px;
+  .wf-pov-tools select {
+    width: 105px;
+    font-size: 10px;
+    height: 30px;
   }
-}
-@media (max-width: 600px) {
+  .wf-pov .wf-pov-tools button {
+    width: 30px;
+    height: 30px;
+    padding: 6px;
+  }
+  .wf-pov .wf-pov-tools button:nth-last-child(3) {
+    display: none;
+  }
+  .wf-pov-room {
+    top: 48px;
+    left: 8px;
+    right: auto;
+  }
+  .wf-pov .wf-world-label {
+    max-width: 190px;
+  }
   .wf-speech-bubble {
-    width: 190px;
-    font-size: 11px;
-    max-height: 105px;
+    font-size: 10px;
+    max-height: 82px;
   }
-  .wf-pov-voice {
-    max-width: 60%;
+  .wf-pov-badge {
+    display: none;
   }
-}
-.wf-pov .wf-pov-tools button[title="Gyro Look"] {
-  width: auto;
-  height: auto;
-  min-height: 34px;
-  font-size: 11px;
-}
-.wf-collaboration {
-  margin-block: 12px;
-  padding: 10px;
-  border-inline-start: 2px solid #ba8e59;
-  background: #778b8210;
-}
-.wf-collaboration summary {
-  cursor: pointer;
-  font-size: 12px;
-}
-.wf-collaboration article {
-  margin-block: 12px;
+  .wf-pov .wf-touch-stick {
+    width: 82px;
+    height: 82px;
+  }
+  .wf-pov-voice strong {
+    font-size: 9px;
+  }
 }
