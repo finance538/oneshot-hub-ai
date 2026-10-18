@@ -66,7 +66,7 @@ function initialModule(): Module {
   const query = new URLSearchParams(window.location.search).get("module");
   if (navigation.some((n) => n.id === query)) return query as Module;
   if (
-    /^\/(products(?:\/.*)?|about|vision|privacy|refund|terms|support|accounts|api-integration)\/?$/.test(
+    /^\/(workforce(?:\/.*)?|products(?:\/.*)?|about|vision|privacy|refund|terms|support|accounts|api-integration)\/?$/.test(
       window.location.pathname,
     )
   )
@@ -241,6 +241,7 @@ function Workspace({
     <>
       {active === "store" ? (
         <Store
+          user={user}
           products={products}
           loading={loading}
           error={error}
