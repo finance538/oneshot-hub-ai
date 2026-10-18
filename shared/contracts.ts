@@ -62,6 +62,7 @@ export interface Order {
   gateway: string;
   executionMode: string;
   checkoutUrl: string | null;
+  processor?: string;
   createdAt: string;
 }
 export interface ChatMessage {
