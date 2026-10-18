@@ -44,8 +44,7 @@ export function Assistant({
   kind?: "chat" | "ceo";
   staffId?: string;
 }) {
-  const [provider, setProvider] = useState(kind === "ceo" ? "core" : "gemini"),
-    [model, setModel] = useState("gemini-3-flash-preview"),
+  const [model, setModel] = useState("gemini-3-flash-preview"),
     [persona, setPersona] = useState("studio"),
     [search, setSearch] = useState(false),
     [maps, setMaps] = useState(false);
@@ -127,12 +126,12 @@ export function Assistant({
         kind === "ceo" ? endpoints.ceo : endpoints.chat,
         {
           message: prompt,
-          provider,
+          provider: "gemini",
           model,
           persona,
           conversationId: conversation,
-          searchGrounding: provider === "gemini" && search,
-          mapsGrounding: provider === "gemini" && maps,
+          searchGrounding: search,
+          mapsGrounding: maps,
           staffId,
         },
       );
@@ -217,7 +216,7 @@ export function Assistant({
     kind === "ceo"
       ? [
           "حلّل المبيعات حسب العملة وحالة الدفع",
-          "راجع جاهزية البوابات واقترح الخطوات التالية",
+          "راجع حالات الطلبات واقترح الخطوات التالية",
           "اقترح توزيع المهام على الفريق",
         ]
       : [
@@ -231,7 +230,7 @@ export function Assistant({
         <SectionHeading
           eyebrow="ONESHOT AI STUDIO"
           title="فكرتك. والذكاء الذي يطلقها."
-          description="مساحة للعمل والإبداع مع Google Gemini ومحركات oneShot وOllama."
+          description="مساحة للعمل والإبداع مع Google Gemini عبر Netlify."
         >
           <span className="mode-badge">
             <Sparkles size={15} /> مساحة الإبداع
@@ -242,32 +241,21 @@ export function Assistant({
         <div className="ai-toolbar">
           <div className="ai-provider">
             <Bot size={19} />
-            <select
-              aria-label="محرك الذكاء الاصطناعي"
-              value={provider}
-              onChange={(e) => setProvider(e.target.value)}
-              disabled={busy}
-            >
-              <option value="gemini">Google Gemini</option>
-              <option value="core">OneShot Core</option>
-              <option value="ollama">Ollama</option>
-            </select>
+            <span dir="ltr">Gemini · Netlify</span>
           </div>
-          {provider === "gemini" && (
-            <select
-              aria-label="نموذج Gemini"
-              value={model}
-              onChange={(e) => {
-                setModel(e.target.value);
-                if (e.target.value !== "gemini-2.5-flash") setMaps(false);
-              }}
-              disabled={busy}
-            >
-              <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
-              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-            </select>
-          )}
+          <select
+            aria-label="نموذج Gemini"
+            value={model}
+            onChange={(e) => {
+              setModel(e.target.value);
+              if (e.target.value !== "gemini-2.5-flash") setMaps(false);
+            }}
+            disabled={busy}
+          >
+            <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
+            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          </select>
           <button
             className="button subtle small"
             disabled={busy}
@@ -381,31 +369,27 @@ export function Assistant({
               />
               <div className="composer-bottom">
                 <div className="composer-tools">
-                  {provider === "gemini" && (
-                    <>
-                      <button
-                        type="button"
-                        aria-pressed={search}
-                        className={search ? "active" : ""}
-                        onClick={() => setSearch(!search)}
-                        disabled={busy}
-                      >
-                        <Search size={14} /> بحث
-                      </button>
-                      <button
-                        type="button"
-                        aria-pressed={maps}
-                        className={maps ? "active" : ""}
-                        onClick={() => {
-                          setMaps(!maps);
-                          if (!maps) setModel("gemini-2.5-flash");
-                        }}
-                        disabled={busy}
-                      >
-                        <MapPin size={14} /> خرائط
-                      </button>
-                    </>
-                  )}
+                  <button
+                    type="button"
+                    aria-pressed={search}
+                    className={search ? "active" : ""}
+                    onClick={() => setSearch(!search)}
+                    disabled={busy}
+                  >
+                    <Search size={14} /> بحث
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={maps}
+                    className={maps ? "active" : ""}
+                    onClick={() => {
+                      setMaps(!maps);
+                      if (!maps) setModel("gemini-2.5-flash");
+                    }}
+                    disabled={busy}
+                  >
+                    <MapPin size={14} /> خرائط
+                  </button>
                   {voiceAvailable && (
                     <button
                       type="button"

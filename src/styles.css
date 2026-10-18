@@ -1849,18 +1849,11 @@ strong {
   gap: 8px;
   color: #f2ad86;
 }
-.ai-provider select {
+.ai-provider > span {
   font-family: Outfit, sans-serif;
   font-size: 14px;
-  background: none;
-  border: 0;
   padding: 3px;
   color: #dbe1ea;
-  box-shadow: none;
-}
-.ai-provider option {
-  background: #181b22;
-  color: #ddd;
 }
 .ai-toolbar > select {
   font-family: Outfit, sans-serif;
@@ -3691,7 +3684,7 @@ tr:last-child td {
   .ai-provider {
     gap: 5px;
   }
-  .ai-provider select {
+  .ai-provider > span {
     font-size: 13px;
     min-height: 32px;
   }

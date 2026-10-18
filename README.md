@@ -1,6 +1,6 @@
 # 1SHOTCAM.COM — OneShot Ecosystem
 
-An Arabic React/Vite ecosystem combining the original OneShot Brand Studio public storefront with the existing gateway workspace, encrypted administrator vault, advisory AI executive office and Gemini/Ollama assistant. The storefront supports Arabic/English and light/dark appearances.
+An Arabic React/Vite ecosystem combining the original OneShot Brand Studio public storefront with the existing gateway workspace, encrypted administrator vault, advisory AI executive office and Gemini assistant through Netlify AI Gateway. The storefront supports Arabic/English and light/dark appearances.
 
 ## Technology and local development
 
@@ -8,7 +8,7 @@ An Arabic React/Vite ecosystem combining the original OneShot Brand Studio publi
 - Netlify Functions for JSON APIs and server-side authorization.
 - Netlify Database (managed PostgreSQL) through `@netlify/database` and Drizzle's Netlify adapter.
 - Netlify Identity for account creation, invitations, recovery and administrator roles.
-- Google GenAI SDK through Netlify AI Gateway; HTTPS integration with the existing OneShot core for payments, executive requests and Ollama.
+- Google GenAI SDK through Netlify AI Gateway for chat and executive requests; HTTPS integration with the existing OneShot core for payments.
 - Netlify Image CDN for the product concept images.
 
 Install with `pnpm install`. Link the project with Netlify CLI, then run `netlify dev --port 8889` for local development with Functions and Identity. Plain `pnpm dev` serves the client only. `npm run build` is the deployment build command; Netlify publishes `dist`. Local build, test, dev-server and type-check commands were not run during this implementation; the deployment pipeline performs validation.
@@ -21,13 +21,13 @@ The template service was unavailable, so the application was assembled directly 
 
 The original storefront import migration stores 48 services (45 ready to request and three marked in preparation/testing) across eight categories, four media packages and one Google Ads package (53 records), preserving original SKUs, SAR prices, fixed/starting prices, billing cycles, delivery windows, revisions, scope, exclusions and English copy. Complete source content is retained in the typed `products.catalog_details` JSONB column; names, amounts and currency in the existing product columns remain authoritative. The four superseded USD listings are deactivated, not deleted, preserving historical order references. This is public business catalog content, not simulated operational data. No orders, payment successes, staff, conversations or revenue are fabricated. Revenue counts only live orders confirmed by a signed callback, grouped by currency. The UI shows actual loading, empty, authorization and service-error states.
 
-Application records are stored in **Netlify Database**, not in the VPS PostgreSQL instance. The application does not claim to verify or administer the VPS database. The VPS remains an external payment/AI processing integration. Supplied database credentials were not copied into source files, build settings or the browser.
+Application records are stored in **Netlify Database**, not in the VPS PostgreSQL instance. The application does not claim to verify or administer the VPS database. The VPS remains an external payment processing integration; AI requests use Netlify Functions and AI Gateway. Supplied database credentials were not copied into source files, build settings or the browser.
 
 ## External setup
 
 The owner has elected to configure these requirements in the administration panels. Their readiness must be checked, not assumed.
 
-1. Install a publicly trusted TLS certificate on `api.1shotcam.com`. The current integration always verifies TLS and never sends payment data or merchant credentials over the supplied HTTP IP endpoints.
+1. Install a publicly trusted TLS certificate on `api.1shotcam.com` for the payment integration. AI requests no longer depend on this server. The payment integration always verifies TLS and never sends payment data or merchant credentials over the supplied HTTP IP endpoints.
 2. Configure `VAULT_ENCRYPTION_KEY` in the project's Functions runtime scope as a securely generated 32-byte key encoded with 64 hexadecimal characters. Configure it separately in each deployment environment. Do not rotate it without migrating encrypted rows: existing credentials depend on the original key.
 3. Configure `ONESHOT_WEBHOOK_SECRET` in both the core's signing adapter and the project's Functions runtime. Use a high-entropy value at least 32 characters long. The application must not display it. `ONESHOT_API_TOKEN` is optional if the core requires a service token.
 4. Identity is enabled. Invite the first administrator from Identity, accept the invitation, then assign the `admin` role in the user's Identity settings. Ordinary signups do not receive that role.
@@ -65,11 +65,13 @@ Set `ONESHOT_CALLBACK_URL` to an HTTPS callback on `1shotcam-ecosystem.netlify.a
 
 ## AI and team workspace
 
-Authenticated users can select Gemini, OneShot core or Ollama, choose assistant personas, save/reopen/delete owned conversations and use browser Arabic dictation when supported. Gemini supports search grounding and Maps grounding with the compatible Gemini 2.5 Flash model. Sources are included in returned answers. Dictation uses the browser's speech service and is saved as part of the conversation only when sent successfully. Provider-specific chat controls are disabled for core/Ollama when unsupported.
+Authenticated users can select supported Gemini models, choose assistant personas, save/reopen/delete owned conversations and use browser Arabic dictation when supported. Both the studio and executive assistant use Gemini through Netlify AI Gateway. Gemini supports search grounding and Maps grounding with the compatible Gemini 2.5 Flash model. Sources are included in returned answers. Dictation uses the browser's speech service and is saved as part of the conversation only when sent successfully.
 
-Gemini uses Netlify AI Gateway with the official SDK default constructor. The platform injects provider configuration; no Gemini credentials are bundled in the client. Gateway availability requires a production deployment. Core and Ollama requests go through the fixed HTTPS API, not the public Ollama HTTP port.
+The existing Netlify Function handles AI requests with the official Google GenAI SDK default constructor. The platform injects provider configuration; no Gemini credentials are bundled in the client. Gateway availability requires a production deployment and available account usage allowance. The AI handler no longer calls the VPS, including for executive context or health checks. OneShot Core and Ollama were removed from the chat provider choices; this change uses hosted Gemini inference, not an Ollama server on Netlify. Stale clients selecting another provider receive `AI_PROVIDER_MIGRATED` and an instruction to refresh, rather than silently sending their prompt to another provider. Existing conversation history stays in Netlify Database without a schema change.
 
-Administrators can create/activate/deactivate named staff specializations. AI CEO requests receive actual database order totals and staff context. Reports are advisory and cannot execute financial or administrative mutations. AI model output is rendered as text, not executable HTML.
+The 2026-10-18 connectivity review found a connected Netlify Database and a disconnected external core; direct HTTPS verification failed with `DEPTH_ZERO_SELF_SIGNED_CERT`. That failure motivated moving the remaining AI requests to Netlify AI Gateway. Payment integration still requires a trusted VPS certificate, and `/api/health` can remain degraded until it is ready. The header reports database connectivity, while the inspector labels external payment health separately. Neither display confirms Gemini inference. Authenticated studio and administrator executive round trips remain to be verified after the platform deploys this change; no successful inference or deployment is claimed from source inspection.
+
+Administrators can create/activate/deactivate named staff specializations. AI CEO requests receive actual database order totals and staff context. They do not receive live payment-core health and are instructed not to infer payment readiness from order records. Reports are advisory and cannot execute financial or administrative mutations. Chat requires a signed-in account and executive requests require the administrator role. Chat and executive endpoint aliases stay within their own authorization and conversation kinds. AI model output is rendered as text, not executable HTML.
 
 ## Routing and cache behavior
 
@@ -83,7 +85,7 @@ Hostname defaults are: root/www → store, portal/pay → gateway, admin → vau
 
 ## Deployment and the approved domain transition
 
-The owner approved moving domains **only after a successful deployment and verification**. Existing sites must keep their domains until those conditions are met. No domain or DNS changes were made during this implementation. At the latest remote check, the target site's health path returned 404 and the external API certificate was still self-signed. These observations are point-in-time findings, not permanent configuration.
+The owner approved moving domains **only after a successful deployment and verification**. Existing sites must keep their domains until those conditions are met. No domain or DNS changes were made during this implementation. At the 2026-10-18 remote check, the published site's health path returned HTTP 200 with a degraded status and a connected Netlify Database; the external API still failed TLS verification because its certificate was self-signed. This supersedes the earlier health-path 404 observation. These observations do not establish full release readiness or authorize an immediate domain transfer.
 
 Follow [the deployment runbook](docs/deployment.md) after the platform publishes this project. Do not transfer domains solely because the static homepage renders. Preserve existing assignments and DNS records for rollback, and leave `api.1shotcam.com` pointing to the VPS.
 
