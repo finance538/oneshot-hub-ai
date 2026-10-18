@@ -1003,6 +1003,7 @@ export default function Workforce({
                   {view === "headquarters" && (
                     <OfficeScene
                       catalog={catalog}
+                      conversation={conversation}
                       workspace={workspace}
                       selected={selected}
                       voice={voice}
