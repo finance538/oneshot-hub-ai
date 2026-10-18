@@ -57,7 +57,7 @@ export function useConversation(
     if (!enabled) return;
     const timer = setInterval(() => {
       if (!document.hidden) void refresh();
-    }, 3000);
+    }, 4000);
     return () => clearInterval(timer);
   }, [employeeId, meetingId, enabled]);
   async function send(input: string): Promise<ChatTurn | null> {

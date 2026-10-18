@@ -5,6 +5,10 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+  external_node_modules = ["@sparticuz/chromium", "playwright-core", "microsoft-cognitiveservices-speech-sdk", "imapflow", "nodemailer", "mailparser"]
+
+[functions.api]
+  included_files = ["node_modules/@sparticuz/chromium/bin/**"]
 
 [[redirects]]
   from = "/api/*"
