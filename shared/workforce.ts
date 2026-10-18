@@ -25,6 +25,26 @@ export function isLanguage(value: unknown): value is WorkforceLanguage {
     workforceLanguages.includes(value as WorkforceLanguage)
   );
 }
+export function voiceProfile(employeeId: string) {
+  const index = [
+    "ceo",
+    "mail",
+    "researcher",
+    "marketing",
+    "developer",
+    "salla",
+    "ads",
+    "analyst",
+    "support",
+    "operations",
+  ].indexOf(employeeId);
+  const profile = Math.max(0, index);
+  return {
+    index: profile,
+    pitch: [0.9, 1.12, 1.02, 1.08, 0.95, 1.04, 1.15, 0.88, 1.06, 0.98][profile],
+    rate: [0.98, 1.04, 1.02, 1.05, 1.0, 0.96, 1.08, 0.94, 1.01, 1.03][profile],
+  };
+}
 export interface Employee {
   id: string;
   title: Record<string, string>;
@@ -75,9 +95,49 @@ export interface ChatTurn {
   output: string;
   outputLanguage: WorkforceLanguage;
   status: "generating" | "ready" | "failed";
+  action?: { kind: string; employeeId: string; resourceId?: string } | null;
   createdAt: string;
 }
+
+export interface WorkforceConnection {
+  id: string;
+  kind: string;
+  label: string;
+  origin: string;
+  status: string;
+  keepSession: boolean;
+  syncEnabled: boolean;
+  lastSyncAt: string | null;
+  sessionExpiresAt: string | null;
+}
+export interface MailMessage {
+  id: string;
+  connectionId: string;
+  direction: string;
+  sender: string;
+  recipient: string;
+  subject: string;
+  body: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface ResearchRun {
+  id: string;
+  connectionId: string | null;
+  query: string;
+  kind: string;
+  status: string;
+  summary: string;
+  pages: { title: string; url: string; excerpt: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
 export interface Workspace {
+  activity?: Record<
+    string,
+    { status: string; text: string; updatedAt: string }
+  >;
   organization: {
     id: string;
     name: string;

@@ -1,3 +1,5 @@
+import { MarketingComparison } from "../marketing/MarketingComparison";
+import { marketingCopy } from "../marketing/copy";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -392,29 +394,19 @@ export default function Storefront({
             <section className="store-hero" id="section-hero">
               <div className="store-hero-copy">
                 <span className="store-pill">
-                  <Camera size={16} />
-                  {tr(
-                    "ونشوت · من الفكرة إلى الصورة",
-                    "ONESHOT · FROM IDEA TO IMAGE",
-                  )}
+                  <Globe2 size={16} />
+                  {marketingCopy[language].badge}
                 </span>
-                <h1>
-                  {tr("كل أدواتك.", "All your tools.")}
-                  <span>{tr("في لقطة واحدة.", "One creative shot.")}</span>
-                </h1>
-                <p>
-                  {tr(
-                    "تصوير، تصميم وتسويق يعبّر عن علامتك. ومع أدوات الأتمتة واستوديو AI، تجد خدماتك ومساحة عملك في مكان واحد.",
-                    "Photography, design and marketing for your brand. Explore creative services, automation and your AI workspace in one place.",
-                  )}
-                </p>
+                <h1>{marketingCopy[language].headline}</h1>
+                <p>{marketingCopy[language].intro}</p>
+                <p>{marketingCopy[language].examples}</p>
                 <div className="store-actions">
                   <a
                     className="store-button"
-                    href={appearanceLink("/products")}
+                    href={appearanceLink("/workforce")}
                   >
                     <ShoppingBag size={18} />
-                    {tr("اكتشف الخدمات", "Explore services")}
+                    {marketingCopy[language].team}
                     <ArrowLeft size={16} />
                   </a>
                   <a
@@ -422,17 +414,12 @@ export default function Storefront({
                     href={appearanceLink("/?module=ai")}
                   >
                     <Sparkles size={18} />
-                    {tr("افتح استوديو AI", "Open AI Studio")}
+                    {marketingCopy[language].studio}
                   </a>
                 </div>
                 <div className="store-hero-note">
                   <FileText size={17} />
-                  <span>
-                    {tr(
-                      "نطاق واضح وأسعار منشورة. نؤكد تفاصيل طلبك معك قبل التنفيذ.",
-                      "Clear scope and published prices. We confirm your brief before work begins.",
-                    )}
-                  </span>
+                  <span>{marketingCopy[language].marketNote}</span>
                 </div>
               </div>
               <a className="store-hero-visual" href="#section-media">
@@ -591,29 +578,9 @@ export default function Storefront({
               </div>
             </section>
 
-            <section className="store-section" id="section-workforce">
-              <div className="store-section-heading">
-                <div>
-                  <span className="store-kicker">ONESHOT AI WORKFORCE</span>
-                  <h2>
-                    {tr(
-                      "مقر شركتك الرقمي. فريقك القادم يبدأ هنا.",
-                      "Your digital headquarters. Meet your next team.",
-                    )}
-                  </h2>
-                  <p>
-                    {tr(
-                      "اكتشف الموظفين، جرّب قدراتهم، وابدأ مع مدير تنفيذي مجاني. نموذج أولي بمسودات وموافقات ومحاضر محفوظة؛ ربط البريد والاشتراكات قيد الإعداد.",
-                      "Explore AI employees and start with a free CEO. A prototype with saved drafts, approvals and meeting minutes. Email connections and subscriptions are pending.",
-                    )}
-                  </p>
-                </div>
-                <a className="store-button" href={appearanceLink("/workforce")}>
-                  {tr("استكشف موظفي AI", "Explore AI employees")}
-                  <ArrowLeft size={18} />
-                </a>
-              </div>
-            </section>
+            <div id="section-workforce">
+              <MarketingComparison />
+            </div>
             <section className="store-section" id="section-ai-staff">
               <div className="store-section-heading">
                 <div>

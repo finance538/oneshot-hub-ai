@@ -17,6 +17,12 @@ The template service was unavailable, so the application was assembled directly 
 
 ## Persistent data
 
+**Deployment remains blocked by divergent preview migration histories.** The owner requires preserving both previews. See the [verified reconciliation report](docs/migration-reconciliation.md) for the affected branches, required platform intervention, and remaining source conflicts. Passing the agent-preview migration check does not establish pull-request deployment readiness.
+
+The current preview migration-order repair replaced two unapplied, older migrations with later versions using Netlify migration reset and Drizzle generation. Applied migrations on this branch were preserved; see [migration reconciliation](docs/workforce-operations.md#migration-reconciliation) for branch-specific release requirements.
+
+The migration CLI `drizzle-kit` is pinned to `1.0.0-beta.22`, matching `drizzle-orm`, and is a regular dependency so production-only installs retain it. Install the committed lockfile before automatic migration generation; an unpinned temporary `npx` download can select the incompatible stable CLI.
+
 `db/schema.ts` defines products, orders, encrypted gateway credentials, conversations, messages, staff, audit events, webhook receipts and rate-limit counters. Migrations in `netlify/database/migrations` are applied automatically by Netlify during deployment. Never apply migrations manually. After a schema change, generate a migration using `npm run db:generate -- --name describe_change`.
 
 Applied migrations are immutable: retain their original names, SQL and Drizzle snapshots. Correct an applied change with a new migration. A deploy reporting migrations "removed after being applied" needs the original files restored, not replacement SQL or a database reset. See [migration recovery](docs/deployment.md#recovering-missing-applied-migrations) before using the migration pull command, which overwrites the local migration directory.
@@ -111,6 +117,8 @@ The responsive presentation update did not alter the backend, catalog data, appl
 
 ## AI Workforce prototype
 
+The following workforce sections document the earlier headquarters implementation on the main branch. For the later mail, research, encrypted portal sessions and speech implementation, see [Workforce operations](docs/workforce-operations.md); its explicit capabilities and limitations supersede the earlier prototype descriptions below.
+
 The additive `/workforce` route introduces the Digital Talent Market and Digital Headquarters without replacing the original storefront, services, checkout, administrator executive office, vault, or AI studio. The homepage and navigation link to the new service. The workforce bundle is lazy loaded and remains accessible independently of the original product catalog request.
 
 The shared appearance provider recognizes Arabic, English, French, Spanish, Turkish, Simplified Chinese, Hindi and Urdu. Arabic and Urdu use RTL. Existing workforce controls and the original three employee titles/bios include eight-language copy. Seven new specialist profiles include Arabic and English with the existing English fallback for other languages. Existing two-argument storefront translations retain their Arabic/English fallback; this is not a claim that every legacy screen has been translated into all eight languages. Employee output language is separate from UI language, is stored on each task, and is passed to meeting generation. Organization setup stores a default output language.
@@ -159,3 +167,21 @@ The workforce catalog now defines ten advisory employees: CEO, mail, content, st
 Chat requests match bounded Arabic/English specialty rules to at most two other catalog employees. Separate Gemini calls produce actual specialist advice, which is persisted on the owned conversation before the primary employee synthesizes the response. Specialist calls run concurrently with a 12-second timeout and failures do not block the primary reply; the primary call is bounded to 25 seconds. Contributions appear through three-second conversation polling during generation, remain readable/playable in chat after reload and drive the visual handoff and overhead text. The 3D visit visualizes recorded collaboration rather than controlling model execution or claiming a low-latency audio stream. Head bubbles also show current microphone transcripts, response generation and the text being spoken in meetings. Gateway usage can increase by up to two calls per matched chat turn. The synchronous workflow still needs durable recovery for runtime interruptions.
 
 The fallback speech route transmits reply text to Azure only when browser speech is unavailable or fails; it does not store recordings or generated audio. HTTPS microphone permission, browser recognition or Gateway transcription, sensor support and configured Azure Speech remain runtime dependencies. Authenticated deployment checks remain required on desktop and iOS/Android for actual speech, denied permissions, missing voices, interruption, sensor orientation, navigation and ten-person meetings. Build, tests, typecheck and dev-server execution remain delegated to platform validation.
+
+
+## Localized marketing
+
+The storefront hero and workforce-market introduction share a typed eight-language marketing catalog in `src/marketing/copy.ts`. Each language has audience-specific positioning, market examples, calls to action and a complete comparison across traditional hiring, chatbots, separate AI tools and oneShot. The shared comparison switches between cost, workflow and execution oversight, includes three trust statements, supports keyboard access and keeps wide tables inside a scrollable mobile region. It follows the existing language, RTL and light/dark appearance settings immediately.
+
+Copy avoids unverified “first” or market-leader claims and does not imply foreign incorporation, partnerships or installed integrations from example platform names. It distinguishes advisory roles, demos, account setup and explicit mail approval from actual execution. This is a frontend-only addition; it does not resolve the previously documented database history or deployment conflicts. Build, tests and typechecking remain delegated to platform validation.
+
+
+## Executive HQ stage (current interface)
+
+The current headquarters view replaces the runtime Three.js scene with a layered SVG/HTML 2.5D office: charcoal architectural panels, warm ceiling lighting, illuminated oneShot lettering, filing cabinets, glass workstations and illustrated suited employees. It is a stylized architectural scene, not a photographic render or a claim of matching an unavailable reference image. The old engine source remains unused; headquarters no longer imports or initializes it. This section supersedes the earlier first-person-engine presentation and navigation descriptions.
+
+A paged composition shows the CEO and up to four specialists at a time; the dock dropdown reaches every catalog employee without overlapping a full team's labels. Selecting a person pans/zooms toward the desk; selecting their monitor opens the corresponding workspace. Dragging adjusts the view, and reduced-motion preferences disable camera transitions. Only one activity ticker appears above the scene, with full text available on demand. Monitor snippets come from owned conversations, recorded activity or tasks; empty states remain explicit.
+
+The desktop chat lives in a collapsible left panel; mobile uses a collapsible bottom sheet. Microphone controls and the real analyser waveform share the composer, and permission/provider failures stay in the chat rather than covering the office. Existing browser/Gateway transcription and local/Azure speech dependencies remain unchanged; this frontend change cannot guarantee audible speech without runtime setup and device permissions.
+
+Mail and research monitors open the existing authenticated inbox, draft approval, research and vault tools. Other monitors open owned chat and an editable task-output draft; submitting a revision saves a new conversation request through the existing API and preserves the original task output. Local edits are not autosaved and are cleared when changing the selected task or closing the screen. Specialist roles remain advisory and cannot publish code or execute arbitrary external changes. The Master PC retains access to every employee's saved task screens and operations. No database or migration changes were made; earlier deployment blockers remain separate. Build, tests and device/browser validation were not run during this change.

@@ -1,5 +1,13 @@
 import { useEffect, useRef } from "react";
-import { Mic, MicOff, Phone, PhoneOff, Volume2, VolumeX } from "lucide-react";
+import {
+  Mic,
+  MicOff,
+  Phone,
+  PhoneOff,
+  Volume2,
+  VolumeX,
+  Settings2,
+} from "lucide-react";
 import type { LiveVoice } from "./useLiveVoice";
 import { useAppearance } from "../storefront/i18n";
 import { liveText } from "./liveCopy";
@@ -43,10 +51,12 @@ export function VoiceControls({
   voice,
   employeeId,
   keyboard = false,
+  compact = false,
 }: {
   voice: LiveVoice;
   employeeId: string;
   keyboard?: boolean;
+  compact?: boolean;
 }) {
   const { language, outputLanguage } = useAppearance(),
     t = (key: string) => liveText(language, key);
@@ -89,6 +99,90 @@ export function VoiceControls({
   const matches = voice.voices.filter(
     (v) => v.lang.toLowerCase().split(/[-_]/)[0] === outputLanguage,
   );
+  if (compact)
+    return (
+      <div className="wf-inline-voice">
+        <button
+          type="button"
+          aria-label={t(voice.active ? "hangup" : "call")}
+          title={t("hold")}
+          aria-pressed={voice.active}
+          className={voice.active ? "wf-call-active" : ""}
+          onClick={
+            voice.phase === "speaking" || voice.phase === "thinking"
+              ? voice.interrupt
+              : voice.active
+                ? voice.stop
+                : voice.startCall
+          }
+        >
+          {voice.active && voice.phase !== "speaking" ? (
+            <PhoneOff size={18} />
+          ) : (
+            <Mic size={18} />
+          )}
+        </button>
+        {voice.phase === "listening" && (
+          <span className="hq-composer-meter">
+            <AudioMeter analyser={voice.analyser} />
+          </span>
+        )}
+        <button
+          type="button"
+          aria-label={t(voice.muted ? "unmute" : "mute")}
+          title={t(voice.muted ? "unmute" : "mute")}
+          aria-pressed={voice.muted}
+          onClick={voice.toggleMute}
+        >
+          {voice.muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+        </button>
+        <details className="wf-inline-settings">
+          <summary aria-label={t("voiceSettings")} title={t("voiceSettings")}>
+            <Settings2 size={16} />
+          </summary>
+          <div>
+            <label>
+              {t("voiceSettings")}
+              <select
+                value={voice.route}
+                onChange={(event) =>
+                  voice.setRoute(event.target.value as "browser" | "gateway")
+                }
+              >
+                <option value="browser" disabled={!voice.supportsRecognition}>
+                  {t("browser")}
+                </option>
+                <option value="gateway">{t("gateway")}</option>
+              </select>
+            </label>
+            <label>
+              {t("automatic")}
+              <select
+                value={
+                  voice.voiceChoices[`${employeeId}:${outputLanguage}`] || ""
+                }
+                onChange={(event) =>
+                  voice.selectVoice(employeeId, event.target.value)
+                }
+              >
+                <option value="">{t("automatic")}</option>
+                {matches.map((v) => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p>
+              {language === "ar"
+                ? "يتفعّل صوت الرد مع المايك. عند غياب صوت الجهاز يُستخدم النطق السحابي إذا كانت الخدمة مفعّلة."
+                : "The microphone enables spoken replies. Cloud speech is used when no local voice is available, if configured."}
+            </p>
+            <p>{t("shortcut")}</p>
+          </div>
+        </details>
+      </div>
+    );
   return (
     <div
       className={`wf-voice ${voice.phase === "listening" ? "is-listening" : ""}`}
