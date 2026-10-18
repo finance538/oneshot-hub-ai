@@ -3,12 +3,13 @@ import {
   ArrowUpRight,
   BriefcaseBusiness,
   Building2,
+  Menu,
+  Monitor,
   Check,
   CircleDot,
   FileText,
   Mail,
   MessageSquare,
-  Monitor,
   Play,
   RotateCcw,
   Search,
@@ -44,6 +45,7 @@ import { useConversation } from "./useConversation";
 import { liveText } from "./liveCopy";
 import "./workforce.css";
 import "./live-workspace.css";
+import "./compact.css";
 
 const emptyWorkspace: Workspace = {
   organization: null,
@@ -326,6 +328,10 @@ export default function Workforce({
       ? "headquarters"
       : "chat",
   );
+  const [toolFocus, setToolFocus] = useState<{
+    employeeId: string;
+    resourceId?: string;
+  }>();
   const [masterOpen, setMasterOpen] = useState(false),
     [operationsOpen, setOperationsOpen] = useState(false);
   const live = (key: string) => liveText(language, key);
@@ -417,6 +423,11 @@ export default function Workforce({
       chat={conversation}
       voice={voice}
       onSend={sendChat}
+      onTools={(employeeId, resourceId) => {
+        voice.stop();
+        setToolFocus({ employeeId: employeeId || selected, resourceId });
+        setMasterOpen(true);
+      }}
       keyboard={inMeeting === boardroom && !masterOpen}
       compact={inMeeting || view === "headquarters"}
     />
@@ -753,18 +764,31 @@ export default function Workforce({
             className={tab === "market" ? "active" : ""}
             onClick={() => setTab("market")}
           >
-            {t("market")}
+            <span className="wf-nav-long">{t("market")}</span>
+            <span className="wf-nav-short">
+              {language === "ar" ? "السوق" : "Market"}
+            </span>
           </button>
           <button
             className={tab === "office" ? "active" : ""}
             onClick={() => setTab("office")}
           >
-            {t("office")}
+            <span className="wf-nav-long">{t("office")}</span>
+            <span className="wf-nav-short">
+              {language === "ar" ? "المقر" : "Office"}
+            </span>
           </button>
-          <a href={appearanceLink("/")}>{t("home")}</a>
         </nav>
-        <AppearanceControls />
-        {accountControl}
+        <details className="wf-global-menu">
+          <summary aria-label="إعدادات الحساب واللغة والمظهر">
+            <Menu size={20} />
+          </summary>
+          <div>
+            <AppearanceControls />
+            {accountControl}
+            <a href={appearanceLink("/")}>{t("home")}</a>
+          </div>
+        </details>
       </header>
       <main className="wf-main">
         {error && (
@@ -876,7 +900,9 @@ export default function Workforce({
                           <span className="wf-avatar">
                             <EmployeeIcon id={e.id} size={28} />
                           </span>
-                          <span className="wf-card-number">0{i + 1}</span>
+                          <span className="wf-card-number">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
                         </div>
                         <span className="wf-eyebrow">AI / {e.category}</span>
                         <h3>{title(e)}</h3>
@@ -993,6 +1019,15 @@ export default function Workforce({
                     {live("headquarters")}
                     <small>3D POV</small>
                   </button>
+                  <button
+                    onClick={() => {
+                      voice.stop();
+                      setMasterOpen(true);
+                    }}
+                  >
+                    <Monitor size={17} />
+                    <span>البريد والبحث</span>
+                  </button>
                   <span className="wf-muted">
                     {voice.active ? live("call") : "ONESHOT / WORKSPACE"}
                   </span>
@@ -1006,6 +1041,8 @@ export default function Workforce({
                       workspace={workspace}
                       selected={selected}
                       voice={voice}
+                      turns={conversation.turns}
+                      chatBusy={conversation.busy}
                       onSelect={selectPerson}
                       onMaster={() => setMasterOpen(true)}
                       onMeeting={openMeeting}
@@ -1258,7 +1295,11 @@ export default function Workforce({
           catalog={catalog}
           workspace={workspace}
           selected={selected}
-          onClose={() => setMasterOpen(false)}
+          toolFocus={toolFocus}
+          onClose={() => {
+            setMasterOpen(false);
+            setToolFocus(undefined);
+          }}
           onSelect={selectPerson}
           onTask={(id) => {
             const row = workspace.tasks.find((item) => item.id === id);

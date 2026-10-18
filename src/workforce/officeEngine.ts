@@ -9,6 +9,8 @@ export type OfficeState = {
   meeting: boolean;
   paused: boolean;
   activity: Record<string, string>;
+  text: Record<string, string>;
+  handoff: { id: string; from: string; to: string } | null;
 };
 export type OfficeAnchor = {
   id: string;
@@ -35,6 +37,9 @@ type Avatar = {
   body: THREE.Group;
   head: THREE.Group;
   arm: THREE.Group;
+  limbs: THREE.Group[];
+  path: Position[];
+  goal: string;
   ring: THREE.Mesh;
   bars: THREE.Mesh[];
   home: Position;
@@ -178,7 +183,7 @@ export function createOffice(
   }
   const staff = employeeIds.filter((id) => id !== "ceo");
   // Extra catalog workstations extend the staff wing without overlapping desks.
-  const back = Math.min(-9, -6 - Math.max(0, staff.length - 2) * 4.4);
+  const back = Math.min(-9, 0.3 - Math.ceil(staff.length / 2) * 3.2);
   const depth = 7 - back;
   const mid = (7 + back) / 2;
   box(floor, 0, -0.12, mid, 23, 0.24, depth);
@@ -313,7 +318,11 @@ export function createOffice(
       box(m, x + p.x, p.y, z + p.z, w, h, d, scene, yaw);
     }
   }
-  const monitorMaterials = new Map<string, THREE.MeshBasicMaterial>();
+  const monitors = new Map<
+    string,
+    { context: CanvasRenderingContext2D; texture: THREE.CanvasTexture }
+  >();
+  let monitorTick = -1;
   function monitor(x: number, z: number, id: string, large = false) {
     const group = new THREE.Group();
     scene.add(group);
@@ -322,23 +331,29 @@ export function createOffice(
     box(trim, 0, 0.47, 0, width, 0.64, 0.07, group);
     box(steel, 0, 0.11, 0, 0.035, 0.22, 0.045, group);
     box(trim, 0, 0.025, 0.07, 0.36, 0.035, 0.23, group);
-    const display = new THREE.MeshBasicMaterial({ color: "#41645b" });
-    materials.add(display);
-    monitorMaterials.set(id, display);
-    box(screen, 0, 0.47, 0.04, width - 0.06, 0.56, 0.006, group);
-    // These are UI glyphs, not invented activity or customer records.
-    box(orange, -width * 0.34, 0.47, 0.05, 0.1, 0.45, 0.006, group);
-    for (let row = 0; row < 4; row++)
-      box(
+    const source = document.createElement("canvas");
+    source.width = 512;
+    source.height = 320;
+    const context = source.getContext("2d");
+    if (context) {
+      const texture = new THREE.CanvasTexture(source);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      textures.add(texture);
+      const display = new THREE.MeshBasicMaterial({ map: texture });
+      materials.add(display);
+      monitors.set(id, { context, texture });
+      mesh(
+        geometry(new THREE.PlaneGeometry(width - 0.06, 0.56)),
         display,
-        0.06,
-        0.63 - row * 0.1,
-        0.05,
-        (width - 0.35) * (row % 2 ? 0.7 : 1),
-        0.023,
-        0.006,
+        0,
+        0.47,
+        0.045,
+        1,
+        1,
+        1,
         group,
       );
+    }
     box(charcoal, 0, 0.02, 0.43, 0.55, 0.035, 0.19, group);
     return group;
   }
@@ -392,16 +407,19 @@ export function createOffice(
     const home =
       id === "ceo"
         ? { x: -2.7, z: -5.25 }
-        : { x: -7.75, z: 2.5 - staffIndex * 4.4 - (staffIndex > 0 ? 1.2 : 0) };
+        : {
+            x: staffIndex % 2 ? -9.4 : -6.4,
+            z: 2.1 - Math.floor(staffIndex / 2) * 3.2,
+          };
     if (id !== "ceo") {
-      desk(home.x, home.z + 0.35);
-      chair(home.x, home.z - 0.7);
-      monitor(home.x + 0.28, home.z + 0.35, id);
+      desk(home.x, home.z + 1.05);
+      chair(home.x, home.z - 0.25);
+      monitor(home.x + 0.28, home.z + 1.05, id);
     }
     const seat =
       i === 0
         ? { x: 7.7, z: -4.95 }
-        : { x: i % 2 ? 5.95 : 9.45, z: -3.2 + Math.floor((i - 1) / 2) * 1.4 };
+        : { x: i % 2 ? 5.95 : 9.45, z: -3.6 + Math.floor((i - 1) / 2) * 0.95 };
     const yaw = i === 0 ? 0 : i % 2 ? Math.PI / 2 : -Math.PI / 2;
     chair(seat.x, seat.z, yaw);
     box(
@@ -421,10 +439,22 @@ export function createOffice(
     mesh(cylinder, suit, 0, 1.05, 0, 0.27, 0.65, 0.17, body);
     box(paper, 0, 1.23, 0.16, 0.14, 0.28, 0.03, body);
     box(brass, 0, 1.18, 0.184, 0.037, 0.28, 0.018, body);
+    const limbs: THREE.Group[] = [];
     for (const x of [-0.115, 0.115]) {
-      box(suit, x, 0.42, 0, 0.18, 0.68, 0.2, body);
-      box(trim, x, 0.07, 0.055, 0.19, 0.12, 0.32, body);
+      const leg = new THREE.Group();
+      leg.position.set(x, 0.76, 0);
+      body.add(leg);
+      limbs.push(leg);
+      box(suit, 0, -0.34, 0, 0.18, 0.68, 0.2, leg);
+      box(trim, 0, -0.69, 0.055, 0.19, 0.12, 0.32, leg);
     }
+    for (const side of [-1, 1]) {
+      const lapel = box(suit, side * 0.09, 1.29, 0.175, 0.08, 0.22, 0.03, body);
+      lapel.rotation.z = side * 0.28;
+    }
+    box(paper, -0.16, 1.2, 0.18, 0.07, 0.035, 0.018, body);
+    for (const y of [1.02, 1.1])
+      mesh(sphere, brass, 0.02, y, 0.175, 0.014, 0.014, 0.01, body);
     const head = new THREE.Group();
     head.position.y = 1.59;
     body.add(head);
@@ -433,6 +463,12 @@ export function createOffice(
     for (const x of [-0.061, 0.061])
       mesh(sphere, trim, x, 0.025, 0.146, 0.015, 0.014, 0.009, head);
     box(skin, 0, -0.028, 0.164, 0.035, 0.06, 0.045, head);
+    box(trim, 0, -0.085, 0.146, 0.055, 0.008, 0.01, head);
+    if (i % 3 === 0) {
+      for (const x of [-0.065, 0.065])
+        box(brass, x, 0.025, 0.16, 0.09, 0.045, 0.012, head);
+      box(brass, 0, 0.025, 0.17, 0.04, 0.008, 0.01, head);
+    }
     let arm = new THREE.Group();
     for (const side of [-1, 1]) {
       const pivot = new THREE.Group();
@@ -460,11 +496,24 @@ export function createOffice(
       bar.visible = false;
       return bar;
     });
-    avatars.push({ id, body, head, arm, ring, bars, home, seat, yaw });
+    avatars.push({
+      id,
+      body,
+      head,
+      arm,
+      ring,
+      bars,
+      home,
+      seat,
+      yaw,
+      limbs,
+      path: [],
+      goal: "home",
+    });
     targets.push({
       id,
       position: new THREE.Vector3(home.x, 2.15, home.z),
-      approach: { x: home.x, z: home.z + (id === "ceo" ? 2.4 : 2.15) },
+      approach: { x: home.x, z: home.z + (id === "ceo" ? 2.4 : 2.3) },
       objects: [body],
     });
   });
@@ -562,6 +611,11 @@ export function createOffice(
   let savedPose: { position: THREE.Vector3; rotation: THREE.Euler } | null =
     null;
   const keys = new Set<string>();
+  let joystick = { x: 0, y: 0 },
+    gyro: { yaw: number; pitch: number } | null = null;
+  let tour = 0,
+    nextTour = 0,
+    lastHandoff = "";
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
   const coarse = window.matchMedia("(pointer: coarse)");
   const raycaster = new THREE.Raycaster();
@@ -580,6 +634,7 @@ export function createOffice(
   }
   function clearInput() {
     keys.clear();
+    joystick = { x: 0, y: 0 };
     drag = null;
   }
   function obstructed(point: Position) {
@@ -595,6 +650,117 @@ export function createOffice(
         Math.abs(point.x - x) < w / 2 + 0.25 &&
         Math.abs(point.z - z) < d / 2 + 0.25,
     );
+  }
+  function planWalk(start: Position, goal: Position): Position[] {
+    const step = 0.4,
+      key = (p: Position) =>
+        `${Math.round(p.x / step)},${Math.round(p.z / step)}`;
+    const snap = (p: Position) => ({
+      x: Math.round(p.x / step) * step,
+      z: Math.round(p.z / step) * step,
+    });
+    const origin = snap(start),
+      target = snap(goal),
+      open = [origin],
+      previous = new Map<string, Position>(),
+      scores = new Map([[key(origin), 0]]);
+    const closed = new Set<string>();
+    for (let n = 0; open.length && n < 5000; n++) {
+      open.sort(
+        (a, b) =>
+          scores.get(key(a))! +
+          Math.hypot(a.x - target.x, a.z - target.z) -
+          (scores.get(key(b))! + Math.hypot(b.x - target.x, b.z - target.z)),
+      );
+      const point = open.shift()!,
+        hash = key(point);
+      if (closed.has(hash)) continue;
+      closed.add(hash);
+      if (Math.hypot(point.x - target.x, point.z - target.z) < step * 1.2) {
+        const route: Position[] = [point];
+        let cursor = point;
+        while (previous.has(key(cursor))) {
+          cursor = previous.get(key(cursor))!;
+          route.unshift(cursor);
+        }
+        return route.slice(1);
+      }
+      for (const [dx, dz] of [
+        [step, 0],
+        [-step, 0],
+        [0, step],
+        [0, -step],
+      ]) {
+        const next = { x: point.x + dx, z: point.z + dz },
+          nextKey = key(next),
+          cost = scores.get(hash)! + step;
+        if (
+          obstructed(next) ||
+          closed.has(nextKey) ||
+          cost >= (scores.get(nextKey) ?? Infinity)
+        )
+          continue;
+        scores.set(nextKey, cost);
+        previous.set(nextKey, point);
+        open.push(next);
+      }
+    }
+    return [];
+  }
+  function walkTo(avatar: Avatar, goal: Position, name: string) {
+    if (avatar.goal === name) return;
+    avatar.goal = name;
+    avatar.path = planWalk(
+      { x: avatar.body.position.x, z: avatar.body.position.z },
+      goal,
+    );
+  }
+  function drawMonitors(time: number) {
+    const tick = Math.floor(time / 650);
+    if (monitorTick === tick && !dirty) return;
+    monitorTick = tick;
+    for (const [id, { context: ctx, texture }] of monitors) {
+      const employee = id.startsWith("@") ? state.selected : id;
+      const status = state.activity[employee] || "idle",
+        busy = ["drafting", "generating", "running", "browsing"].includes(
+          status,
+        );
+      ctx.fillStyle = "#152124";
+      ctx.fillRect(0, 0, 512, 320);
+      ctx.fillStyle = "#293639";
+      ctx.fillRect(0, 0, 512, 48);
+      ctx.fillStyle = "#d9a36d";
+      ctx.font = "18px Outfit, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(`ONESHOT / ${employee.toUpperCase()}`, 20, 31);
+      ctx.fillStyle = busy ? "#d3a16c" : "#abd0b3";
+      ctx.fillRect(20, 67, 7, 7);
+      ctx.font = "16px Outfit, sans-serif";
+      ctx.fillText(status, 38, 80);
+      const content = state.text[employee] || "لا توجد مهمة نشطة · متاح";
+      ctx.textAlign = "right";
+      ctx.direction = "rtl";
+      ctx.font = "18px IBM Plex Sans Arabic, sans-serif";
+      ctx.fillStyle = "#e0e2da";
+      const words = content.slice(0, 500).split(/\s+/);
+      let line = "",
+        y = 124;
+      for (const word of words) {
+        if (ctx.measureText(`${line} ${word}`).width > 458) {
+          ctx.fillText(line, 488, y);
+          y += 30;
+          line = word;
+          if (y > 270) break;
+        } else line += ` ${word}`;
+      }
+      if (y <= 270) ctx.fillText(line, 488, y);
+      if (busy) {
+        ctx.fillStyle = "#c28b55";
+        ctx.fillRect(22 + (tick % 6) * 65, 299, 55, 3);
+      }
+      ctx.direction = "ltr";
+      texture.needsUpdate = true;
+    }
   }
   function throughGlass(target: THREE.Vector3) {
     return partitions.some(({ x, z, d }) => {
@@ -798,17 +964,34 @@ export function createOffice(
       exitLock();
     }
     for (const avatar of avatars) {
-      const pos = next.meeting ? avatar.seat : avatar.home;
-      avatar.body.position.set(pos.x, next.meeting ? -0.4 : 0, pos.z);
-      avatar.body.rotation.y = next.meeting ? avatar.yaw : 0;
-      const target = targets.find((item) => item.id === avatar.id)!;
-      target.position.set(pos.x, next.meeting ? 1.85 : 2.15, pos.z);
-      const display = monitorMaterials.get(avatar.id);
-      const status = next.activity[avatar.id];
-      display?.color.set(
-        status === "drafting" || status === "queued" ? "#c28b55" : "#547b6c",
-      );
+      if (entering || leaving) {
+        const pos = next.meeting ? avatar.seat : avatar.home;
+        avatar.body.position.set(pos.x, next.meeting ? -0.4 : 0, pos.z);
+        avatar.body.rotation.y = next.meeting ? avatar.yaw : 0;
+        avatar.path = [];
+        avatar.goal = "home";
+      }
     }
+    if (
+      next.handoff &&
+      next.handoff.id !== lastHandoff &&
+      !next.meeting &&
+      !reduced.matches
+    ) {
+      lastHandoff = next.handoff.id;
+      const from = avatars.find((a) => a.id === next.handoff!.from),
+        to = avatars.find((a) => a.id === next.handoff!.to);
+      if (from && to && from !== to)
+        walkTo(
+          from,
+          { x: to.home.x + 0.65, z: to.home.z - 0.2 },
+          `handoff:${next.handoff.id}`,
+        );
+    }
+    if (!next.handoff)
+      for (const avatar of avatars)
+        if (avatar.goal.startsWith("handoff:"))
+          walkTo(avatar, avatar.home, "home");
     dirty = true;
     schedule();
   }
@@ -822,13 +1005,29 @@ export function createOffice(
     }
     const dt = Math.min((time - lastTime) / 1000 || 0, 0.05);
     lastTime = time;
-    if (!state.paused && keys.size) {
+    if (!state.paused && gyro) {
+      camera.rotation.y +=
+        Math.atan2(
+          Math.sin(gyro.yaw - camera.rotation.y),
+          Math.cos(gyro.yaw - camera.rotation.y),
+        ) * Math.min(1, dt * 8);
+      camera.rotation.x = THREE.MathUtils.damp(
+        camera.rotation.x,
+        gyro.pitch,
+        8,
+        dt,
+      );
+      dirty = true;
+    }
+    if (!state.paused && (keys.size || joystick.x || joystick.y)) {
       const axis = (a: string, b: string) =>
         Number(keys.has(a)) - Number(keys.has(b));
       look(axis("KeyL", "KeyJ") * dt * 540, axis("KeyK", "KeyI") * dt * 400);
       if (!state.meeting) {
-        const forward = axis("KeyW", "KeyS") + axis("ArrowUp", "ArrowDown");
-        const right = axis("KeyD", "KeyA") + axis("ArrowRight", "ArrowLeft");
+        const forward =
+          axis("KeyW", "KeyS") + axis("ArrowUp", "ArrowDown") - joystick.y;
+        const right =
+          axis("KeyD", "KeyA") + axis("ArrowRight", "ArrowLeft") + joystick.x;
         const length = Math.max(1, Math.hypot(forward, right));
         const yaw = camera.rotation.y,
           speed = (2.7 * dt) / length;
@@ -843,8 +1042,54 @@ export function createOffice(
     }
     const moving = !state.paused && !reduced.matches;
     if (moving || dirty) {
+      if (moving && !state.meeting && time > nextTour) {
+        nextTour = time + 22000;
+        const ceo = avatars.find((a) => a.id === "ceo"),
+          coworkers = avatars.filter((a) => a.id !== "ceo");
+        const destination = coworkers[tour++ % Math.max(1, coworkers.length)];
+        if (ceo && destination && !ceo.goal.startsWith("handoff:"))
+          walkTo(
+            ceo,
+            { x: destination.home.x + 0.65, z: destination.home.z - 0.2 },
+            `tour:${tour}`,
+          );
+      }
+      drawMonitors(time);
       for (let i = 0; i < avatars.length; i++) {
         const avatar = avatars[i];
+        const waypoint = moving && !state.meeting ? avatar.path[0] : undefined;
+        if (waypoint) {
+          const dx = waypoint.x - avatar.body.position.x,
+            dz = waypoint.z - avatar.body.position.z,
+            distance = Math.hypot(dx, dz),
+            stride = Math.min(distance, dt * 1.35);
+          if (distance < 0.06) avatar.path.shift();
+          else {
+            avatar.body.position.x += (dx / distance) * stride;
+            avatar.body.position.z += (dz / distance) * stride;
+            avatar.body.rotation.y = Math.atan2(dx, dz);
+          }
+        }
+        avatar.limbs.forEach(
+          (limb, j) =>
+            (limb.rotation.x = waypoint
+              ? Math.sin(time * 0.009 + j * Math.PI) * 0.32
+              : 0),
+        );
+        const target = targets.find((item) => item.id === avatar.id)!;
+        target.position.set(
+          avatar.body.position.x,
+          avatar.body.position.y + 2.15,
+          avatar.body.position.z,
+        );
+        if (avatar.goal !== "home" && !state.meeting) {
+          const choices = [
+            { x: avatar.body.position.x + 0.8, z: avatar.body.position.z },
+            { x: avatar.body.position.x, z: avatar.body.position.z - 1 },
+          ];
+          const approach = choices.find((point) => !obstructed(point));
+          if (approach) target.approach = approach;
+        }
         const speaking = state.speaker === avatar.id;
         avatar.ring.visible = speaking;
         avatar.ring.rotation.y = camera.rotation.y - avatar.body.rotation.y;
@@ -855,7 +1100,11 @@ export function createOffice(
           ? Math.sin(time * 0.0005 + i) * 0.07
           : 0;
         avatar.arm.rotation.x =
-          speaking && moving ? -0.35 + Math.sin(time * 0.004) * 0.17 : 0;
+          speaking && moving
+            ? -0.35 + Math.sin(time * 0.004) * 0.17
+            : waypoint
+              ? Math.sin(time * 0.009) * 0.25
+              : 0;
         avatar.body.scale.y =
           moving && !speaking ? 1 + Math.sin(time * 0.0015 + i) * 0.002 : 1;
         avatar.bars.forEach((bar, j) => {
@@ -876,7 +1125,13 @@ export function createOffice(
         (target) => !target.id.startsWith("@"),
       );
       const nearId = closeEmployee?.id || null;
-      if (!state.paused && !state.meeting && nearId && nearId !== lastProximity)
+      if (
+        !state.paused &&
+        !state.meeting &&
+        nearId &&
+        nearId !== lastProximity &&
+        (keys.size > 0 || joystick.x !== 0 || joystick.y !== 0)
+      )
         callbacks.proximity(nearId);
       lastProximity = nearId;
       callbacks.frame({
@@ -908,7 +1163,11 @@ export function createOffice(
       renderer.render(scene, camera);
       dirty = false;
     }
-    if (!state.paused && (!reduced.matches || keys.size)) schedule();
+    if (
+      !state.paused &&
+      (!reduced.matches || keys.size || joystick.x || joystick.y || gyro)
+    )
+      schedule();
   }
   function schedule() {
     if (!frameId && !disposed && visible && !document.hidden)
@@ -964,6 +1223,19 @@ export function createOffice(
     update,
     navigate,
     activate,
+    joystick(x: number, y: number) {
+      joystick = { x: clamp(x, -1, 1), y: clamp(y, -1, 1) };
+      dirty = true;
+      schedule();
+    },
+    orientation(yaw: number | null, pitch = 0) {
+      gyro = yaw === null ? null : { yaw, pitch: clamp(pitch, -0.8, 0.8) };
+      dirty = true;
+      schedule();
+    },
+    pose() {
+      return { yaw: camera.rotation.y, pitch: camera.rotation.x };
+    },
     input(code: string, down: boolean) {
       if (state.paused) return;
       if (down) keys.add(code);

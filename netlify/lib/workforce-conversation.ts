@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { conversationAction } from "./workforce-actions.js";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import {
@@ -158,6 +159,26 @@ export async function workforceConversation(
     .returning();
   if (!turn) throw new ApiError(409, "الرسالة قيد المعالجة. حدّث المحادثة.");
   try {
+    if (!meetingId) {
+      const executed = await conversationAction(
+        orgId,
+        employeeId,
+        input,
+        requestKey,
+        body.outputLanguage,
+        async (action) => {
+          await db.update(turns).set({ action }).where(eq(turns.id, turn.id));
+        },
+      );
+      if (executed) {
+        const [saved] = await db
+          .update(turns)
+          .set({ ...executed, status: "ready" })
+          .where(eq(turns.id, turn.id))
+          .returning();
+        return { turn: saved };
+      }
+    }
     const result = await new GoogleGenAI({}).models.generateContent({
       model: "gemini-2.5-flash",
       contents: [

@@ -234,6 +234,11 @@ export const workforceChatTurns = pgTable(
     requestKey: uuid("request_key").notNull().unique(),
     input: text("input").notNull(),
     output: text("output").notNull().default(""),
+    action: jsonb("action").$type<{
+      kind: string;
+      employeeId: string;
+      resourceId?: string;
+    }>(),
     outputLanguage: text("output_language").notNull(),
     status: text("status").notNull().default("generating"),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -248,4 +253,89 @@ export const workforceChatTurns = pgTable(
       t.createdAt,
     ),
   ],
+);
+
+export const workforceConnections = pgTable(
+  "workforce_connections",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    label: text("label").notNull(),
+    origin: text("origin").notNull().default(""),
+    encryptedConfig: text("encrypted_config").notNull(),
+    encryptedSession: text("encrypted_session"),
+    sessionExpiresAt: timestamp("session_expires_at", { withTimezone: true }),
+    keepSession: boolean("keep_session").notNull().default(false),
+    status: text("status").notNull().default("saved"),
+    syncEnabled: boolean("sync_enabled").notNull().default(true),
+    lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+    leaseUntil: timestamp("lease_until", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("workforce_connections_org").on(t.organizationId)],
+);
+
+export const workforceMail = pgTable(
+  "workforce_mail",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    connectionId: uuid("connection_id")
+      .notNull()
+      .references(() => workforceConnections.id, { onDelete: "cascade" }),
+    dedupeKey: text("dedupe_key").notNull().unique(),
+    direction: text("direction").notNull(),
+    sender: text("sender").notNull(),
+    recipient: text("recipient").notNull(),
+    subject: text("subject").notNull(),
+    body: text("body").notNull(),
+    messageId: text("message_id"),
+    inReplyTo: text("in_reply_to"),
+    status: text("status").notNull(),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("workforce_mail_org").on(t.organizationId, t.createdAt)],
+);
+
+export const workforceResearch = pgTable(
+  "workforce_research",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    connectionId: uuid("connection_id").references(
+      () => workforceConnections.id,
+      { onDelete: "set null" },
+    ),
+    requestKey: uuid("request_key").notNull().unique(),
+    query: text("query").notNull(),
+    kind: text("kind").notNull(),
+    status: text("status").notNull().default("running"),
+    summary: text("summary").notNull().default(""),
+    pages: jsonb("pages")
+      .$type<{ title: string; url: string; excerpt: string }[]>()
+      .notNull()
+      .default([]),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("workforce_research_org").on(t.organizationId, t.createdAt)],
 );

@@ -1,22 +1,17 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
   Crosshair,
   HelpCircle,
   Maximize2,
-  Mic,
   Minimize2,
   Monitor,
   MousePointer2,
-  PhoneOff,
   RotateCcw,
+  Smartphone,
   Users,
   Volume2,
 } from "lucide-react";
-import type { Employee, Workspace } from "../../shared/workforce";
+import type { ChatTurn, Employee, Workspace } from "../../shared/workforce";
 import { useAppearance } from "../storefront/i18n";
 import { liveText } from "./liveCopy";
 import { wfText } from "./copy";
@@ -37,6 +32,8 @@ export function OfficeScene({
   onStandard,
   meetingOpen,
   paused,
+  turns,
+  chatBusy,
 }: {
   catalog: Employee[];
   workspace: Workspace;
@@ -48,6 +45,8 @@ export function OfficeScene({
   onStandard: () => void;
   meetingOpen: boolean;
   paused: boolean;
+  turns: ChatTurn[];
+  chatBusy: boolean;
 }) {
   const { language } = useAppearance();
   const t = (key: string) => liveText(language, key);
@@ -59,7 +58,34 @@ export function OfficeScene({
     "loading",
   );
   const [expanded, setExpanded] = useState(false);
-  const [locked, setLocked] = useState(false);
+  const [gyro, setGyro] = useState(false),
+    [sensorError, setSensorError] = useState("");
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 5000);
+    return () => clearInterval(timer);
+  }, []);
+  const recent = turns.at(-1);
+  const handoff =
+    recent?.action &&
+    recent.employeeId !== recent.action.employeeId &&
+    now - Date.parse(recent.createdAt) < 90000
+      ? { id: recent.id, from: recent.employeeId, to: recent.action.employeeId }
+      : null;
+  const bubbles: Record<string, string> = {};
+  if (recent?.output && now - Date.parse(recent.createdAt) < 90000)
+    bubbles[selected] = recent.output.slice(0, 170);
+  if (chatBusy) bubbles[selected] = "أعالج طلبك الآن…";
+  if (voice.interim)
+    bubbles[selected] = `أستمع: ${voice.interim.slice(0, 140)}`;
+  if (handoff)
+    bubbles[handoff.to] =
+      recent?.status === "generating"
+        ? "أجهّز الإحالة الآن؛ الإرسال ينتظر اعتمادك."
+        : recent?.action?.resourceId
+          ? "جهزت نتيجة الإحالة؛ راجعها في الكمبيوتر الرئيسي."
+          : "أحتاج ربط الحساب أو تحديد تفاصيل الرسالة.";
+
   const [help, setHelp] = useState(false);
   const [room, setRoom] = useState<OfficeFrame["room"]>("executive");
   const [nearest, setNearest] = useState<string | null>(null);
@@ -72,11 +98,27 @@ export function OfficeScene({
     speaker: voice.speaker,
     meeting: meetingOpen,
     paused,
+    text: Object.fromEntries(
+      catalog.map((employee) => [
+        employee.id,
+        employee.id === selected && recent
+          ? recent.output || recent.input
+          : workspace.activity?.[employee.id]?.text ||
+            workspace.tasks.find((task) => task.employeeId === employee.id)
+              ?.output ||
+            "",
+      ]),
+    ),
+    handoff,
     activity: Object.fromEntries(
       catalog.map((employee) => [
         employee.id,
-        workspace.tasks.find((task) => task.employeeId === employee.id)
-          ?.status || "idle",
+        chatBusy && employee.id === selected
+          ? "generating"
+          : workspace.activity?.[employee.id]?.status ||
+            workspace.tasks.find((task) => task.employeeId === employee.id)
+              ?.status ||
+            "idle",
       ]),
     ),
   };
@@ -121,9 +163,7 @@ export function OfficeScene({
                 if (id !== latest.current.state.selected)
                   latest.current.onSelect(id);
               },
-              lock(value) {
-                if (!cancelled) setLocked(value);
-              },
+              lock() {},
               error() {
                 if (!cancelled) setStatus("error");
               },
@@ -162,19 +202,114 @@ export function OfficeScene({
   }, [catalogKey]);
   useEffect(() => {
     engine.current?.update(state);
-  }, [selected, voice.speaker, meetingOpen, paused, workspace.tasks, status]);
+  }, [
+    selected,
+    voice.speaker,
+    meetingOpen,
+    paused,
+    workspace.tasks,
+    workspace.activity,
+    status,
+    turns,
+    chatBusy,
+    now,
+  ]);
   useEffect(() => {
     if (status === "error") {
       engine.current?.dispose();
       engine.current = null;
     }
   }, [status]);
-  function move(event: PointerEvent<HTMLButtonElement>, code: string) {
-    if (event.button !== 0) return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    engine.current?.input(code, true);
+  async function toggleGyro() {
+    if (gyro) {
+      setGyro(false);
+      return;
+    }
+    setSensorError("");
+    const sensor =
+      window.DeviceOrientationEvent as typeof DeviceOrientationEvent & {
+        requestPermission?: () => Promise<string>;
+      };
+    if (!window.isSecureContext || !sensor) {
+      setSensorError("الجايروسكوب غير متاح على هذا الجهاز. استخدم اللمس.");
+      return;
+    }
+    try {
+      if (
+        sensor.requestPermission &&
+        (await sensor.requestPermission()) !== "granted"
+      ) {
+        setSensorError("لم يُمنح إذن الحركة؛ يمكنك استخدام اللمس.");
+        return;
+      }
+      setGyro(true);
+    } catch {
+      setSensorError("تعذر تفعيل مستشعر الحركة.");
+    }
   }
+  useEffect(() => {
+    if (!gyro || paused || status !== "ready") {
+      engine.current?.orientation(null);
+      return;
+    }
+    let baseline: {
+        alpha: number;
+        pitch: number;
+        yaw: number;
+        cameraPitch: number;
+      } | null = null,
+      received = false;
+    const reset = () => {
+      baseline = null;
+    };
+    const orient = (event: DeviceOrientationEvent) => {
+      if (
+        document.hidden ||
+        event.alpha === null ||
+        event.beta === null ||
+        event.gamma === null
+      )
+        return;
+      received = true;
+      const angle = ((screen.orientation?.angle || 0) * Math.PI) / 180;
+      const pitch =
+        event.beta * Math.cos(angle) + event.gamma * Math.sin(angle);
+      if (!baseline) {
+        const pose = engine.current?.pose();
+        baseline = {
+          alpha: event.alpha,
+          pitch,
+          yaw: pose?.yaw || 0,
+          cameraPitch: pose?.pitch || 0,
+        };
+      }
+      const delta = ((event.alpha - baseline.alpha + 540) % 360) - 180;
+      engine.current?.orientation(
+        baseline.yaw + (delta * Math.PI) / 180,
+        baseline.cameraPitch + ((pitch - baseline.pitch) * Math.PI) / 180,
+      );
+    };
+    const hidden = () => {
+      baseline = null;
+      if (document.hidden) engine.current?.orientation(null);
+    };
+    window.addEventListener("deviceorientation", orient);
+    window.addEventListener("orientationchange", reset);
+    document.addEventListener("visibilitychange", hidden);
+    const timer = setTimeout(() => {
+      if (!received) {
+        setSensorError("لم تصل بيانات الحركة. استخدم السحب أو عصا التحكم.");
+        setGyro(false);
+      }
+    }, 3500);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("deviceorientation", orient);
+      window.removeEventListener("orientationchange", reset);
+      document.removeEventListener("visibilitychange", hidden);
+      engine.current?.orientation(null);
+    };
+  }, [gyro, paused, status]);
   function travel(id: string) {
     engine.current?.navigate(id);
     canvas.current?.focus({ preventScroll: true });
@@ -202,7 +337,7 @@ export function OfficeScene({
           tabIndex={status === "ready" ? 0 : -1}
           role="group"
           aria-label={o("navigate")}
-          aria-describedby="wf-pov-help"
+          aria-description={o("navigate")}
         />
         {status !== "ready" ? (
           <div className="wf-pov-fallback" role="status">
@@ -219,6 +354,43 @@ export function OfficeScene({
               <small>01 / ONESHOT</small>
             </div>
             <div className="wf-pov-tools">
+              <select
+                aria-label={o("travel")}
+                value={selected}
+                onChange={(event) => {
+                  travel(event.target.value);
+                  onSelect(event.target.value);
+                }}
+              >
+                {catalog.map((employee) => (
+                  <option key={employee.id} value={employee.id}>
+                    {title(employee.id)}
+                  </option>
+                ))}
+              </select>
+              <button
+                aria-label={t("master")}
+                title={t("master")}
+                onClick={onMaster}
+              >
+                <Monitor size={16} />
+              </button>
+              <button
+                aria-label={o("boardroom")}
+                title={o("boardroom")}
+                onClick={onMeeting}
+                disabled={meetingOpen}
+              >
+                <Users size={16} />
+              </button>
+              <button
+                aria-label="تفعيل الجايروسكوب"
+                title="تفعيل الجايروسكوب"
+                aria-pressed={gyro}
+                onClick={() => void toggleGyro()}
+              >
+                <Smartphone size={16} />
+              </button>
               <button
                 aria-label={o("reset")}
                 title={o("reset")}
@@ -282,6 +454,11 @@ export function OfficeScene({
                             : `AI · ${wfText(language, workspace.tasks.find((task) => task.employeeId === id)?.status || "available")}`}
                     </small>
                   </span>
+                  {bubbles[id] && (
+                    <span className="wf-speech-bubble" dir="auto">
+                      {bubbles[id]}
+                    </span>
+                  )}
                   <span className="wf-label-wave" aria-hidden="true">
                     <i />
                     <i />
@@ -298,15 +475,22 @@ export function OfficeScene({
             {help && (
               <div className="wf-pov-help">
                 <strong>{o("help")}</strong>
-                <p>{o("navigate")}</p>
+                <p id="wf-pov-help">{o("navigate")}</p>
                 <p>{o("drag")}</p>
                 <p>{o("unlock")}</p>
+                <button onClick={() => void engine.current?.lockPointer()}>
+                  <MousePointer2 size={15} />
+                  {o("look")}
+                </button>
+                <p>
+                  جولة CEO حركة بصرية؛ شاشات العمل والفقاعات تتبع السجل الفعلي.
+                </p>
               </div>
             )}
             <div className="wf-pov-hud">
-              {(voice.error || voice.interim) && (
+              {(voice.error || voice.interim || sensorError) && (
                 <p className="wf-pov-caption" dir="auto">
-                  {voice.error || voice.interim}
+                  {voice.error || voice.interim || sensorError}
                 </p>
               )}
               {meetingOpen ? (
@@ -329,48 +513,10 @@ export function OfficeScene({
                 )
               )}
               <div className="wf-pov-bottom-row">
-                <div
-                  className="wf-pov-pad"
-                  dir="ltr"
-                  aria-label={o("navigate")}
-                >
-                  {(
-                    [
-                      ["KeyW", "forward", ArrowUp],
-                      ["KeyA", "left", ArrowLeft],
-                      ["KeyS", "back", ArrowDown],
-                      ["KeyD", "right", ArrowRight],
-                    ] as const
-                  ).map(([code, label, Icon]) => (
-                    <button
-                      key={code}
-                      className={code === "KeyW" ? "is-forward" : ""}
-                      aria-label={o(label)}
-                      disabled={meetingOpen}
-                      onPointerDown={(event) => move(event, code)}
-                      onPointerUp={() => engine.current?.input(code, false)}
-                      onPointerCancel={() => engine.current?.input(code, false)}
-                      onLostPointerCapture={() =>
-                        engine.current?.input(code, false)
-                      }
-                      onKeyDown={(event) => {
-                        if (event.code === "Space" || event.code === "Enter") {
-                          event.preventDefault();
-                          engine.current?.input(code, true);
-                        }
-                      }}
-                      onKeyUp={(event) => {
-                        if (event.code === "Space" || event.code === "Enter") {
-                          event.preventDefault();
-                          engine.current?.input(code, false);
-                        }
-                      }}
-                      onBlur={() => engine.current?.input(code, false)}
-                    >
-                      <Icon size={17} />
-                    </button>
-                  ))}
-                </div>
+                <TouchStick
+                  disabled={meetingOpen || paused}
+                  onMove={(x, y) => engine.current?.joystick(x, y)}
+                />
                 <div className="wf-pov-voice">
                   <div>
                     <strong>
@@ -382,73 +528,79 @@ export function OfficeScene({
                   {voice.phase === "listening" && (
                     <AudioMeter analyser={voice.analyser} />
                   )}
-                  <button
-                    className={voice.active ? "is-calling" : ""}
-                    aria-label={t(voice.active ? "hangup" : "call")}
-                    title={t(voice.active ? "hangup" : "call")}
-                    aria-pressed={voice.active}
-                    onClick={voice.active ? voice.stop : voice.startCall}
-                  >
-                    {voice.active ? <PhoneOff size={20} /> : <Mic size={20} />}
-                  </button>
                 </div>
               </div>
             </div>
           </>
         )}
       </div>
-      <footer className="wf-pov-footer">
-        <div
-          className="wf-pov-destinations"
-          role="group"
-          aria-label={o("travel")}
-        >
-          {catalog.map((employee) => (
-            <button
-              key={employee.id}
-              disabled={status !== "ready"}
-              aria-pressed={selected === employee.id}
-              onClick={() => {
-                travel(employee.id);
-                onSelect(employee.id);
-              }}
-            >
-              {employee.title[language] || employee.title.en}
-            </button>
-          ))}
-          <button
-            disabled={status !== "ready" || meetingOpen}
-            onClick={() => {
-              travel("@master");
-              onMaster();
-            }}
-          >
-            <Monitor size={16} />
-            {t("master")}
-          </button>
-          <button
-            className="wf-pov-meeting"
-            disabled={meetingOpen}
-            onClick={onMeeting}
-          >
-            <Users size={16} />
-            {wfText(language, "meeting")}
-          </button>
-        </div>
-        <div className="wf-pov-instructions">
-          <p id="wf-pov-help">{o("navigate")}</p>
-          <button
-            disabled={status !== "ready"}
-            className="wf-pov-lock"
-            onClick={async () => {
-              if (!(await engine.current?.lockPointer())) setHelp(true);
-            }}
-          >
-            <MousePointer2 size={14} />
-            {o(locked ? "unlock" : "look")}
-          </button>
-        </div>
-      </footer>
     </section>
+  );
+}
+
+function TouchStick({
+  onMove,
+  disabled,
+}: {
+  onMove: (x: number, y: number) => void;
+  disabled: boolean;
+}) {
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const pointer = useRef<number | null>(null);
+  const reset = () => {
+    pointer.current = null;
+    setOffset({ x: 0, y: 0 });
+    onMove(0, 0);
+  };
+  useEffect(() => {
+    if (disabled) reset();
+  }, [disabled]);
+  const move = (event: PointerEvent<HTMLButtonElement>) => {
+    if (pointer.current !== event.pointerId || disabled) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - rect.left - rect.width / 2) / 30,
+      y = (event.clientY - rect.top - rect.height / 2) / 30,
+      length = Math.max(1, Math.hypot(x, y));
+    setOffset({ x: (x / length) * 26, y: (y / length) * 26 });
+    onMove(x / length, y / length);
+  };
+  return (
+    <button
+      type="button"
+      className="wf-touch-stick"
+      aria-label="عصا الحركة: اسحب أو استخدم الأسهم"
+      disabled={disabled}
+      onPointerDown={(event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        pointer.current = event.pointerId;
+        event.currentTarget.setPointerCapture(event.pointerId);
+        move(event);
+      }}
+      onPointerMove={move}
+      onPointerUp={reset}
+      onPointerCancel={reset}
+      onLostPointerCapture={reset}
+      onBlur={reset}
+      onKeyDown={(event) => {
+        const axes: Record<string, [number, number]> = {
+          ArrowUp: [0, -1],
+          ArrowDown: [0, 1],
+          ArrowLeft: [-1, 0],
+          ArrowRight: [1, 0],
+        };
+        const axis = axes[event.key];
+        if (axis) {
+          event.preventDefault();
+          onMove(...axis);
+          setOffset({ x: axis[0] * 26, y: axis[1] * 26 });
+        }
+      }}
+      onKeyUp={reset}
+    >
+      <span style={{ transform: `translate(${offset.x}px,${offset.y}px)` }}>
+        <Crosshair size={21} />
+      </span>
+    </button>
   );
 }
