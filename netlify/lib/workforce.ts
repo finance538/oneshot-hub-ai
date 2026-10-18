@@ -57,7 +57,7 @@ export async function workforceRoute(req: Request, path: string) {
         .orderBy(asc(aiEmployees.id)),
     };
   }
-  const user = await authenticate();
+  const user = await authenticate(req);
   let [organization] = await db
     .select()
     .from(organizations)
