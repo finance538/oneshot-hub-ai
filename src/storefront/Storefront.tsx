@@ -31,7 +31,6 @@ import {
   Search,
   ShieldCheck,
   ShoppingBag,
-  Sparkles,
   Target,
   Video,
   X,
@@ -94,10 +93,16 @@ function Logo() {
 }
 
 export default function Storefront({
+  signedIn,
+  authReady,
+  onWorkforce,
   onLogin,
   onOrders,
   accountControl,
 }: {
+  signedIn: boolean;
+  authReady: boolean;
+  onWorkforce: () => void;
   onLogin: () => void;
   onOrders: () => void;
   accountControl: ReactNode;
@@ -290,12 +295,6 @@ export default function Storefront({
             {[
               { module: "store", ar: "المتجر", en: "Store", Icon: ShoppingBag },
               {
-                module: "ai",
-                ar: "استوديو AI",
-                en: "AI Studio",
-                Icon: Sparkles,
-              },
-              {
                 module: "gateway",
                 ar: "بوابات الدفع",
                 en: "Payments",
@@ -409,13 +408,20 @@ export default function Storefront({
                     {marketingCopy[language].team}
                     <ArrowLeft size={16} />
                   </a>
-                  <a
-                    className="store-button secondary"
-                    href={appearanceLink("/?module=ai")}
+                  <button
+                    type="button"
+                    className="store-button secondary store-workforce-entry"
+                    onClick={onWorkforce}
+                    disabled={!authReady}
                   >
-                    <Sparkles size={18} />
-                    {marketingCopy[language].studio}
-                  </a>
+                    <KeyRound size={18} aria-hidden="true" />
+                    <span>
+                      {signedIn
+                        ? marketingCopy[language].enterHeadquarters
+                        : marketingCopy[language].signInHeadquarters}
+                    </span>
+                    {signedIn && <ArrowLeft size={16} aria-hidden="true" />}
+                  </button>
                 </div>
                 <div className="store-hero-note">
                   <FileText size={17} />
@@ -653,9 +659,9 @@ export default function Storefront({
                       "مستشار خدمة العملاء والدعم الفوري (Customer Care AI)",
                     titleEn: "Instant Customer Experience AI",
                     descAr:
-                      "يساعد في صياغة إجابات العملاء وشرح الخدمات داخل استوديو المحادثة.",
+                      "يساعد في صياغة إجابات العملاء وشرح الخدمات داخل مقر شركتك الرقمي.",
                     descEn:
-                      "Helps draft customer replies and explain services in the conversation studio.",
+                      "Helps draft customer replies and explain services in your digital headquarters.",
                     tagAr: "الدعم المباشر",
                     tagEn: "Support",
                     icon: Bot,
@@ -679,11 +685,11 @@ export default function Storefront({
                       <p>{tr(item.descAr, item.descEn)}</p>
                       <a
                         className="store-button secondary compact"
-                        href={appearanceLink("/?module=ceo")}
+                        href={appearanceLink("/workforce")}
                       >
                         {tr(
-                          "إعداد التخصص في المكتب التنفيذي",
-                          "Configure in executive workspace",
+                          "استكشف موظفي AI في مقر شركتك",
+                          "Explore AI employees in your headquarters",
                         )}
                         <ArrowLeft size={14} />
                       </a>
@@ -1030,14 +1036,6 @@ export default function Storefront({
       {inquiry && (
         <InquiryDialog inquiry={inquiry} onClose={() => setInquiry(null)} />
       )}
-      <a
-        className="store-assistant-entry"
-        href={appearanceLink("/?module=ai")}
-        aria-label={tr("افتح استوديو OneShot AI", "Open OneShot AI Studio")}
-      >
-        <Sparkles size={20} />
-        <span>{tr("استوديو OneShot AI", "OneShot AI Studio")}</span>
-      </a>
     </div>
   );
 }

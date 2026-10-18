@@ -213,7 +213,7 @@ export function Executive() {
             ))}
         </select>
       </div>
-      <Assistant kind="ceo" staffId={employee || undefined} />
+      <Assistant staffId={employee || undefined} />
       <section className="panel orders-panel">
         <div className="panel-title">
           <ReceiptText size={20} />

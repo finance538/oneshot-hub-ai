@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   login,
   signup,
@@ -21,6 +21,7 @@ export interface SessionUser {
   roles?: string[];
 }
 export function useAuth() {
+  const afterLogin = useRef<(() => void) | undefined>(undefined);
   const [user, setUser] = useState<SessionUser | null>(null),
     [ready, setReady] = useState(false),
     [open, setOpen] = useState(false);
@@ -65,6 +66,7 @@ export function useAuth() {
     };
   }, []);
   async function signOut() {
+    afterLogin.current = undefined;
     try {
       await logout();
       clearApiSession();
@@ -73,6 +75,10 @@ export function useAuth() {
       setError("تعذّر تسجيل الخروج. حاول مجدداً.");
       setOpen(true);
     }
+  }
+  function openLogin(onSuccess?: () => void) {
+    afterLogin.current = onSuccess;
+    setOpen(true);
   }
   const control = (
     <div className="account-controls">
@@ -96,7 +102,7 @@ export function useAuth() {
         <button
           className="button subtle small"
           disabled={!ready}
-          onClick={() => setOpen(true)}
+          onClick={() => openLogin()}
         >
           <LogIn size={16} /> تسجيل الدخول
         </button>
@@ -108,16 +114,20 @@ export function useAuth() {
       callback={callback}
       initialError={error}
       onClose={() => {
+        afterLogin.current = undefined;
         setOpen(false);
         setError("");
       }}
       onDone={() => {
+        const onSuccess = afterLogin.current;
+        afterLogin.current = undefined;
         setOpen(false);
         setCallback(null);
+        onSuccess?.();
       }}
     />
   ) : null;
-  return { user, ready, openLogin: () => setOpen(true), control, dialog };
+  return { user, ready, openLogin, control, dialog };
 }
 function AuthDialog({
   callback,
@@ -185,7 +195,7 @@ function AuthDialog({
         : "مرحباً بعودتك";
   return (
     <Modal title={title} onClose={onClose}>
-      <p className="muted">حساب واحد للمتجر والاستوديو ومساحة أعمالك.</p>
+      <p className="muted">حساب واحد للمتجر ومقر شركتك الرقمي وموظفي AI.</p>
       <form onSubmit={submit} className="form-stack">
         {!callback && mode === "signup" && (
           <label>
