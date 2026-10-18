@@ -5,11 +5,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
-export type Language = "ar" | "en";
+import { isLanguage, type WorkforceLanguage } from "../../shared/workforce";
+export { languageNames, workforceLanguages } from "../../shared/workforce";
+export type Language = WorkforceLanguage;
 type Theme = "dark" | "light";
 const Context = createContext<{
   language: Language;
   theme: Theme;
+  outputLanguage: Language;
+  setOutputLanguage: (v: Language) => void;
   setLanguage: (v: Language) => void;
   setTheme: (v: Theme) => void;
   tr: (ar: string, en: string) => string;
@@ -18,8 +22,9 @@ const Context = createContext<{
 export function AppearanceProvider({ children }: { children: ReactNode }) {
   const params = new URLSearchParams(location.search);
   const [language, setLanguageState] = useState<Language>(
-    params.get("lang") === "en" ? "en" : "ar",
+    isLanguage(params.get("lang")) ? (params.get("lang") as Language) : "ar",
   );
+  const [outputLanguage, setOutputLanguage] = useState<Language>("ar");
   const [theme, setThemeState] = useState<Theme>(
     params.get("theme") === "light" ? "light" : "dark",
   );
@@ -30,7 +35,9 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   };
   useEffect(() => {
     document.documentElement.lang = language;
-    document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = ["ar", "ur"].includes(language)
+      ? "rtl"
+      : "ltr";
     document.documentElement.dataset.theme = theme;
     return () => {
       document.documentElement.lang = "ar";
@@ -43,6 +50,8 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       value={{
         language,
         theme,
+        outputLanguage,
+        setOutputLanguage,
         setLanguage: (v) => {
           update("lang", v);
           setLanguageState(v);
@@ -53,7 +62,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
         },
         tr: (ar, en) => (language === "ar" ? ar : en),
         number: (v) =>
-          new Intl.NumberFormat(language === "ar" ? "ar-SA" : "en-US").format(
+          new Intl.NumberFormat(language === "zh" ? "zh-CN" : language).format(
             v,
           ),
       }}

@@ -1,5 +1,10 @@
 import { Moon, Sun, Globe2 } from "lucide-react";
-import { useAppearance, type Language } from "./i18n";
+import {
+  useAppearance,
+  languageNames,
+  workforceLanguages,
+  type Language,
+} from "./i18n";
 export function AppearanceControls() {
   const { language, theme, setLanguage, setTheme, tr } = useAppearance();
   return (
@@ -11,8 +16,11 @@ export function AppearanceControls() {
           value={language}
           onChange={(e) => setLanguage(e.target.value as Language)}
         >
-          <option value="ar">العربية</option>
-          <option value="en">English</option>
+          {workforceLanguages.map((code) => (
+            <option key={code} value={code}>
+              {languageNames[code]}
+            </option>
+          ))}
         </select>
       </label>
       <button

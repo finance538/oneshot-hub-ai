@@ -125,3 +125,94 @@ export const requestLimits = pgTable("request_limits", {
   count: integer("count").notNull().default(1),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 });
+
+// Workforce is isolated from the existing administrator staff and payment tables.
+export const organizations = pgTable("workforce_organizations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ownerId: text("owner_id").notNull().unique(),
+  name: text("name").notNull(),
+  outputLanguage: text("output_language").notNull().default("ar"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+export const aiEmployees = pgTable("workforce_employees", {
+  id: text("id").primaryKey(),
+  title: jsonb("title").$type<Record<string, string>>().notNull(),
+  bio: jsonb("bio").$type<Record<string, string>>().notNull(),
+  skills: jsonb("skills").$type<string[]>().notNull(),
+  category: text("category").notNull(),
+  instructions: text("instructions").notNull(),
+  availability: text("availability").notNull().default("prototype"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+export const workforceTasks = pgTable(
+  "workforce_tasks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    employeeId: text("employee_id")
+      .notNull()
+      .references(() => aiEmployees.id),
+    requestKey: uuid("request_key").notNull().unique(),
+    mode: text("mode").notNull().default("live"),
+    status: text("status").notNull().default("received"),
+    input: text("input").notNull(),
+    output: text("output").notNull().default(""),
+    outputLanguage: text("output_language").notNull().default("ar"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [index("workforce_tasks_org").on(t.organizationId)],
+);
+export const workforceEvents = pgTable(
+  "workforce_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => workforceTasks.id, { onDelete: "cascade" }),
+    phase: text("phase").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [index("workforce_events_org").on(t.organizationId)],
+);
+export const workforceMeetings = pgTable(
+  "workforce_meetings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    requestKey: uuid("request_key").notNull().unique(),
+    status: text("status").notNull().default("generating"),
+    topic: text("topic").notNull(),
+    minutes: text("minutes").notNull().default(""),
+    reports: jsonb("reports")
+      .$type<
+        { employeeId: string; taskId: string; status: string; output: string }[]
+      >()
+      .notNull(),
+    proposals: jsonb("proposals")
+      .$type<{ id: string; employeeId: string; title: string }[]>()
+      .notNull(),
+    revision: text("revision").notNull().default(""),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [index("workforce_meetings_org").on(t.organizationId)],
+);

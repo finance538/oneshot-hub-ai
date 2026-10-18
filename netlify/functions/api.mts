@@ -30,6 +30,7 @@ import {
   publicOrder,
   paymentWebhook,
 } from "../lib/payments.js";
+import { workforceRoute } from "../lib/workforce.js";
 import { aiChat, overview } from "../lib/ai.js";
 import { gateways, endpoints } from "../../shared/contracts.js";
 
@@ -58,6 +59,8 @@ export default async (req: Request) => {
     if (!["GET", "POST", "DELETE", "PATCH"].includes(method))
       throw new ApiError(405, "طريقة الطلب غير مدعومة.");
     if (method !== "GET") assertOrigin(req);
+    if (path.startsWith("/api/workforce/"))
+      return json(await workforceRoute(req, path));
     if (path === "/api/health" && method === "GET") {
       const [dbConnected, core] = await Promise.all([
         database()
