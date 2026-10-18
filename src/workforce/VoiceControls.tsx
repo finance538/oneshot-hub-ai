@@ -122,6 +122,11 @@ export function VoiceControls({
             <Mic size={18} />
           )}
         </button>
+        {voice.phase === "listening" && (
+          <span className="hq-composer-meter">
+            <AudioMeter analyser={voice.analyser} />
+          </span>
+        )}
         <button
           type="button"
           aria-label={t(voice.muted ? "unmute" : "mute")}
