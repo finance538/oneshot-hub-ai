@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { lazy, Suspense, useMemo, type ReactNode } from "react";
 import type { Product } from "../../shared/contracts";
 import OriginalStorefront from "../storefront/Storefront";
 import { AppearanceProvider } from "../storefront/i18n";
@@ -6,7 +6,11 @@ import { CatalogContext } from "../storefront/catalog";
 import { documents } from "../storefront/documents";
 import { Notice } from "./common";
 
+import type { SessionUser } from "./auth";
+const Workforce = lazy(() => import("../workforce/Workforce"));
+
 export function Store({
+  user,
   products,
   loading,
   error,
@@ -15,6 +19,7 @@ export function Store({
   onOrders,
   accountControl,
 }: {
+  user: SessionUser | null;
   products: Product[];
   loading: boolean;
   error: string;
@@ -64,7 +69,16 @@ export function Store({
   return (
     <AppearanceProvider>
       <CatalogContext.Provider value={records}>
-        {!isDocument && (loading || error || !records.length) ? (
+        {window.location.pathname.startsWith("/workforce") ? (
+          <Suspense fallback={<p role="status">جارٍ تحميل مساحة الفريق…</p>}>
+            <Workforce
+              key={user?.id || "guest"}
+              user={user}
+              onLogin={onLogin}
+              accountControl={accountControl}
+            />
+          </Suspense>
+        ) : !isDocument && (loading || error || !records.length) ? (
           <div className="storefront store-loading">
             <a href="/" className="store-logo">
               <img src="/oneshot.svg" width="44" height="44" alt="" />
