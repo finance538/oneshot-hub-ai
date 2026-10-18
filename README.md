@@ -17,6 +17,8 @@ The template service was unavailable, so the application was assembled directly 
 
 ## Persistent data
 
+**Deployment remains blocked by divergent preview migration histories.** The owner requires preserving both previews. See the [verified reconciliation report](docs/migration-reconciliation.md) for the affected branches, required platform intervention, and remaining source conflicts. Passing the agent-preview migration check does not establish pull-request deployment readiness.
+
 The current preview migration-order repair replaced two unapplied, older migrations with later versions using Netlify migration reset and Drizzle generation. Applied migrations on this branch were preserved; see [migration reconciliation](docs/workforce-operations.md#migration-reconciliation) for branch-specific release requirements.
 
 The migration CLI `drizzle-kit` is pinned to `1.0.0-beta.22`, matching `drizzle-orm`, and is a regular dependency so production-only installs retain it. Install the committed lockfile before automatic migration generation; an unpinned temporary `npx` download can select the incompatible stable CLI.
