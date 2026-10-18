@@ -4,7 +4,6 @@ import {
   Zap,
   LockKeyhole,
   BriefcaseBusiness,
-  Sparkles,
   Globe2,
   ChevronLeft,
   ArrowUpRight,
@@ -27,7 +26,7 @@ import { useAuth, type SessionUser } from "./components/auth";
 import { Store } from "./components/store";
 import { Inspector } from "./components/inspector";
 import { Gateway, Vault } from "./components/gateway";
-import { Assistant } from "./components/assistant";
+import { appearanceLink } from "./storefront/i18n";
 import { Executive } from "./components/executive";
 import { AccessGate, Modal, Notice } from "./components/common";
 const navigation = [
@@ -55,15 +54,21 @@ const navigation = [
     subtitle: "AI CEO & TEAM",
     icon: BriefcaseBusiness,
   },
-  {
-    id: "ai" as Module,
-    title: "استوديو الذكاء الاصطناعي",
-    subtitle: "ONESHOT AI STUDIO",
-    icon: Sparkles,
-  },
 ];
 function initialModule(): Module {
   const query = new URLSearchParams(window.location.search).get("module");
+  const sub = window.location.hostname.split(".")[0];
+  if (
+    query === "ai" ||
+    (window.location.pathname === "/" &&
+      !navigation.some((n) => n.id === query) &&
+      ["ai", "app"].includes(sub))
+  ) {
+    // Retire old bookmarks without reloading or discarding Identity callbacks.
+    const destination = appearanceLink("/workforce") + window.location.hash;
+    history.replaceState(history.state, "", destination);
+    return "store";
+  }
   if (navigation.some((n) => n.id === query)) return query as Module;
   if (
     /^\/(workforce(?:\/.*)?|products(?:\/.*)?|about|vision|privacy|refund|terms|support|accounts|api-integration)\/?$/.test(
@@ -71,21 +76,23 @@ function initialModule(): Module {
     )
   )
     return "store";
-  const sub = window.location.hostname.split(".")[0];
   return (
     (
       {
         portal: "gateway",
         pay: "gateway",
         admin: "vault",
-        ai: "ai",
-        app: "ai",
       } as Record<string, Module>
     )[sub] || "store"
   );
 }
 export default function App() {
   const auth = useAuth();
+  function enterWorkforce() {
+    const go = () => window.location.assign(appearanceLink("/workforce"));
+    if (auth.user) go();
+    else auth.openLogin(go);
+  }
   return (
     <>
       <Workspace
@@ -95,7 +102,9 @@ export default function App() {
             : "guest"
         }
         user={auth.user}
-        onLogin={auth.openLogin}
+        onLogin={() => auth.openLogin()}
+        authReady={auth.ready}
+        onWorkforce={enterWorkforce}
         accountControl={auth.control}
       />
       {auth.dialog}
@@ -105,10 +114,14 @@ export default function App() {
 function Workspace({
   user,
   onLogin,
+  authReady,
+  onWorkforce,
   accountControl,
 }: {
   user: SessionUser | null;
   onLogin: () => void;
+  authReady: boolean;
+  onWorkforce: () => void;
   accountControl: React.ReactNode;
 }) {
   const [active, setActive] = useState<Module>(initialModule),
@@ -242,6 +255,8 @@ function Workspace({
       {active === "store" ? (
         <Store
           user={user}
+          authReady={authReady}
+          onWorkforce={onWorkforce}
           products={products}
           loading={loading}
           error={error}
@@ -393,24 +408,6 @@ function Workspace({
                   ) : (
                     <AccessGate admin onLogin={onLogin} />
                   ))}
-                {active === "ai" &&
-                  (user ? (
-                    <Assistant />
-                  ) : (
-                    <>
-                      <div className="studio-preview">
-                        <Sparkles size={40} />
-                        <span className="eyebrow">ONESHOT AI STUDIO</span>
-                        <h1>
-                          مكان واحد.
-                          <br />
-                          <span>لأفكار لا تنتهي.</span>
-                        </h1>
-                        <p>كتابة، تحليل، برمجة وإبداع مع Gemini عبر Netlify.</p>
-                      </div>
-                      <AccessGate onLogin={onLogin} />
-                    </>
-                  ))}
               </main>
               <Inspector
                 health={health}
@@ -428,8 +425,8 @@ function Workspace({
                 <small>كل أدواتك. في لقطة واحدة.</small>
               </div>
               <p>© {new Date().getFullYear()} 1SHOTCAM.COM</p>
-              <button onClick={() => navigate("ai")}>
-                لنصنع شيئاً استثنائياً <ArrowUpRight size={16} />
+              <button onClick={onWorkforce} disabled={!authReady}>
+                ادخل مقر شركتك الرقمي <ArrowUpRight size={16} />
               </button>
             </footer>
           </div>

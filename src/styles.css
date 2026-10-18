@@ -460,7 +460,7 @@ strong {
 }
 .module-nav {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
   margin-top: 24px;
   background: #14171d;
@@ -1751,40 +1751,6 @@ strong {
 }
 .access-gate .button {
   margin-top: 24px;
-}
-.studio-preview {
-  padding: 30px 25px 32px;
-  border: 1px solid #35333a;
-  background: #17191f;
-  border-radius: 13px;
-  margin-bottom: 20px;
-  position: relative;
-  overflow: hidden;
-}
-.studio-preview > svg {
-  position: absolute;
-  left: 35px;
-  top: 55px;
-  color: #b17c60;
-  width: 90px;
-  height: 90px;
-  stroke-width: 1;
-}
-.studio-preview h1 {
-  font-size: 39px;
-  font-weight: 500;
-  margin: 15px 0;
-  line-height: 1.5;
-}
-.studio-preview h1 span {
-  color: #e8a07b;
-}
-.studio-preview p {
-  font-size: 12px;
-  color: #a0a8b6;
-}
-.studio-preview .eyebrow {
-  font-size: 9px;
 }
 .empty-state {
   padding: 45px 25px;
@@ -3151,11 +3117,6 @@ tr:last-child td {
   .site-footer {
     margin-top: 28px;
   }
-  .studio-preview > svg {
-    left: 60px;
-    width: 100px;
-    height: 100px;
-  }
 }
 @media (max-width: 600px) {
   .top-ribbon {
@@ -3252,9 +3213,6 @@ tr:last-child td {
     display: grid;
     grid-template-columns: 1fr 1fr;
     overflow: visible;
-  }
-  .module-nav.open > button:last-child {
-    grid-column: span 2;
   }
   .module-name {
     font-size: 10px;
@@ -3661,21 +3619,6 @@ tr:last-child td {
   }
   .access-gate p {
     font-size: 11px;
-  }
-  .studio-preview {
-    padding: 28px 23px;
-  }
-  .studio-preview h1 {
-    font-size: 31px;
-  }
-  .studio-preview > svg {
-    left: 20px;
-    top: 70px;
-    width: 55px;
-    height: 55px;
-  }
-  .studio-preview p {
-    font-size: 10px;
   }
   .ai-toolbar {
     padding: 13px;

@@ -34,7 +34,7 @@ export const regions = [
   ["GB-GBP", "بريطانيا · GBP"],
   ["EU-EUR", "الاتحاد الأوروبي · EUR"],
 ] as const;
-export type Module = "store" | "gateway" | "vault" | "ceo" | "ai";
+export type Module = "store" | "gateway" | "vault" | "ceo";
 export interface Product {
   catalogDetails?: OriginalProduct | null;
   id: string;
@@ -84,5 +84,4 @@ export const endpoints = {
   ],
   vault: ["/api/admin/vault/keys", "/api/vault/keys", "/api/gateways/keys"],
   ceo: ["/api/ai/ceo", "/api/ceo/command"],
-  chat: ["/api/ai/chat"],
 };

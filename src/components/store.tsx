@@ -11,6 +11,8 @@ const Workforce = lazy(() => import("../workforce/Workforce"));
 
 export function Store({
   user,
+  authReady,
+  onWorkforce,
   products,
   loading,
   error,
@@ -20,6 +22,8 @@ export function Store({
   accountControl,
 }: {
   user: SessionUser | null;
+  authReady: boolean;
+  onWorkforce: () => void;
   products: Product[];
   loading: boolean;
   error: string;
@@ -112,6 +116,9 @@ export function Store({
           </div>
         ) : (
           <OriginalStorefront
+            signedIn={!!user}
+            authReady={authReady}
+            onWorkforce={onWorkforce}
             onLogin={onLogin}
             onOrders={onOrders}
             accountControl={accountControl}
