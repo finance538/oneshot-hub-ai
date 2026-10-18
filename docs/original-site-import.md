@@ -4,7 +4,7 @@ Source: https://github.com/finance538/oneshot-ai-google-
 
 Pinned revision: `a9160bae7fcfb588dc35c6b532610ac97ca2b1be` (reviewed October 17, 2026).
 
-The public Brand Studio storefront was ported into the existing React application, retaining the source layout, logo, editorial imagery, catalog categories, service specifications, media packages, policies and Arabic/English content. It replaces the earlier four-product storefront. The authenticated gateway, vault, executive and AI modules remain the destination implementation.
+The public Brand Studio storefront was ported into the existing React application, retaining the source layout, logo, editorial imagery, catalog categories, service specifications, media packages, policies and Arabic/English content. It replaces the earlier four-product storefront. The authenticated gateway, vault and executive modules remain the destination implementation. The former AI Studio module has since been retired in favor of the `/workforce` experience; the photography storefront's business branding remains intact.
 
 ## Content mapping
 

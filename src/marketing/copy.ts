@@ -8,7 +8,8 @@ export type MarketingCopy = {
   intro: string;
   examples: string;
   team: string;
-  studio: string;
+  signInHeadquarters: string;
+  enterHeadquarters: string;
   why: string;
   comparisonTitle: string;
   compareBy: string;
@@ -33,7 +34,8 @@ export const marketingCopy = {
     examples:
       "سلة، زد، Shopify وWhatsApp — أمثلة قريبة من التجارة الخليجية والعربية.",
     team: "استكشف فريقك",
-    studio: "افتح استوديو العلامة",
+    signInHeadquarters: "سجّل دخولك وابدأ مع مديرك التنفيذي (AI) مجاناً",
+    enterHeadquarters: "ادخل مقر شركتك الرقمي الآن",
     why: "لماذا oneShot؟",
     comparisonTitle: "اختر طريقة العمل التي تناسب مرحلتك",
     compareBy: "قارن حسب",
@@ -57,7 +59,7 @@ export const marketingCopy = {
         "فريق بشري بخبرة ومسؤوليات مباشرة، يحتاج تنسيقاً وإدارة.",
         "مناسب للأسئلة المتكررة؛ التخطيط والتنفيذ يعتمدان على تصميمه وربطه.",
         "تخصصات متنوعة؛ قد تتطلب نقل السياق أو إعداد تكاملات.",
-        "سوق كفاءات وتجارب، شات سريع أو مقر 3D بمنظور الشخص الأول، صوت وغرفة اجتماعات واستوديو علامة.",
+        "سوق كفاءات وتجارب، شات سريع أو مقر تفاعلي، صوت وغرفة اجتماعات.",
       ],
       [
         "البشر ينفذون ضمن الصلاحيات والإجراءات المتفق عليها.",
@@ -90,7 +92,8 @@ export const marketingCopy = {
     examples:
       "Think Shopify, WooCommerce, Stripe and Gmail — familiar contexts for global commerce.",
     team: "Explore your team",
-    studio: "Open Brand Studio",
+    signInHeadquarters: "Sign in and start with your AI CEO for free",
+    enterHeadquarters: "Enter your digital headquarters now",
     why: "Why oneShot?",
     comparisonTitle: "Choose the working model that fits your stage",
     compareBy: "Compare by",
@@ -114,7 +117,7 @@ export const marketingCopy = {
         "Human expertise and direct accountability, with coordination and management needs.",
         "Useful for recurring questions; planning and actions depend on design and integrations.",
         "Specialist capabilities, sometimes requiring context transfers or integrations.",
-        "A talent market with demos, quick chat or a first-person 3D HQ, voice, a meeting room and Brand Studio.",
+        "A talent market with demos, quick chat or an interactive HQ, voice and a meeting room.",
       ],
       [
         "People execute within agreed responsibilities and permissions.",
@@ -147,7 +150,8 @@ export const marketingCopy = {
     examples:
       "Shopify, PrestaShop et Gmail : des repères pour les commerces de France, d’Europe et d’Afrique francophone.",
     team: "Découvrir l’équipe",
-    studio: "Ouvrir le studio de marque",
+    signInHeadquarters: "Connectez-vous et commencez avec votre CEO IA gratuit",
+    enterHeadquarters: "Entrez dans votre siège numérique",
     why: "Pourquoi oneShot ?",
     comparisonTitle: "Un mode de travail à la mesure de votre activité",
     compareBy: "Comparer par",
@@ -171,7 +175,7 @@ export const marketingCopy = {
         "Expertise humaine et responsabilités directes, avec un besoin de coordination.",
         "Adaptés aux questions récurrentes ; planification et actions dépendent des intégrations.",
         "Des fonctions spécialisées, parfois avec des transferts de contexte manuels.",
-        "Un marché de talents à essayer, un chat rapide ou un QG 3D en vue subjective, la voix, une salle de réunion et un studio de marque.",
+        "Un marché de talents à essayer, un chat rapide ou un QG interactif, la voix et une salle de réunion.",
       ],
       [
         "Les personnes agissent dans le cadre de leurs responsabilités et autorisations.",
@@ -204,7 +208,8 @@ export const marketingCopy = {
     examples:
       "Trendyol, Shopify ve Gmail: Türkçe e-ticaret yapan işletmelere tanıdık örnekler.",
     team: "Ekibi keşfedin",
-    studio: "Marka stüdyosunu açın",
+    signInHeadquarters: "Giriş yapın, yapay zekâ CEO’nuzla ücretsiz başlayın",
+    enterHeadquarters: "Dijital merkezinize şimdi girin",
     why: "Neden oneShot?",
     comparisonTitle: "İşinizin aşamasına uygun çalışma biçimini seçin",
     compareBy: "Karşılaştırma ölçütü",
@@ -228,7 +233,7 @@ export const marketingCopy = {
         "İnsan uzmanlığı ve doğrudan sorumluluk; koordinasyon ve yönetim gerektirir.",
         "Tekrarlanan sorulara uygundur; planlama ve işlemler entegrasyonlara bağlıdır.",
         "Uzmanlaşmış özellikler; bağlam aktarımı veya entegrasyon gerekebilir.",
-        "Denemeler sunan yetenek pazarı, hızlı sohbet veya birinci şahıs 3D merkez, ses, toplantı odası ve marka stüdyosu.",
+        "Denemeler sunan yetenek pazarı, hızlı sohbet veya etkileşimli merkez, ses ve toplantı odası.",
       ],
       [
         "İnsanlar belirlenen görev ve yetkiler çerçevesinde işlem yapar.",
@@ -261,7 +266,8 @@ export const marketingCopy = {
     examples:
       "Shopify, WooCommerce y Gmail: ejemplos para negocios de España y América Latina.",
     team: "Descubre tu equipo",
-    studio: "Abre el estudio de marca",
+    signInHeadquarters: "Inicia sesión y empieza gratis con tu CEO IA",
+    enterHeadquarters: "Entra ahora en tu sede digital",
     why: "¿Por qué oneShot?",
     comparisonTitle: "Elige cómo trabajar según la etapa de tu negocio",
     compareBy: "Comparar por",
@@ -285,7 +291,7 @@ export const marketingCopy = {
         "Experiencia humana y responsabilidad directa; requiere coordinación.",
         "Útiles para consultas frecuentes; planificar y actuar depende de las integraciones.",
         "Funciones especializadas; puede ser necesario trasladar contexto entre herramientas.",
-        "Un mercado de talentos con demos, chat rápido o sede 3D en primera persona, voz, sala de reuniones y estudio de marca.",
+        "Un mercado de talentos con demos, chat rápido o sede interactiva, voz y sala de reuniones.",
       ],
       [
         "Las personas ejecutan según las funciones y permisos acordados.",
@@ -319,7 +325,8 @@ export const marketingCopy = {
     examples:
       "以 Shopify、WooCommerce 和 Gmail 为场景示例，关注跨境店铺与国际客户沟通。",
     team: "探索团队",
-    studio: "打开品牌工作室",
+    signInHeadquarters: "登录，免费开始与你的 AI CEO 协作",
+    enterHeadquarters: "立即进入你的数字总部",
     why: "为什么选择 oneShot？",
     comparisonTitle: "根据业务阶段选择工作方式",
     compareBy: "比较维度",
@@ -338,7 +345,7 @@ export const marketingCopy = {
         "拥有人的经验与直接责任，也需要协调和管理。",
         "适合常见问答；规划和执行能力取决于设计与集成。",
         "提供专业功能，但可能需要手动传递上下文或配置集成。",
-        "可体验的人才市场、快捷聊天或第一人称 3D 总部，以及语音、会议室和品牌工作室。",
+        "可体验的人才市场、快捷聊天或互动总部，以及语音和会议室。",
       ],
       [
         "人员在约定的职责和授权范围内执行工作。",
@@ -367,7 +374,8 @@ export const marketingCopy = {
     examples:
       "Shopify, WooCommerce और Gmail — ऑनलाइन दुकानों और डिजिटल सेवाओं के परिचित उदाहरण।",
     team: "अपनी टीम खोजें",
-    studio: "ब्रांड स्टूडियो खोलें",
+    signInHeadquarters: "लॉग इन करें और अपने AI CEO के साथ मुफ्त शुरुआत करें",
+    enterHeadquarters: "अभी अपने डिजिटल कार्यालय में प्रवेश करें",
     why: "oneShot क्यों?",
     comparisonTitle: "अपने कारोबार के चरण के अनुसार काम करने का तरीका चुनें",
     compareBy: "तुलना का आधार",
@@ -386,7 +394,7 @@ export const marketingCopy = {
         "मानवीय अनुभव और सीधी जिम्मेदारी, साथ में समन्वय की जरूरत।",
         "बार-बार पूछे जाने वाले सवालों के लिए उपयोगी; योजना और कार्रवाई इंटीग्रेशन पर निर्भर हैं।",
         "विशेष सुविधाएं; संदर्भ साझा करने या इंटीग्रेशन की जरूरत हो सकती है।",
-        "डेमो वाला प्रतिभा बाजार, तेज चैट या प्रथम-व्यक्ति 3D कार्यालय, आवाज, बैठक कक्ष और ब्रांड स्टूडियो।",
+        "डेमो वाला प्रतिभा बाजार, तेज चैट या इंटरैक्टिव कार्यालय, आवाज और बैठक कक्ष।",
       ],
       [
         "लोग तय जिम्मेदारियों और अनुमतियों के दायरे में काम करते हैं।",
@@ -419,7 +427,8 @@ export const marketingCopy = {
     examples:
       "Shopify، WooCommerce اور WhatsApp — آن لائن دکانوں اور صارفین سے رابطے کی مانوس مثالیں۔",
     team: "اپنی ٹیم دریافت کریں",
-    studio: "برانڈ اسٹوڈیو کھولیں",
+    signInHeadquarters: "لاگ اِن کریں اور اپنے AI CEO کے ساتھ مفت آغاز کریں",
+    enterHeadquarters: "ابھی اپنے ڈیجیٹل دفتر میں داخل ہوں",
     why: "oneShot کیوں؟",
     comparisonTitle: "اپنے کاروبار کے مرحلے کے مطابق کام کا طریقہ چنیں",
     compareBy: "موازنہ کریں",
@@ -438,7 +447,7 @@ export const marketingCopy = {
         "انسانی تجربہ اور براہ راست ذمہ داری، ساتھ ہی انتظام اور رابطے کی ضرورت۔",
         "بار بار پوچھے جانے والے سوالات کے لیے مفید؛ منصوبہ بندی اور عمل انضمام پر منحصر ہیں۔",
         "خصوصی صلاحیتیں؛ سیاق منتقل کرنے یا انضمام کی ضرورت پڑ سکتی ہے۔",
-        "ڈیمو کے ساتھ مہارتوں کی مارکیٹ، فوری چیٹ یا اول شخص 3D دفتر، آواز، اجلاس کا کمرہ اور برانڈ اسٹوڈیو۔",
+        "ڈیمو کے ساتھ مہارتوں کی مارکیٹ، فوری چیٹ یا انٹرایکٹو دفتر، آواز اور اجلاس کا کمرہ۔",
       ],
       [
         "لوگ طے شدہ ذمہ داریوں اور اختیارات کے تحت کام کرتے ہیں۔",

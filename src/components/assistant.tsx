@@ -21,7 +21,7 @@ import {
   type ChatMessage,
   type Conversation,
 } from "../../shared/contracts";
-import { Busy, Notice, Modal, SectionHeading } from "./common";
+import { Busy, Notice, Modal } from "./common";
 interface SpeechResult {
   results: { [index: number]: { [index: number]: { transcript: string } } };
   resultIndex: number;
@@ -37,15 +37,9 @@ interface SpeechRecognizer {
   stop: () => void;
   abort: () => void;
 }
-export function Assistant({
-  kind = "chat",
-  staffId,
-}: {
-  kind?: "chat" | "ceo";
-  staffId?: string;
-}) {
+export function Assistant({ staffId }: { staffId?: string }) {
   const [model, setModel] = useState("gemini-3-flash-preview"),
-    [persona, setPersona] = useState("studio"),
+    [persona, setPersona] = useState("executive"),
     [search, setSearch] = useState(false),
     [maps, setMaps] = useState(false);
   const [history, setHistory] = useState<Conversation[]>([]),
@@ -65,7 +59,7 @@ export function Assistant({
   async function refreshHistory() {
     try {
       const r = await api<{ conversations: Conversation[] }>(
-        `/api/conversations?kind=${kind}`,
+        "/api/conversations?kind=ceo",
         undefined,
         { quiet: true },
       );
@@ -123,7 +117,7 @@ export function Assistant({
     const prompt = input.trim();
     try {
       const r = await callBackendApi<{ reply: string; conversationId: string }>(
-        kind === "ceo" ? endpoints.ceo : endpoints.chat,
+        endpoints.ceo,
         {
           message: prompt,
           provider: "gemini",
@@ -212,31 +206,13 @@ export function Assistant({
       setError("تعذّر بدء الإملاء الصوتي.");
     }
   }
-  const prompts =
-    kind === "ceo"
-      ? [
-          "حلّل المبيعات حسب العملة وحالة الدفع",
-          "راجع حالات الطلبات واقترح الخطوات التالية",
-          "اقترح توزيع المهام على الفريق",
-        ]
-      : [
-          "اكتب سيناريو فيديو لمنتج جديد",
-          "ساعدني في إعداد استوديو تصوير",
-          "ضع خطة محتوى للأسبوع القادم",
-        ];
+  const prompts = [
+    "حلّل المبيعات حسب العملة وحالة الدفع",
+    "راجع حالات الطلبات واقترح الخطوات التالية",
+    "اقترح توزيع المهام على الفريق",
+  ];
   return (
     <>
-      {kind === "chat" && (
-        <SectionHeading
-          eyebrow="ONESHOT AI STUDIO"
-          title="فكرتك. والذكاء الذي يطلقها."
-          description="مساحة للعمل والإبداع مع Google Gemini عبر Netlify."
-        >
-          <span className="mode-badge">
-            <Sparkles size={15} /> مساحة الإبداع
-          </span>
-        </SectionHeading>
-      )}
       <section className="ai-workspace">
         <div className="ai-toolbar">
           <div className="ai-provider">
@@ -316,16 +292,10 @@ export function Assistant({
                   <div className="ai-mark">
                     <Sparkles size={36} strokeWidth={1.5} />
                   </div>
-                  <span className="eyebrow">YOUR CREATIVE CO-PILOT</span>
-                  <h2>
-                    {kind === "ceo"
-                      ? "ما القرار التالي لأعمالك؟"
-                      : "كل فكرة كبيرة تبدأ بمحادثة."}
-                  </h2>
+                  <span className="eyebrow">YOUR EXECUTIVE ADVISOR</span>
+                  <h2>ما القرار التالي لأعمالك؟</h2>
                   <p>
-                    {kind === "ceo"
-                      ? "تقارير تستند إلى الطلبات والفريق المسجلين في المنظومة."
-                      : "اكتب، حلّل، خطّط. حوّل ما في بالك إلى خطوة واضحة."}
+                    تقارير تستند إلى الطلبات والفريق المسجلين في المنظومة.
                   </p>
                   <div className="prompt-suggestions">
                     {prompts.map((p) => (
@@ -351,11 +321,7 @@ export function Assistant({
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={
-                  kind === "ceo"
-                    ? "اكتب توجيهك التنفيذي..."
-                    : "اسأل، اكتب فكرة، أو ابدأ شيئاً جديداً..."
-                }
+                placeholder="اكتب توجيهك التنفيذي..."
                 aria-label="رسالتك"
                 maxLength={8000}
                 required
@@ -425,7 +391,7 @@ export function Assistant({
                 onChange={(e) => setPersona(e.target.value)}
                 disabled={busy}
               >
-                <option value="studio">مدير الاستوديو</option>
+                <option value="executive">المستشار التنفيذي</option>
                 <option value="developer">مساعد البرمجة</option>
                 <option value="marketing">خبير التسويق</option>
                 <option value="analyst">محلل البيانات</option>
