@@ -1,3 +1,5 @@
+import { MarketingComparison } from "../marketing/MarketingComparison";
+import { marketingCopy } from "../marketing/copy";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowUpRight,
@@ -809,9 +811,12 @@ export default function Workforce({
           <>
             <section className="wf-hero">
               <div>
-                <span className="wf-eyebrow">ONESHOT / THE NEXT WORKFORCE</span>
-                <h1>{t("headline")}</h1>
-                <p>{t("intro")}</p>
+                <span className="wf-eyebrow">
+                  {marketingCopy[language].badge}
+                </span>
+                <h1>{marketingCopy[language].headline}</h1>
+                <p>{marketingCopy[language].intro}</p>
+                <p>{marketingCopy[language].examples}</p>
                 <button
                   className="wf-primary"
                   onClick={() => {
@@ -841,10 +846,11 @@ export default function Workforce({
                   <span>CONTENT</span>
                 </div>
                 <span className="wf-art-caption">
-                  YOUR BUSINESS. YOUR DIRECTION.
+                  {marketingCopy[language].team}
                 </span>
               </div>
             </section>
+            <MarketingComparison />
             <section className="wf-market">
               <div className="wf-section-title">
                 <div>
