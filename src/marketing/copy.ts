@@ -27,15 +27,14 @@ export type MarketingCopy = {
 
 export const marketingCopy = {
   ar: {
-    badge: "للتاجر السعودي والعربي · مقر رقمي وفريق AI بلغتك",
-    headline: "لا تكتفِ بأداة. ابنِ مقر شركتك الرقمي وفريقك.",
-    intro:
-      "من متجرك الأول إلى علامتك القادمة: خطّط مع المدير التنفيذي، جرّب الكفاءات، واجمع العمل والمحتوى في مساحة واحدة بالعربية.",
+    badge: "مقر رقمي وفريق AI بلغتك",
+    headline: "مقرّك الرقمي. فريقك في مكان واحد.",
+    intro: "خطّط مع مديرك التنفيذي، وتعاون مع موظفي AI بالنص والصوت.",
     examples:
       "سلة، زد، Shopify وWhatsApp — أمثلة قريبة من التجارة الخليجية والعربية.",
     team: "استكشف فريقك",
-    signInHeadquarters: "سجّل دخولك وابدأ مع مديرك التنفيذي (AI) مجاناً",
-    enterHeadquarters: "ادخل مقر شركتك الرقمي الآن",
+    signInHeadquarters: "تسجيل الدخول للمقر",
+    enterHeadquarters: "ادخل مقرّك",
     why: "لماذا oneShot؟",
     comparisonTitle: "اختر طريقة العمل التي تناسب مرحلتك",
     compareBy: "قارن حسب",
@@ -88,12 +87,12 @@ export const marketingCopy = {
     badge: "For global founders · Your AI workforce & digital HQ",
     headline: "Build your headquarters. Bring your team together.",
     intro:
-      "Turn scattered work into a shared workspace: plan with an advisory CEO, explore specialist demos and develop your brand for a global audience.",
+      "Plan with your advisory CEO. Work with your AI team through chat and voice.",
     examples:
       "Think Shopify, WooCommerce, Stripe and Gmail — familiar contexts for global commerce.",
     team: "Explore your team",
-    signInHeadquarters: "Sign in and start with your AI CEO for free",
-    enterHeadquarters: "Enter your digital headquarters now",
+    signInHeadquarters: "Sign in to your HQ",
+    enterHeadquarters: "Enter your HQ",
     why: "Why oneShot?",
     comparisonTitle: "Choose the working model that fits your stage",
     compareBy: "Compare by",
@@ -150,8 +149,8 @@ export const marketingCopy = {
     examples:
       "Shopify, PrestaShop et Gmail : des repères pour les commerces de France, d’Europe et d’Afrique francophone.",
     team: "Découvrir l’équipe",
-    signInHeadquarters: "Connectez-vous et commencez avec votre CEO IA gratuit",
-    enterHeadquarters: "Entrez dans votre siège numérique",
+    signInHeadquarters: "Connexion au siège",
+    enterHeadquarters: "Ouvrir mon siège",
     why: "Pourquoi oneShot ?",
     comparisonTitle: "Un mode de travail à la mesure de votre activité",
     compareBy: "Comparer par",
@@ -208,8 +207,8 @@ export const marketingCopy = {
     examples:
       "Trendyol, Shopify ve Gmail: Türkçe e-ticaret yapan işletmelere tanıdık örnekler.",
     team: "Ekibi keşfedin",
-    signInHeadquarters: "Giriş yapın, yapay zekâ CEO’nuzla ücretsiz başlayın",
-    enterHeadquarters: "Dijital merkezinize şimdi girin",
+    signInHeadquarters: "Merkeze giriş yap",
+    enterHeadquarters: "Merkezini aç",
     why: "Neden oneShot?",
     comparisonTitle: "İşinizin aşamasına uygun çalışma biçimini seçin",
     compareBy: "Karşılaştırma ölçütü",
@@ -266,8 +265,8 @@ export const marketingCopy = {
     examples:
       "Shopify, WooCommerce y Gmail: ejemplos para negocios de España y América Latina.",
     team: "Descubre tu equipo",
-    signInHeadquarters: "Inicia sesión y empieza gratis con tu CEO IA",
-    enterHeadquarters: "Entra ahora en tu sede digital",
+    signInHeadquarters: "Inicia sesión en tu sede",
+    enterHeadquarters: "Entra en tu sede",
     why: "¿Por qué oneShot?",
     comparisonTitle: "Elige cómo trabajar según la etapa de tu negocio",
     compareBy: "Comparar por",
@@ -325,8 +324,8 @@ export const marketingCopy = {
     examples:
       "以 Shopify、WooCommerce 和 Gmail 为场景示例，关注跨境店铺与国际客户沟通。",
     team: "探索团队",
-    signInHeadquarters: "登录，免费开始与你的 AI CEO 协作",
-    enterHeadquarters: "立即进入你的数字总部",
+    signInHeadquarters: "登录你的总部",
+    enterHeadquarters: "进入你的总部",
     why: "为什么选择 oneShot？",
     comparisonTitle: "根据业务阶段选择工作方式",
     compareBy: "比较维度",
@@ -374,8 +373,8 @@ export const marketingCopy = {
     examples:
       "Shopify, WooCommerce और Gmail — ऑनलाइन दुकानों और डिजिटल सेवाओं के परिचित उदाहरण।",
     team: "अपनी टीम खोजें",
-    signInHeadquarters: "लॉग इन करें और अपने AI CEO के साथ मुफ्त शुरुआत करें",
-    enterHeadquarters: "अभी अपने डिजिटल कार्यालय में प्रवेश करें",
+    signInHeadquarters: "कार्यालय में लॉग इन करें",
+    enterHeadquarters: "अपना कार्यालय खोलें",
     why: "oneShot क्यों?",
     comparisonTitle: "अपने कारोबार के चरण के अनुसार काम करने का तरीका चुनें",
     compareBy: "तुलना का आधार",
@@ -427,8 +426,8 @@ export const marketingCopy = {
     examples:
       "Shopify، WooCommerce اور WhatsApp — آن لائن دکانوں اور صارفین سے رابطے کی مانوس مثالیں۔",
     team: "اپنی ٹیم دریافت کریں",
-    signInHeadquarters: "لاگ اِن کریں اور اپنے AI CEO کے ساتھ مفت آغاز کریں",
-    enterHeadquarters: "ابھی اپنے ڈیجیٹل دفتر میں داخل ہوں",
+    signInHeadquarters: "دفتر میں لاگ اِن کریں",
+    enterHeadquarters: "اپنا دفتر کھولیں",
     why: "oneShot کیوں؟",
     comparisonTitle: "اپنے کاروبار کے مرحلے کے مطابق کام کا طریقہ چنیں",
     compareBy: "موازنہ کریں",

@@ -4,8 +4,8 @@
   min-width: 0;
   color: #eee9dd;
   background: #11191e;
-  border: 1px solid #45413a;
-  border-radius: 18px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -15,24 +15,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 18px;
-  background: #121b20;
+  padding: 10px 16px;
+  background: var(--ui-panel);
+  color: var(--ui-text);
   border-bottom: 1px solid #ffffff0c;
   font-family: Outfit, "IBM Plex Sans Arabic", sans-serif;
 }
 .hq-stage-header > span:first-child {
-  font-size: 23px;
+  font-size: 17px;
   letter-spacing: -1px;
 }
 .hq-stage-header small {
   font-size: 9px;
-  color: #a99c84;
+  color: var(--ui-muted);
   letter-spacing: 2px;
   margin-inline-start: 14px;
 }
 .hq-stage-type {
   font-size: 10px;
-  color: #b7a489;
+  color: var(--ui-muted);
 }
 .hq-activity {
   display: flex;
@@ -40,9 +41,9 @@
   gap: 9px;
   height: 40px;
   padding: 0 16px;
-  background: #1b2429;
+  background: var(--ui-panel);
   flex-shrink: 0;
-  color: #bca888;
+  color: var(--ui-muted);
   z-index: 2;
 }
 .hq-activity button {
@@ -54,7 +55,7 @@
   padding: 0;
   border: 0;
   background: none;
-  color: #c6c9c7;
+  color: var(--ui-muted);
   text-align: start;
   font: inherit;
   font-size: 11px;
@@ -65,23 +66,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   flex-shrink: 0;
-  color: #e1b27c;
+  color: var(--ui-text);
 }
 .hq-activity button > span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.hq-activity-detail {
-  max-height: 140px;
-  overflow: auto;
-  padding: 14px 20px;
-  background: #1b2429;
-  color: #ddd;
-  font-size: 13px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 .hq-viewport {
   position: relative;
@@ -314,8 +305,8 @@
   min-height: 40px;
   padding: 7px 9px;
   color: #d8c9b3;
-  background: #202c33;
-  border: 1px solid #5a5144;
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-border);
   border-radius: 7px;
 }
 .hq-dock select {
@@ -326,9 +317,9 @@
   font: inherit;
   font-size: 11px;
   padding: 7px;
-  background: #202c33;
-  color: #ded4c4;
-  border: 1px solid #5a5144;
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  border: 1px solid var(--ui-border);
   border-radius: 7px;
 }
 .hq-stage button:focus-visible,
@@ -341,122 +332,31 @@
   cursor: default;
 }
 .wf-live-workspace.has-office {
-  display: grid !important;
-  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr) !important;
-  gap: 14px;
-  align-items: stretch;
-  direction: ltr;
+  display: block;
+  position: relative;
 }
-.wf-live-workspace.has-office > .hq-stage {
-  grid-column: 2;
-  grid-row: 1;
+.wf-shell .wf-open-chat {
+  position: absolute;
+  inset-inline-end: 16px;
+  bottom: 78px;
+  z-index: 3;
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  border-color: var(--ui-border);
+  box-shadow: 0 4px 20px #080d1333;
 }
-.hq-chat-shell {
-  grid-column: 1;
-  grid-row: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  height: min(820px, 85svh);
-  min-height: 600px;
-  border: 1px solid var(--wf-border);
-  background: var(--wf-panel);
-  border-radius: 16px;
-  overflow: hidden;
-  direction: ltr;
-}
-[dir="rtl"] .hq-chat-shell,
-[dir="rtl"] .hq-stage {
-  direction: rtl;
-}
-.hq-chat-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 44px;
-  padding: 8px 14px;
-  color: var(--wf-text);
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--wf-border);
-  font: inherit;
-}
-.hq-chat-shell > .hq-chat-body {
+.hq-station button {
   min-height: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-}
-.hq-chat-shell .wf-chat-panel {
-  flex: 1;
-  min-height: 0 !important;
-  height: 100% !important;
-  border: 0;
-  border-radius: 0;
-}
-.wf-live-workspace.has-office:has(.hq-chat-shell.is-collapsed) {
-  grid-template-columns: 48px minmax(0, 1fr) !important;
-}
-.hq-chat-shell.is-collapsed {
-  min-height: 0;
-  height: auto;
-  align-self: start;
-}
-.hq-chat-shell.is-collapsed .hq-chat-toggle {
-  writing-mode: vertical-rl;
-  min-height: 120px;
-  padding: 16px 10px;
-}
-.hq-chat-shell.is-collapsed .hq-chat-body {
-  display: none;
 }
 @media (max-width: 900px) {
-  .wf-live-workspace.has-office,
-  .wf-live-workspace.has-office:has(.hq-chat-shell.is-collapsed) {
-    display: flex !important;
-    flex-direction: column;
-    gap: 0;
-  }
-  .hq-stage {
-    width: 100%;
-  }
   .hq-viewport {
-    min-height: 520px;
-    height: 65svh;
+    min-height: 460px;
+    height: 62svh;
     flex: none;
   }
   .hq-stage-header small {
     font-size: 8px;
     letter-spacing: 1px;
-  }
-  .hq-chat-shell {
-    position: fixed;
-    left: 10px;
-    right: 10px;
-    bottom: 0;
-    width: auto;
-    height: 70svh;
-    min-height: 0;
-    z-index: 35;
-    border-radius: 18px 18px 0 0;
-    box-shadow: 0 -12px 38px #080d1377;
-  }
-  .hq-chat-shell.is-collapsed {
-    height: 48px;
-  }
-  .hq-chat-shell.is-collapsed .hq-chat-toggle {
-    writing-mode: horizontal-tb;
-    min-height: 48px;
-    width: 100%;
-    padding: 10px 16px;
-  }
-  .hq-chat-toggle {
-    flex-shrink: 0;
-  }
-  .hq-stage {
-    margin-bottom: 58px;
   }
   .hq-dock {
     gap: 5px;
@@ -468,7 +368,6 @@
   }
   .hq-dock button svg {
     width: 15px;
-    flex-shrink: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -546,31 +445,10 @@
   width: 36px !important;
   height: 20px !important;
 }
-.hq-chat-shell .wf-meeting-panel {
-  min-width: 0;
-  border: 0;
-  padding: 12px;
-}
-.hq-chat-shell .wf-inline-status {
-  max-height: 80px;
-  overflow: auto;
-}
-.hq-chat-shell .wf-chat-header {
-  flex-shrink: 0;
-}
 
-.wf-office-title.is-cinematic {
-  margin-bottom: 12px;
-}
 .wf-office-title.is-cinematic h1 {
-  font-size: clamp(20px, 2.5vw, 30px);
-  margin-block: 5px;
+  font-size: clamp(22px, 2.4vw, 30px);
 }
-.wf-office-title.is-cinematic p,
 .wf-office-title.is-cinematic > .wf-actions {
-  display: none;
-}
-.wf-shell:has(.hq-stage) .wf-view-switch > button:nth-of-type(3),
-.wf-shell:has(.hq-stage) .wf-view-switch > .wf-muted {
   display: none;
 }

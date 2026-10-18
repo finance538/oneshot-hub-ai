@@ -1,0 +1,115 @@
+.ui-dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  margin: auto;
+  border: 1px solid var(--ui-border);
+  border-radius: 16px;
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  font:
+    var(--ui-body-size)/1.8 "IBM Plex Sans Arabic",
+    "Outfit",
+    sans-serif;
+  box-shadow: 0 24px 80px #05070966;
+  overflow: auto;
+  color-scheme: dark;
+}
+[data-theme="light"] .ui-dialog {
+  color-scheme: light;
+}
+.ui-dialog::backdrop {
+  background: #080b10b3;
+  backdrop-filter: blur(5px);
+}
+.ui-dialog-wide {
+  width: min(1120px, calc(100vw - 32px));
+}
+.ui-dialog-drawer {
+  width: min(390px, calc(100vw - 24px));
+  height: calc(100dvh - 24px);
+  max-height: calc(100dvh - 24px);
+  margin-block: 12px;
+  margin-inline-start: auto;
+  margin-inline-end: 12px;
+}
+.ui-dialog-heading {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 22px;
+  background: var(--ui-panel);
+  border-bottom: 1px solid var(--ui-border);
+}
+.ui-dialog .ui-dialog-heading h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.7;
+}
+.ui-dialog .ui-dialog-close {
+  display: grid;
+  place-items: center;
+  width: var(--ui-control-height);
+  height: var(--ui-control-height);
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-control-radius);
+  background: transparent;
+  color: var(--ui-text);
+  flex-shrink: 0;
+}
+.ui-dialog-body {
+  padding: 24px;
+  min-width: 0;
+}
+.ui-dialog-body > p {
+  color: var(--ui-muted);
+}
+.ui-dialog :is(button, a, input, textarea, select, summary):focus-visible {
+  outline: 2px solid var(--ui-muted);
+  outline-offset: 3px;
+}
+.ui-settings {
+  display: grid;
+  gap: 24px;
+}
+.ui-settings label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ui-muted);
+}
+.ui-settings :is(input, select) {
+  width: 100%;
+  min-height: 40px;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  border: 1px solid var(--ui-border);
+}
+.ui-settings p {
+  font-size: 12px;
+  color: var(--ui-muted);
+}
+.ui-settings-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ui-detail-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 580px) {
+  .ui-dialog-body {
+    padding: 20px 16px;
+  }
+  .ui-dialog-heading {
+    padding: 12px 16px;
+  }
+}

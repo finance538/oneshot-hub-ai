@@ -1,3 +1,4 @@
+import { Modal } from "../components/Modal";
 import { MarketingComparison } from "../marketing/MarketingComparison";
 import { marketingCopy } from "../marketing/copy";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -299,7 +300,7 @@ export default function Workforce({
   onLogin: () => void;
   accountControl: ReactNode;
 }) {
-  const { language, outputLanguage, setOutputLanguage } = useAppearance();
+  const { language, outputLanguage, setOutputLanguage, tr } = useAppearance();
   const t = (key: string) => wfText(language, key);
   const [tab, setTabState] = useState<"market" | "office">(
       new URLSearchParams(window.location.search).get("view") === "office"
@@ -312,6 +313,7 @@ export default function Workforce({
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [syncing, setSyncing] = useState(false);
+  const [catalogLimit, setCatalogLimit] = useState(6);
   const [search, setSearch] = useState(""),
     [category, setCategory] = useState("all"),
     [trial, setTrial] = useState<Employee | null>(null),
@@ -330,9 +332,8 @@ export default function Workforce({
       ? "headquarters"
       : "chat",
   );
-  const [chatCollapsed, setChatCollapsed] = useState(
-    () => window.matchMedia("(max-width: 900px)").matches,
-  );
+  const [chatCollapsed, setChatCollapsed] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [toolFocus, setToolFocus] = useState<{
     employeeId: string;
     resourceId?: string;
@@ -409,6 +410,8 @@ export default function Workforce({
     window.history.replaceState({}, "", url);
   }
   function openMeeting() {
+    setChatCollapsed(true);
+    setOperationsOpen(false);
     voice.stop();
     setBoardroom(true);
   }
@@ -548,6 +551,13 @@ export default function Workforce({
   }, [task?.id, task?.updatedAt, mode]);
   const meeting = workspace.meetings.find((m) => m.id === meetingId);
   const demoText = t(`sample_${trial?.id || selected}`);
+  const filteredEmployees = catalog.filter(
+    (e) =>
+      (category === "all" || e.category === category) &&
+      JSON.stringify([e.title, e.bio, e.skills])
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
   const title = (e?: Employee) => e?.title[language] || e?.title.en || "CEO";
   async function createOrganization() {
     await action(async () => {
@@ -642,11 +652,7 @@ export default function Workforce({
     </label>
   );
   const meetingPanel = boardroom ? (
-    <Dialog
-      inline={view === "headquarters"}
-      title={t("boardroom")}
-      onClose={closeMeeting}
-    >
+    <Dialog title={t("boardroom")} onClose={closeMeeting}>
       {error && (
         <p className="wf-error" role="alert">
           {error}
@@ -769,9 +775,10 @@ export default function Workforce({
             oneShot <small>AI WORKFORCE</small>
           </span>
         </a>
-        <nav>
+        <nav aria-label={tr("مساحة العمل", "Workspace")}>
           <button
             className={tab === "market" ? "active" : ""}
+            aria-pressed={tab === "market"}
             onClick={() => setTab("market")}
           >
             <span className="wf-nav-long">{t("market")}</span>
@@ -781,6 +788,7 @@ export default function Workforce({
           </button>
           <button
             className={tab === "office" ? "active" : ""}
+            aria-pressed={tab === "office"}
             onClick={() => setTab("office")}
           >
             <span className="wf-nav-long">{t("office")}</span>
@@ -789,17 +797,40 @@ export default function Workforce({
             </span>
           </button>
         </nav>
-        <details className="wf-global-menu">
-          <summary aria-label="إعدادات الحساب واللغة والمظهر">
-            <Menu size={20} />
-          </summary>
-          <div>
+        <button
+          className="wf-menu-button"
+          type="button"
+          aria-label={tr("القائمة والحساب", "Menu & account")}
+          aria-haspopup="dialog"
+          onClick={() => setMenuOpen(true)}
+        >
+          <Menu size={18} />
+        </button>
+      </header>
+      {menuOpen && (
+        <Modal
+          title={tr("القائمة والحساب", "Menu & account")}
+          onClose={() => setMenuOpen(false)}
+          drawer
+        >
+          <div className="ui-settings">
             <AppearanceControls />
-            {accountControl}
+            <div
+              onClick={(event) => {
+                if (
+                  event.target instanceof Element &&
+                  event.target.closest("button")
+                )
+                  setMenuOpen(false);
+              }}
+            >
+              {accountControl}
+            </div>
             <a href={appearanceLink("/")}>{t("home")}</a>
           </div>
-        </details>
-      </header>
+        </Modal>
+      )}
+
       <main className="wf-main">
         {error && (
           <div className="wf-error" role="alert">
@@ -824,11 +855,10 @@ export default function Workforce({
                 </span>
                 <h1>{marketingCopy[language].headline}</h1>
                 <p>{marketingCopy[language].intro}</p>
-                <p>{marketingCopy[language].examples}</p>
                 <button
                   className="wf-primary"
                   onClick={() => {
-                    setSelected("ceo");
+                    selectPerson("ceo");
                     setTab("office");
                   }}
                 >
@@ -867,6 +897,7 @@ export default function Workforce({
                 </div>
                 <span className="wf-pill">AI</span>
               </div>
+              <p className="wf-catalog-note">{t("details")}</p>
               <div className="wf-filters">
                 <label>
                   <Search size={18} />
@@ -874,13 +905,19 @@ export default function Workforce({
                     aria-label={t("search")}
                     placeholder={t("search")}
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setCatalogLimit(6);
+                    }}
                   />
                 </label>
                 <select
                   aria-label={t("all")}
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => {
+                    setCategory(e.target.value);
+                    setCatalogLimit(6);
+                  }}
                 >
                   <option value="all">{t("all")}</option>
                   {[...new Set(catalog.map((e) => e.category))].map((c) => (
@@ -890,57 +927,52 @@ export default function Workforce({
               </div>
               {catalogLoading ? (
                 <p role="status">{t("loading")}</p>
-              ) : !catalog.filter(
-                  (e) =>
-                    (category === "all" || e.category === category) &&
-                    JSON.stringify([e.title, e.bio, e.skills])
-                      .toLowerCase()
-                      .includes(search.toLowerCase()),
-                ).length ? (
+              ) : !filteredEmployees.length ? (
                 <p>{t("empty")}</p>
               ) : (
                 <div className="wf-cards">
-                  {catalog
-                    .filter(
-                      (e) =>
-                        (category === "all" || e.category === category) &&
-                        JSON.stringify([e.title, e.bio, e.skills])
-                          .toLowerCase()
-                          .includes(search.toLowerCase()),
-                    )
-                    .map((e, i) => (
-                      <article key={e.id} className="wf-card">
-                        <div className="wf-card-top">
-                          <span className="wf-avatar">
-                            <EmployeeIcon id={e.id} size={28} />
-                          </span>
-                          <span className="wf-card-number">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                        </div>
-                        <span className="wf-eyebrow">AI / {e.category}</span>
-                        <h3>{title(e)}</h3>
-                        <p>{e.bio[language] || e.bio.en}</p>
-                        <div className="wf-skills">
-                          {e.skills.map((s) => (
-                            <span key={s}>{s}</span>
-                          ))}
-                        </div>
-                        <small>{t("details")}</small>
-                        <footer>
-                          <span>{e.id === "ceo" ? t("free") : t("demo")}</span>
-                          <button
-                            onClick={() => {
-                              setTrial(e);
-                              setInput("");
-                            }}
-                          >
-                            <Play size={15} />
-                            {t("try")}
-                          </button>
-                        </footer>
-                      </article>
-                    ))}
+                  {filteredEmployees.slice(0, catalogLimit).map((e, i) => (
+                    <article key={e.id} className="wf-card">
+                      <div className="wf-card-top">
+                        <span className="wf-avatar">
+                          <EmployeeIcon id={e.id} size={28} />
+                        </span>
+                        <span className="wf-card-number">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+                      <span className="wf-eyebrow">AI / {e.category}</span>
+                      <h3>{title(e)}</h3>
+                      <p>{e.bio[language] || e.bio.en}</p>
+                      <div className="wf-skills">
+                        {e.skills.slice(0, 2).map((s) => (
+                          <span key={s}>{s}</span>
+                        ))}
+                      </div>
+                      <footer>
+                        <span>{e.id === "ceo" ? t("free") : t("demo")}</span>
+                        <button
+                          onClick={() => {
+                            setTrial(e);
+                            setInput("");
+                          }}
+                        >
+                          <Play size={15} />
+                          {t("try")}
+                        </button>
+                      </footer>
+                    </article>
+                  ))}
+                </div>
+              )}
+              {!catalogLoading && filteredEmployees.length > catalogLimit && (
+                <div className="wf-show-more">
+                  <button
+                    type="button"
+                    onClick={() => setCatalogLimit((limit) => limit + 6)}
+                  >
+                    {tr("عرض المزيد من الموظفين", "Show more colleagues")}
+                  </button>
                 </div>
               )}
             </section>
@@ -957,7 +989,6 @@ export default function Workforce({
               <div>
                 <span className="wf-eyebrow">YOUR EXECUTIVE OFFICE</span>
                 <h1>{workspace.organization?.name || t("office")}</h1>
-                <p>{t("prototype")}</p>
               </div>
               <div className="wf-actions">
                 <button
@@ -1032,8 +1063,8 @@ export default function Workforce({
                     onClick={() => changeView("headquarters")}
                   >
                     <Building2 size={18} />
-                    {live("headquarters")}
-                    <small>EXECUTIVE HQ</small>
+                    <span className="wf-nav-long">{live("headquarters")}</span>
+                    <span className="wf-nav-short">{tr("المقر", "HQ")}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1042,11 +1073,19 @@ export default function Workforce({
                     }}
                   >
                     <Monitor size={17} />
-                    <span>البريد والبحث</span>
+                    <span>{tr("الأدوات", "Tools")}</span>
                   </button>
-                  <span className="wf-muted">
-                    {voice.active ? live("call") : "ONESHOT / WORKSPACE"}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      voice.stop();
+                      setOperationsOpen(true);
+                    }}
+                    aria-haspopup="dialog"
+                  >
+                    <FileText size={16} />
+                    {t("tasks")}
+                  </button>
                 </div>
                 <div
                   className={`wf-live-workspace ${view === "headquarters" ? "has-office" : "standard-chat"}`}
@@ -1074,238 +1113,245 @@ export default function Workforce({
                       }}
                       onMeeting={openMeeting}
                       meetingOpen={boardroom}
-                      paused={masterOpen || !!trial}
+                      paused={
+                        masterOpen ||
+                        !!trial ||
+                        !chatCollapsed ||
+                        boardroom ||
+                        operationsOpen
+                      }
                       onStandard={() => changeView("chat")}
                     />
                   )}
                   {view === "headquarters" ? (
-                    <aside
-                      className={`hq-chat-shell ${chatCollapsed && !boardroom ? "is-collapsed" : ""}`}
-                    >
+                    <>
                       <button
-                        className="hq-chat-toggle"
+                        className="wf-open-chat"
                         type="button"
-                        aria-expanded={!chatCollapsed || boardroom}
-                        aria-controls="hq-chat-body"
-                        onClick={() => {
-                          if (boardroom) closeMeeting();
-                          voice.stop();
-                          setChatCollapsed((value) => !value);
-                        }}
+                        aria-haspopup="dialog"
+                        onClick={() => setChatCollapsed(false)}
                       >
                         <MessageSquare size={17} />
-                        <span>{live("chat")}</span>
-                        <span aria-hidden="true">
-                          {chatCollapsed && !boardroom ? "+" : "−"}
-                        </span>
+                        {live("chat")}
                       </button>
-                      <div
-                        id="hq-chat-body"
-                        className="hq-chat-body"
-                        inert={chatCollapsed && !boardroom}
-                      >
-                        {boardroom ? meetingPanel : chatPanel()}
-                      </div>
-                    </aside>
+                      {!chatCollapsed && !boardroom && (
+                        <Modal
+                          title={live("chat")}
+                          onClose={() => {
+                            voice.stop();
+                            setChatCollapsed(true);
+                          }}
+                          drawer
+                        >
+                          {chatPanel()}
+                        </Modal>
+                      )}
+                    </>
                   ) : !boardroom ? (
                     chatPanel()
                   ) : null}
                 </div>
-                <details
-                  className="wf-operations"
-                  open={operationsOpen}
-                  onToggle={(event) =>
-                    setOperationsOpen(event.currentTarget.open)
-                  }
-                >
-                  <summary>
-                    <FileText size={18} />
-                    {live("operations")}
-                  </summary>
-                  <div className="wf-office-grid">
-                    <section className="wf-team">
-                      <h2>
-                        <Users size={18} />
-                        {t("team")}
-                      </h2>
-                      {catalog.map((e) => {
-                        const current = workspace.tasks.find(
-                          (x) => x.employeeId === e.id,
-                        );
-                        return (
+                {operationsOpen && (
+                  <Modal
+                    title={live("operations")}
+                    onClose={() => setOperationsOpen(false)}
+                    wide
+                  >
+                    {error && (
+                      <p className="wf-error" role="alert">
+                        {error}
+                      </p>
+                    )}
+                    <div className="wf-office-grid">
+                      <section className="wf-team">
+                        <h2>
+                          <Users size={18} />
+                          {t("team")}
+                        </h2>
+                        {catalog.map((e) => {
+                          const current = workspace.tasks.find(
+                            (x) => x.employeeId === e.id,
+                          );
+                          return (
+                            <button
+                              key={e.id}
+                              className={`wf-desk ${selected === e.id ? "selected" : ""}`}
+                              onClick={() => {
+                                selectPerson(e.id);
+                              }}
+                            >
+                              <EmployeeIcon id={e.id} />
+                              <strong>{title(e)}</strong>
+                              <small>
+                                <i
+                                  className={
+                                    current?.status === "drafting"
+                                      ? "working"
+                                      : ""
+                                  }
+                                />
+                                {t(current?.status || "available")}
+                              </small>
+                            </button>
+                          );
+                        })}
+                      </section>
+                      <section className="wf-work">
+                        <div className="wf-modebar">
+                          {(["demo", "live", "replay"] as const).map((m) => (
+                            <button
+                              key={m}
+                              aria-pressed={mode === m}
+                              disabled={m === "replay" && !task}
+                              onClick={() => setMode(m)}
+                            >
+                              {t(m)}
+                            </button>
+                          ))}
+                        </div>
+                        <Desktop
+                          employee={employee}
+                          task={
+                            mode === "demo" && task?.mode !== "demo"
+                              ? undefined
+                              : task
+                          }
+                          mode={mode}
+                          events={
+                            mode === "replay" ? replayEvents : workspace.events
+                          }
+                          demoText={demoText}
+                          busy={busy}
+                          onApprove={() =>
+                            void action(async () => {
+                              if (task)
+                                await request(`tasks/${task.id}/approve`, {});
+                            })
+                          }
+                        />
+                        <form
+                          className="wf-composer"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            void run(selected, mode === "demo");
+                          }}
+                        >
+                          {languageControl}
+                          <label>
+                            {t("task")}
+                            <textarea
+                              required
+                              maxLength={6000}
+                              value={input}
+                              onChange={(e) => setInput(e.target.value)}
+                            />
+                          </label>
+                          <button
+                            className="wf-primary"
+                            disabled={busy || !input.trim()}
+                          >
+                            <Play size={16} />
+                            {busy ? t("busy") : t("run")}
+                          </button>
+                        </form>
+                      </section>
+                      <aside className="wf-activity">
+                        <h2>
+                          <CircleDot size={17} />
+                          {t("activity")}
+                        </h2>
+                        {!workspace.events.length && <p>{t("empty")}</p>}
+                        {workspace.events.slice(0, 20).map((e) => (
                           <button
                             key={e.id}
-                            className={`wf-desk ${selected === e.id ? "selected" : ""}`}
                             onClick={() => {
-                              selectPerson(e.id);
+                              const row = workspace.tasks.find(
+                                (x) => x.id === e.taskId,
+                              );
+                              if (row) {
+                                selectPerson(row.employeeId);
+                                setActiveTask(row.id);
+                                setMode("replay");
+                              }
                             }}
                           >
-                            <EmployeeIcon id={e.id} />
-                            <strong>{title(e)}</strong>
-                            <small>
-                              <i
-                                className={
-                                  current?.status === "drafting"
-                                    ? "working"
-                                    : ""
-                                }
-                              />
-                              {t(current?.status || "available")}
-                            </small>
-                          </button>
-                        );
-                      })}
-                    </section>
-                    <section className="wf-work">
-                      <div className="wf-modebar">
-                        {(["demo", "live", "replay"] as const).map((m) => (
-                          <button
-                            key={m}
-                            aria-pressed={mode === m}
-                            disabled={m === "replay" && !task}
-                            onClick={() => setMode(m)}
-                          >
-                            {t(m)}
+                            <span>{t(e.phase)}</span>
+                            <time>
+                              {new Date(e.createdAt).toLocaleTimeString(
+                                language,
+                              )}
+                            </time>
                           </button>
                         ))}
-                      </div>
-                      <Desktop
-                        employee={employee}
-                        task={
-                          mode === "demo" && task?.mode !== "demo"
-                            ? undefined
-                            : task
-                        }
-                        mode={mode}
-                        events={
-                          mode === "replay" ? replayEvents : workspace.events
-                        }
-                        demoText={demoText}
-                        busy={busy}
-                        onApprove={() =>
-                          void action(async () => {
-                            if (task)
-                              await request(`tasks/${task.id}/approve`, {});
-                          })
-                        }
-                      />
-                      <form
-                        className="wf-composer"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          void run(selected, mode === "demo");
-                        }}
-                      >
-                        {languageControl}
-                        <label>
-                          {t("task")}
-                          <textarea
-                            required
-                            maxLength={6000}
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                          />
-                        </label>
-                        <button
-                          className="wf-primary"
-                          disabled={busy || !input.trim()}
-                        >
-                          <Play size={16} />
-                          {busy ? t("busy") : t("run")}
-                        </button>
-                      </form>
-                    </section>
-                    <aside className="wf-activity">
-                      <h2>
-                        <CircleDot size={17} />
-                        {t("activity")}
-                      </h2>
-                      {!workspace.events.length && <p>{t("empty")}</p>}
-                      {workspace.events.slice(0, 20).map((e) => (
-                        <button
-                          key={e.id}
-                          onClick={() => {
-                            const row = workspace.tasks.find(
-                              (x) => x.id === e.taskId,
-                            );
-                            if (row) {
+                      </aside>
+                    </div>
+                    <section className="wf-history">
+                      <h2>{t("tasks")}</h2>
+                      {!workspace.tasks.length && <p>{t("empty")}</p>}
+                      {workspace.tasks.map((row) => (
+                        <article key={row.id}>
+                          <button
+                            onClick={() => {
                               selectPerson(row.employeeId);
                               setActiveTask(row.id);
-                              setMode("replay");
-                            }
-                          }}
-                        >
-                          <span>{t(e.phase)}</span>
-                          <time>
-                            {new Date(e.createdAt).toLocaleTimeString(language)}
-                          </time>
-                        </button>
-                      ))}
-                    </aside>
-                  </div>
-                  <section className="wf-history">
-                    <h2>{t("tasks")}</h2>
-                    {!workspace.tasks.length && <p>{t("empty")}</p>}
-                    {workspace.tasks.map((row) => (
-                      <article key={row.id}>
-                        <button
-                          onClick={() => {
-                            selectPerson(row.employeeId);
-                            setActiveTask(row.id);
-                            setMode("live");
-                          }}
-                        >
-                          <EmployeeIcon id={row.employeeId} size={18} />
-                          <span>{row.input.slice(0, 90)}</span>
-                          <small>{t(row.status)}</small>
-                        </button>
-                        {["received", "queued", "failed"].includes(
-                          row.status,
-                        ) && (
-                          <button
-                            disabled={busy}
-                            onClick={() =>
-                              void action(async () => {
-                                const r = await request<{ task: WorkTask }>(
-                                  `tasks/${row.id}/run`,
-                                  {},
-                                );
-                                selectPerson(r.task.employeeId);
-                                setActiveTask(r.task.id);
-                              })
-                            }
+                              setMode("live");
+                            }}
                           >
-                            {t("run")}
+                            <EmployeeIcon id={row.employeeId} size={18} />
+                            <span>{row.input.slice(0, 90)}</span>
+                            <small>{t(row.status)}</small>
                           </button>
-                        )}
-                      </article>
-                    ))}
-                  </section>
-                  <section className="wf-history">
-                    <h2>{t("minutes")}</h2>
-                    {!workspace.meetings.length && <p>{t("empty")}</p>}
-                    {workspace.meetings.map((m) => (
-                      <article key={m.id}>
-                        <button
-                          onClick={() => {
-                            setMeetingId(m.id);
-                            setSelectedProposals([]);
-                            setBoardroom(true);
-                          }}
-                        >
-                          {m.topic}
-                          <time>
-                            {new Date(m.createdAt).toLocaleDateString(language)}
-                          </time>
-                        </button>
-                      </article>
-                    ))}
-                  </section>
-                </details>
-                <div className="wf-connection">
-                  <ShieldCheck />
-                  <p>{t("connections")}</p>
-                </div>
+                          {["received", "queued", "failed"].includes(
+                            row.status,
+                          ) && (
+                            <button
+                              disabled={busy}
+                              onClick={() =>
+                                void action(async () => {
+                                  const r = await request<{ task: WorkTask }>(
+                                    `tasks/${row.id}/run`,
+                                    {},
+                                  );
+                                  selectPerson(r.task.employeeId);
+                                  setActiveTask(r.task.id);
+                                })
+                              }
+                            >
+                              {t("run")}
+                            </button>
+                          )}
+                        </article>
+                      ))}
+                    </section>
+                    <section className="wf-history">
+                      <h2>{t("minutes")}</h2>
+                      {!workspace.meetings.length && <p>{t("empty")}</p>}
+                      {workspace.meetings.map((m) => (
+                        <article key={m.id}>
+                          <button
+                            onClick={() => {
+                              setOperationsOpen(false);
+                              setMeetingId(m.id);
+                              setSelectedProposals([]);
+                              setBoardroom(true);
+                            }}
+                          >
+                            {m.topic}
+                            <time>
+                              {new Date(m.createdAt).toLocaleDateString(
+                                language,
+                              )}
+                            </time>
+                          </button>
+                        </article>
+                      ))}
+                    </section>
+                    <div className="wf-connection">
+                      <ShieldCheck />
+                      <p>{t("connections")}</p>
+                    </div>
+                  </Modal>
+                )}
               </>
             )}
           </>
@@ -1314,6 +1360,12 @@ export default function Workforce({
       {trial && (
         <Dialog title={title(trial)} onClose={() => setTrial(null)}>
           <p>{trial.bio[language] || trial.bio.en}</p>
+          <div className="wf-skills">
+            {trial.skills.map((skill) => (
+              <span key={skill}>{skill}</span>
+            ))}
+          </div>
+          <p className="wf-catalog-note">{t("details")}</p>
           <Desktop
             employee={trial}
             mode="demo"
@@ -1364,12 +1416,15 @@ export default function Workforce({
               selectPerson(row.employeeId);
               setActiveTask(id);
               setMode("live");
+              voice.stop();
+              setMasterOpen(false);
+              setToolFocus(undefined);
               setOperationsOpen(true);
             }
           }}
         />
       )}
-      {view !== "headquarters" && meetingPanel}
+      {meetingPanel}
     </div>
   );
 }

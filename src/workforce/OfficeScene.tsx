@@ -1,3 +1,5 @@
+import { Modal } from "../components/Modal";
+import type { Conversation } from "./useConversation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Monitor, Users, ArrowUpRight, Activity } from "lucide-react";
 import type { ChatTurn, Employee, Workspace } from "../../shared/workforce";
@@ -92,8 +94,8 @@ export function OfficeScene({
     [],
   );
   useEffect(() => {
-    if (paused && timer.current) clearTimeout(timer.current);
-  }, [paused]);
+    if ((paused || activityOpen) && timer.current) clearTimeout(timer.current);
+  }, [paused, activityOpen]);
   function travel(id: string, open = false) {
     if (paused || moved.current) return;
     if (timer.current) clearTimeout(timer.current);
@@ -120,17 +122,21 @@ export function OfficeScene({
         <button
           type="button"
           onClick={() => setActivityOpen((v) => !v)}
-          aria-expanded={activityOpen}
-          aria-controls="hq-activity-detail"
+          aria-haspopup="dialog"
         >
           <strong>{name(catalog.find((e) => e.id === selected))}</strong>
           <span dir="auto">{activityText}</span>
         </button>
       </div>
       {activityOpen && (
-        <div className="hq-activity-detail" id="hq-activity-detail" dir="auto">
-          {activityText}
-        </div>
+        <Modal
+          title={name(catalog.find((e) => e.id === selected)) || w("activity")}
+          onClose={() => setActivityOpen(false)}
+        >
+          <p className="ui-detail-text" dir="auto">
+            {activityText}
+          </p>
+        </Modal>
       )}
       <div
         className="hq-viewport"
