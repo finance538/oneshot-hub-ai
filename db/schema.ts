@@ -234,6 +234,10 @@ export const workforceChatTurns = pgTable(
     requestKey: uuid("request_key").notNull().unique(),
     input: text("input").notNull(),
     output: text("output").notNull().default(""),
+    collaboration: jsonb("collaboration")
+      .$type<{ employeeId: string; output: string }[]>()
+      .notNull()
+      .default([]),
     action: jsonb("action").$type<{
       kind: string;
       employeeId: string;
