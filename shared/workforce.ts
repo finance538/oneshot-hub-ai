@@ -52,6 +52,7 @@ export interface WorkEvent {
 }
 export interface Meeting {
   id: string;
+  outputLanguage?: WorkforceLanguage;
   status: string;
   topic: string;
   minutes: string;
@@ -63,6 +64,16 @@ export interface Meeting {
     output: string;
   }[];
   proposals: { id: string; employeeId: string; title: string }[];
+  createdAt: string;
+}
+export interface ChatTurn {
+  id: string;
+  employeeId: string;
+  meetingId: string | null;
+  input: string;
+  output: string;
+  outputLanguage: WorkforceLanguage;
+  status: "generating" | "ready" | "failed";
   createdAt: string;
 }
 export interface Workspace {
