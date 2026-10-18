@@ -33,7 +33,7 @@ import {
   paymentWebhook,
 } from "../lib/payments.js";
 import { workforceRoute } from "../lib/workforce.js";
-import { aiChat, overview } from "../lib/ai.js";
+import { executiveChat, overview } from "../lib/ai.js";
 import { gateways, endpoints } from "../../shared/contracts.js";
 
 export default async (req: Request) => {
@@ -52,10 +52,25 @@ export default async (req: Request) => {
   try {
     const url = new URL(req.url);
     const route = url.searchParams.get("route");
-    const path = route
-      ? `/api/${route.replace(/^\/+/, "")}`
-      : url.pathname.replace(/\/$/, "");
+    const path = (
+      route ? `/api/${route.replace(/^\/+/, "")}` : url.pathname
+    ).replace(/\/+$/, "");
     const method = req.method;
+    // Retired studio requests must stop before auth, database work or inference.
+    if (
+      path === "/api/ai/chat" ||
+      (path === "/api/conversations" &&
+        url.searchParams.get("kind") !== "ceo")
+    )
+      return json(
+        {
+          error: "هذه الخدمة لم تعد متاحة. استخدم موظفي AI في مقر شركتك الرقمي.",
+          code: "AI_STUDIO_RETIRED",
+          destination: "/workforce",
+          requestId,
+        },
+        410,
+      );
     if (method === "OPTIONS") {
       assertOrigin(req);
       return new Response(null, {
@@ -273,20 +288,13 @@ export default async (req: Request) => {
       await audit(user.id, "staff.updated", id);
       return json({ employee });
     }
-    if (
-      [...endpoints.chat, ...endpoints.ceo].includes(path) &&
-      method === "POST"
-    ) {
-      const kind = path.includes("ceo") ? "ceo" : "chat",
-        user = await authenticate(req, kind === "ceo");
+    if (endpoints.ceo.includes(path) && method === "POST") {
+      const user = await authenticate(req, true);
       await limit(user.id, "ai", 10);
-      return json(await aiChat(await payload(req), user.id, kind));
+      return json(await executiveChat(await payload(req), user.id));
     }
     if (path === "/api/conversations" && method === "GET") {
-      const user = await authenticate(req),
-        kind = url.searchParams.get("kind") === "ceo" ? "ceo" : "chat";
-      if (kind === "ceo" && !user.roles?.includes("admin"))
-        throw new ApiError(403, "هذه المحادثات متاحة للمسؤول فقط.");
+      const user = await authenticate(req, true);
       return json({
         conversations: await database()
           .select()
@@ -294,7 +302,7 @@ export default async (req: Request) => {
           .where(
             and(
               eq(conversations.ownerId, user.id),
-              eq(conversations.kind, kind),
+              eq(conversations.kind, "ceo"),
             ),
           )
           .orderBy(desc(conversations.updatedAt))
@@ -302,18 +310,20 @@ export default async (req: Request) => {
       });
     }
     if (/^\/api\/conversations\/[^/]+$/.test(path)) {
-      const user = await authenticate(req),
+      const user = await authenticate(req, true),
         id = uuid(path.split("/").pop()!),
         db = database();
       const [conversation] = await db
         .select()
         .from(conversations)
         .where(
-          and(eq(conversations.id, id), eq(conversations.ownerId, user.id)),
+          and(
+            eq(conversations.id, id),
+            eq(conversations.ownerId, user.id),
+            eq(conversations.kind, "ceo"),
+          ),
         );
       if (!conversation) throw new ApiError(404, "المحادثة غير موجودة.");
-      if (conversation.kind === "ceo" && !user.roles?.includes("admin"))
-        throw new ApiError(403, "صلاحية المسؤول مطلوبة.");
       if (method === "GET")
         return json({
           conversation,
