@@ -56,8 +56,8 @@ export function useConversation(
   useEffect(() => {
     if (!enabled) return;
     const timer = setInterval(() => {
-      if (!document.hidden && !requests.current) void refresh();
-    }, 10000);
+      if (!document.hidden) void refresh();
+    }, 3000);
     return () => clearInterval(timer);
   }, [employeeId, meetingId, enabled]);
   async function send(input: string): Promise<ChatTurn | null> {
@@ -89,6 +89,7 @@ export function useConversation(
         { quiet: true },
       );
       if (epoch !== generation.current) return null;
+      read.current++;
       setTurns((prev) =>
         [...prev.filter((row) => row.id !== result.turn.id), result.turn].sort(
           (a, b) =>
