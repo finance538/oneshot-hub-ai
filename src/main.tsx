@@ -3,6 +3,12 @@ import ReactDOM from "react-dom/client";
 import Root from "./Root";
 import "./design-tokens.css";
 import "./styles.css";
+// Native plugins are loaded only inside the signed iOS/Android container.
+if ("Capacitor" in window) {
+  void import("./lib/native-shell")
+    .then(({ initializeNativeShell }) => initializeNativeShell())
+    .catch(() => {});
+}
 class ErrorBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }

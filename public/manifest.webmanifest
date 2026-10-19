@@ -2,12 +2,27 @@
   "id": "/hub",
   "name": "OneShot Hub",
   "short_name": "OneShot",
-  "description": "Your digital company, intelligent team and ecosystem launcher.",
+  "description": "مساحة أعمالك وفريقك الذكي ومنظومة ون شوت.",
+  "lang": "ar",
+  "dir": "rtl",
   "start_url": "/hub",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0b0c0e",
-  "theme_color": "#0b0c0e",
+  "background_color": "#101312",
+  "theme_color": "#101312",
+  "categories": ["business", "productivity", "photography"],
+  "shortcuts": [
+    {
+      "name": "مساحتي",
+      "url": "/hub#command",
+      "icons": [{ "src": "/hub-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "الكتالوج",
+      "url": "/products",
+      "icons": [{ "src": "/hub-icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "/hub-icon-192.png",

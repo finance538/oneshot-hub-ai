@@ -392,3 +392,19 @@ export const ecosystemGrants = pgTable(
   },
   (t) => [index("ecosystem_grants_owner").on(t.ownerId)],
 );
+
+// A subscription belongs to one account; its endpoint and keys never leave
+// the server after enrollment. Web Push payloads contain no account content.
+export const pushSubscriptions = pgTable(
+  "push_subscriptions",
+  {
+    endpointHash: text("endpoint_hash").primaryKey(),
+    ownerId: text("owner_id").notNull(),
+    encryptedSubscription: text("encrypted_subscription").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [index("push_subscriptions_owner").on(t.ownerId)],
+);
