@@ -5,9 +5,13 @@ import {
   randomBytes,
   createHash,
 } from "node:crypto";
-import { sql } from "drizzle-orm";
+import { and, eq, gt, sql } from "drizzle-orm";
 import { database } from "../../db/index.js";
-import { requestLimits, auditEvents } from "../../db/schema.js";
+import {
+  requestLimits,
+  auditEvents,
+  ecosystemGrants,
+} from "../../db/schema.js";
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -27,7 +31,36 @@ export async function resolveUserFromToken(req: Request): Promise<User | null> {
   if (!authHeader || !authHeader.toLowerCase().startsWith("bearer ")) {
     return null;
   }
-  const token = authHeader.slice(7).trim();
+  let token = authHeader.slice(7).trim();
+  if (token.startsWith("osh_")) {
+    if (!/^osh_[A-Za-z0-9_-]{43}$/.test(token)) return null;
+    // Ecosystem sessions are accepted only by the central backend, and only
+    // from the exact browser origin to which the one-time grant was bound.
+    if (new URL(req.url).origin !== "https://www.1shotcam.com") return null;
+    try {
+      const digest = createHash("sha256").update(token).digest("base64url");
+      const [grant] = await database()
+        .select()
+        .from(ecosystemGrants)
+        .where(
+          and(
+            eq(ecosystemGrants.sessionHash, digest),
+            eq(ecosystemGrants.audience, req.headers.get("origin") || ""),
+            gt(ecosystemGrants.sessionExpiresAt, new Date()),
+          ),
+        );
+      if (!grant) return null;
+      const saved = decrypt(
+        grant.encryptedToken,
+        `ecosystem:${grant.codeHash}:${grant.audience}`,
+      );
+      if (typeof saved?.token !== "string" || saved.token.startsWith("osh_"))
+        return null;
+      token = saved.token;
+    } catch {
+      return null;
+    }
+  }
   if (!token) return null;
 
   const now = Date.now();
@@ -94,6 +127,8 @@ export async function resolveUserFromToken(req: Request): Promise<User | null> {
 }
 
 export async function resolveUser(req?: Request): Promise<User | null> {
+  // Explicit bearer credentials must never fall back to a different cookie account.
+  if (req?.headers.has("authorization")) return resolveUserFromToken(req);
   const cookieUser = await getUser();
   if (cookieUser) return cookieUser;
   if (req) return resolveUserFromToken(req);
@@ -107,11 +142,7 @@ export async function authenticate(
   const req =
     arg1 instanceof Request ? arg1 : arg2 instanceof Request ? arg2 : undefined;
   const admin =
-    typeof arg1 === "boolean"
-      ? arg1
-      : typeof arg2 === "boolean"
-        ? arg2
-        : false;
+    typeof arg1 === "boolean" ? arg1 : typeof arg2 === "boolean" ? arg2 : false;
   const user = await resolveUser(req);
   if (!user) throw new ApiError(401, "سجّل الدخول للمتابعة.", "AUTH_REQUIRED");
   if (admin && !user.roles?.includes("admin"))
@@ -127,10 +158,16 @@ const BUILTIN_ALLOWED_ORIGINS = new Set([
   "https://portal.1shotcam.com",
   "https://pay.1shotcam.com",
   "https://admin.1shotcam.com",
+  "https://workflow.1shotcam.com",
+  "https://brand.oneshotcam.com",
+  "https://loader.1shotcam.com",
   "https://1shotcam-ecosystem.netlify.app",
 ]);
 
-export function isAllowedOrigin(origin: string | null, reqUrl: string): boolean {
+export function isAllowedOrigin(
+  origin: string | null,
+  reqUrl: string,
+): boolean {
   if (!origin) return true;
   try {
     const originUrl = new URL(origin);
