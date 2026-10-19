@@ -1,5 +1,6 @@
 import { Modal } from "../components/Modal";
 import { MarketingComparison } from "../marketing/MarketingComparison";
+import { MarketingMarket, MarketingModes } from "../marketing/MarketingIntro";
 import { marketingCopy } from "../marketing/copy";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -139,10 +140,12 @@ export default function Storefront({
             "كتالوج المنتجات والخدمات الرقمية",
             "Products & Digital Services Catalog",
           )
-        : tr(
-            "التصوير والتسويق والتصميم والتكاملات الرقمية",
-            "Photography, Marketing, Design & Business Integrations",
-          );
+        : path === "/"
+          ? marketingCopy[language].headline
+          : tr(
+              "التصوير والتسويق والتصميم والتكاملات الرقمية",
+              "Photography, Marketing, Design & Business Integrations",
+            );
   useEffect(() => {
     document.title = `${title} | oneShot Brand Studio`;
   }, [title]);
@@ -393,6 +396,7 @@ export default function Storefront({
                 </span>
                 <h1>{marketingCopy[language].headline}</h1>
                 <p>{marketingCopy[language].intro}</p>
+                <MarketingMarket />
                 <div className="store-actions">
                   <a
                     className="store-button secondary"
@@ -418,33 +422,11 @@ export default function Storefront({
                   </button>
                 </div>
               </div>
-              <a className="store-hero-visual" href="#section-media">
-                <img
-                  src={cdnImage("/images/photography.jpg")}
-                  srcSet={cdnImageSet("/images/photography.jpg")}
-                  sizes="(max-width: 580px) calc(100vw - 68px), (max-width: 760px) calc(100vw - 96px), (max-width: 1320px) 40vw, 510px"
-                  alt={tr(
-                    "كاميرا وعدسات للتصوير الاحترافي",
-                    "Professional photography camera and lenses",
-                  )}
-                  width="800"
-                  height="1000"
-                  fetchPriority="high"
-                />
-                <span className="store-hero-visual-label" dir="ltr">
-                  ONESHOT / BRAND STUDIO
-                </span>
-                <span className="store-hero-caption">
-                  <span>
-                    <small>{tr("من قلب الاستوديو", "FROM THE STUDIO")}</small>
-                    <strong>
-                      {tr("صورة تروي حكايتك.", "Your story, in focus.")}
-                    </strong>
-                  </span>
-                  <ArrowLeft size={22} />
-                </span>
-              </a>
+              <MarketingModes />
             </section>
+            <div id="section-workforce">
+              <MarketingComparison />
+            </div>
             <ol
               className="store-journey"
               aria-label={tr("خطوات طلب الخدمة", "How to request a service")}
@@ -574,9 +556,6 @@ export default function Storefront({
               </div>
             </section>
 
-            <div id="section-workforce">
-              <MarketingComparison />
-            </div>
             <section className="store-section" id="section-ai-staff">
               <div className="store-section-heading">
                 <div>
