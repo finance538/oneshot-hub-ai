@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "5a178405-7ff7-43b9-986f-0751e7d02d39",
+  "id": "c9e1e89a-a822-4c31-8175-6d1cd3156eb0",
   "prevIds": [
     "68e0634b-546f-425d-92eb-db497a3817c6"
   ],
@@ -68,7 +68,7 @@
     },
     {
       "isRlsEnabled": false,
-      "name": "push_subscriptions",
+      "name": "experience_push_subscriptions",
       "entityType": "tables",
       "schema": "public"
     },
@@ -1062,17 +1062,17 @@
       "table": "products"
     },
     {
-      "type": "text",
+      "type": "uuid",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "gen_random_uuid()",
       "generated": null,
       "identity": null,
-      "name": "endpoint_hash",
+      "name": "id",
       "entityType": "columns",
       "schema": "public",
-      "table": "push_subscriptions"
+      "table": "experience_push_subscriptions"
     },
     {
       "type": "text",
@@ -1085,7 +1085,20 @@
       "name": "owner_id",
       "entityType": "columns",
       "schema": "public",
-      "table": "push_subscriptions"
+      "table": "experience_push_subscriptions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "endpoint_hash",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "experience_push_subscriptions"
     },
     {
       "type": "text",
@@ -1098,7 +1111,20 @@
       "name": "encrypted_subscription",
       "entityType": "columns",
       "schema": "public",
-      "table": "push_subscriptions"
+      "table": "experience_push_subscriptions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "experience_push_subscriptions"
     },
     {
       "type": "timestamp with time zone",
@@ -1111,20 +1137,7 @@
       "name": "updated_at",
       "entityType": "columns",
       "schema": "public",
-      "table": "push_subscriptions"
-    },
-    {
-      "type": "timestamp with time zone",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "expires_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "push_subscriptions"
+      "table": "experience_push_subscriptions"
     },
     {
       "type": "text",
@@ -2515,10 +2528,10 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "push_subscriptions_owner",
+      "name": "experience_push_owner",
       "entityType": "indexes",
       "schema": "public",
-      "table": "push_subscriptions"
+      "table": "experience_push_subscriptions"
     },
     {
       "nameExplicit": true,
@@ -3138,12 +3151,12 @@
     },
     {
       "columns": [
-        "endpoint_hash"
+        "id"
       ],
       "nameExplicit": false,
-      "name": "push_subscriptions_pkey",
+      "name": "experience_push_subscriptions_pkey",
       "schema": "public",
-      "table": "push_subscriptions",
+      "table": "experience_push_subscriptions",
       "entityType": "pks"
     },
     {
@@ -3287,6 +3300,17 @@
       "name": "workforce_organizations_owner_id_key",
       "schema": "public",
       "table": "workforce_organizations",
+      "entityType": "uniques"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "endpoint_hash"
+      ],
+      "nullsNotDistinct": false,
+      "name": "experience_push_subscriptions_endpoint_hash_key",
+      "schema": "public",
+      "table": "experience_push_subscriptions",
       "entityType": "uniques"
     },
     {

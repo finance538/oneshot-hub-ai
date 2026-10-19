@@ -3,28 +3,26 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "com.oneshotcam.ecosystem",
   appName: "OneShot",
-  webDir: "native/shell",
-  backgroundColor: "#101312",
+  webDir: "native-shell",
   server: {
-    // The hosted app remains on its first-party origin for Identity and checkout.
-    // No sensitive requests originate from a capacitor:// or localhost origin.
+    // Hosted origin preserves same-origin Identity cookies and protected APIs.
     url: "https://www.1shotcam.com",
     cleartext: false,
+    allowNavigation: ["www.1shotcam.com"],
     errorPath: "offline.html",
   },
-  android: { allowMixedContent: false, backgroundColor: "#101312" },
+  android: {
+    allowMixedContent: false,
+    webContentsDebuggingEnabled: false,
+    backgroundColor: "#101211",
+  },
   ios: {
     contentInset: "automatic",
-    backgroundColor: "#101312",
-    preferredContentMode: "mobile",
+    backgroundColor: "#101211",
+    webContentsDebuggingEnabled: false,
   },
   plugins: {
-    SplashScreen: {
-      launchShowDuration: 600,
-      backgroundColor: "#101312",
-      showSpinner: false,
-    },
-    StatusBar: { style: "DARK", backgroundColor: "#101312" },
+    StatusBar: { backgroundColor: "#101211", overlaysWebView: false },
   },
 };
 export default config;

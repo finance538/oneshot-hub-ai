@@ -18,7 +18,6 @@ import {
   Globe2,
   Grid2X2,
   Menu,
-  Smartphone,
   X,
   Zap,
 } from "lucide-react";
@@ -32,21 +31,16 @@ import {
   appearanceLink,
   type Language,
 } from "../storefront/i18n";
+import Experience from "./experience/Experience";
+import BusinessFooter from "./experience/BusinessFooter";
 import { ecosystemApps, type EcosystemStatus } from "../../shared/ecosystem";
 import { api } from "../lib/api";
 import { hubCopy } from "./copy";
 import { spaceCopy } from "./spaceCopy";
 import "./hub.css";
-import LuxuryHome from "../luxury/LuxuryHome";
-import BusinessFooter from "../luxury/BusinessFooter";
-import AppCenter from "../luxury/AppCenter";
 const LitePortal = lazy(() => import("./LitePortal"));
 const YourSpace = lazy(() => import("./YourSpace"));
 const SsoAuthorize = lazy(() => import("./SsoAuthorize"));
-type InstallEvent = Event & {
-  prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: string }>;
-};
 export default function Hub() {
   return (
     <AppearanceProvider>
@@ -56,7 +50,7 @@ export default function Hub() {
 }
 function HubPage() {
   const auth = useAuth();
-  const { language, setLanguage, tr } = useAppearance();
+  const { language, setLanguage } = useAppearance();
   const c = hubCopy[language],
     s = spaceCopy[language];
   // /hub is the ONESHOTHUB page: the full idea, the six services, the
@@ -64,26 +58,10 @@ function HubPage() {
   const spacePage = location.pathname === "/hub";
   const [menu, setMenu] = useState(false),
     [switcher, setSwitcher] = useState(false);
-  const [deep, setDeep] = useState(false),
-    [installHelp, setInstallHelp] = useState(false);
+  const [deep, setDeep] = useState(false);
   const [status, setStatus] = useState<EcosystemStatus | null>(null);
-  const [install, setInstall] = useState<InstallEvent | null>(null);
-  const [installed, setInstalled] = useState(
-    window.matchMedia("(display-mode: standalone)").matches ||
-      ("standalone" in navigator && navigator.standalone === true) ||
-      "Capacitor" in window,
-  );
   const switchRef = useRef<HTMLButtonElement>(null);
   const navIds = ["overview", "power", "command", "comparison", "ecosystem"];
-  const navLabels = [
-    tr("الرئيسية", "Overview"),
-    tr("خدماتنا", "Our services"),
-    c.portal,
-    tr("حاسبة التوفير", "Savings calculator"),
-    tr("المنظومة", "Ecosystem"),
-  ];
-  const sectionHref = (id: string) =>
-    location.pathname === "/" ? `#${id}` : `${appearanceLink("/")}#${id}`;
   useEffect(() => {
     let alive = true;
     const checkConnections = () => {
@@ -100,27 +78,19 @@ function HubPage() {
     };
     checkConnections();
     const healthTimer = setInterval(checkConnections, 60000);
-    const onInstall = (event: Event) => {
-      event.preventDefault();
-      setInstall(event as InstallEvent);
-    };
-    const onInstalled = () => {
-      setInstalled(true);
-      setInstall(null);
-    };
-    window.addEventListener("beforeinstallprompt", onInstall);
-    window.addEventListener("appinstalled", onInstalled);
     if ("serviceWorker" in navigator)
       void navigator.serviceWorker.register("/hub-sw.js").catch(() => {});
     return () => {
       alive = false;
       clearInterval(healthTimer);
-      window.removeEventListener("beforeinstallprompt", onInstall);
-      window.removeEventListener("appinstalled", onInstalled);
     };
   }, []);
   useEffect(() => {
-    document.title = spacePage ? s.pageTitle : `OneShot Hub — ${c.portal}`;
+    document.title = spacePage
+      ? s.pageTitle
+      : language === "ar"
+        ? "OneShot — أعمالك، ببُعدٍ آخر"
+        : `OneShot Hub — ${c.portal}`;
     const description = document.querySelector('meta[name="description"]');
     description?.setAttribute("content", spacePage ? s.lead : c.intro);
   }, [c, s, spacePage]);
@@ -209,44 +179,10 @@ function HubPage() {
     </div>
   );
   const downloadActions = (
-    <div className="hub-actions">
-      {!installed && (
-        <button
-          className="hub-button"
-          onClick={async () => {
-            if (install) {
-              try {
-                await install.prompt();
-                await install.userChoice;
-              } catch {
-                setInstallHelp(true);
-              } finally {
-                setInstall(null);
-              }
-            } else setInstallHelp(true);
-          }}
-        >
-          <Download size={16} />
-          {c.install}
-        </button>
-      )}
-      {status?.apkUrl ? (
-        <a
-          className="hub-button"
-          href={status.apkUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Smartphone size={16} />
-          {c.apk}
-        </a>
-      ) : (
-        <span className="hub-unavailable">
-          <Smartphone size={15} />
-          {c.apkPending}
-        </span>
-      )}
-    </div>
+    <a className="hub-button" href={appearanceLink("/") + "#install"}>
+      <Download size={16} />
+      {c.install}
+    </a>
   );
   const spaceShowcase = (
     <Suspense
@@ -331,7 +267,7 @@ function HubPage() {
   );
   return (
     <div className="hub hub-luxury">
-      <a className="hub-skip" href="#main-content">
+      <a className="hub-skip" href={spacePage ? "#command" : "#overview"}>
         {c.nav[0]}
       </a>
       <header className="hub-header">
@@ -350,11 +286,14 @@ function HubPage() {
           {navIds.map((id, index) =>
             id === "command" ? (
               <button key={id} onClick={openPortal}>
-                {navLabels[index]}
+                {c.nav[index]}
               </button>
             ) : (
-              <a key={id} href={sectionHref(id)}>
-                {navLabels[index]}
+              <a
+                key={id}
+                href={spacePage ? `${appearanceLink("/")}#${id}` : `#${id}`}
+              >
+                {c.nav[index]}
               </a>
             ),
           )}
@@ -447,7 +386,7 @@ function HubPage() {
           {navIds.map((id, i) => (
             <a
               key={id}
-              href={id === "command" ? "#command" : sectionHref(id)}
+              href={spacePage ? `${appearanceLink("/")}#${id}` : `#${id}`}
               onClick={(event) => {
                 setMenu(false);
                 if (id === "command") {
@@ -456,13 +395,13 @@ function HubPage() {
                 }
               }}
             >
-              {navLabels[i]}
+              {c.nav[i]}
               <ArrowUpRight size={16} />
             </a>
           ))}
         </nav>
       )}
-      <main id="main-content" tabIndex={-1}>
+      <main>
         {location.pathname === "/sso/authorize" ? (
           <Suspense fallback={<p role="status">{c.loading}</p>}>
             <SsoAuthorize
@@ -487,28 +426,20 @@ function HubPage() {
               {spaceShowcase}
             </section>
             {commandRoom}
-            <AppCenter
-              downloadActions={downloadActions}
-              status={status}
-              installed={installed}
-              userId={auth.user?.id}
-              onSignIn={() => auth.openLogin()}
-            />
           </>
         ) : (
-          <LuxuryHome
+          <Experience
+            status={status}
+            appHref={appHref}
             onEnter={openPortal}
             ready={auth.ready}
-            userId={auth.user?.id}
-            appHref={appHref}
-            status={status}
-            downloadActions={downloadActions}
-            installed={installed}
-            onSignIn={() => auth.openLogin()}
+            user={auth.user}
           />
         )}
       </main>
-      <BusinessFooter />
+      <div id="section-contact">
+        <BusinessFooter />
+      </div>
       {deep && (
         <Modal title={c.deepTitle} onClose={() => setDeep(false)}>
           <div className="hub-dialog">
@@ -528,11 +459,6 @@ function HubPage() {
             </a>
             {downloadActions}
           </div>
-        </Modal>
-      )}
-      {installHelp && (
-        <Modal title={c.install} onClose={() => setInstallHelp(false)}>
-          <p>{c.installHelp}</p>
         </Modal>
       )}
       {auth.dialog}

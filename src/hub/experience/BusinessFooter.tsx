@@ -1,6 +1,6 @@
 import { ShieldCheck } from "lucide-react";
-import { appearanceLink, useAppearance } from "../storefront/i18n";
-import { documents } from "../storefront/documents";
+import { appearanceLink, useAppearance } from "../../storefront/i18n";
+import { documents } from "../../storefront/documents";
 function Logo() {
   const { tr } = useAppearance();
   return (

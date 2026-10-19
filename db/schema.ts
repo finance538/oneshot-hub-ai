@@ -22,6 +22,24 @@ export const products = pgTable("products", {
   catalogDetails: jsonb("catalog_details").$type<OriginalProduct>(),
   active: boolean("active").notNull().default(true),
 });
+
+// Browser push capabilities are encrypted; only endpoint digests are indexed.
+export const pushSubscriptions = pgTable(
+  "experience_push_subscriptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ownerId: text("owner_id").notNull(),
+    endpointHash: text("endpoint_hash").notNull().unique(),
+    encryptedSubscription: text("encrypted_subscription").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [index("experience_push_owner").on(t.ownerId)],
+);
 export const vaultKeys = pgTable(
   "vault_keys",
   {
@@ -391,20 +409,4 @@ export const ecosystemGrants = pgTable(
     sessionExpiresAt: timestamp("session_expires_at", { withTimezone: true }),
   },
   (t) => [index("ecosystem_grants_owner").on(t.ownerId)],
-);
-
-// A subscription belongs to one account; its endpoint and keys never leave
-// the server after enrollment. Web Push payloads contain no account content.
-export const pushSubscriptions = pgTable(
-  "push_subscriptions",
-  {
-    endpointHash: text("endpoint_hash").primaryKey(),
-    ownerId: text("owner_id").notNull(),
-    encryptedSubscription: text("encrypted_subscription").notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  },
-  (t) => [index("push_subscriptions_owner").on(t.ownerId)],
 );

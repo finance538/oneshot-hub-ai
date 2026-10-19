@@ -3,10 +3,14 @@ import ReactDOM from "react-dom/client";
 import Root from "./Root";
 import "./design-tokens.css";
 import "./styles.css";
-// Native plugins are loaded only inside the signed iOS/Android container.
-if ("Capacitor" in window) {
+// Platform plugins and their bridge are absent from the browser path.
+if (
+  (
+    window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }
+  ).Capacitor?.isNativePlatform?.()
+) {
   void import("./lib/native-shell")
-    .then(({ initializeNativeShell }) => initializeNativeShell())
+    .then(({ connectNativeShell }) => connectNativeShell())
     .catch(() => {});
 }
 class ErrorBoundary extends Component<

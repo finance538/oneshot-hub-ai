@@ -1,25 +1,32 @@
 {
   "id": "/hub",
-  "name": "OneShot Hub",
+  "name": "OneShot — منظومة أعمالك",
   "short_name": "OneShot",
-  "description": "مساحة أعمالك وفريقك الذكي ومنظومة ون شوت.",
+  "description": "التصوير والهوية والذكاء الاصطناعي والأتمتة في منظومة واحدة.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/hub",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#101312",
-  "theme_color": "#101312",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#101211",
+  "theme_color": "#101211",
   "categories": ["business", "productivity", "photography"],
   "shortcuts": [
     {
-      "name": "مساحتي",
+      "name": "مساحة عملي",
+      "short_name": "مساحتي",
       "url": "/hub#command",
       "icons": [{ "src": "/hub-icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "الكتالوج",
       "url": "/products",
+      "icons": [{ "src": "/hub-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "حاسبة التوفير",
+      "url": "/#roi",
       "icons": [{ "src": "/hub-icon-192.png", "sizes": "192x192" }]
     }
   ],
