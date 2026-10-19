@@ -59,4 +59,6 @@ export interface AppConnection {
 export interface EcosystemStatus {
   apps: AppConnection[];
   apkUrl: string | null;
+  iosStoreUrl?: string | null;
+  playStoreUrl?: string | null;
 }

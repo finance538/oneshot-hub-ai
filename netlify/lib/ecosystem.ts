@@ -143,7 +143,43 @@ export async function ecosystemRoute(req: Request, path: string) {
         /* Hide downloads until the published artifact responds. */
       }
     }
-    return { apps, apkUrl };
+    const storeLink = (name: string, host: string, path: RegExp) => {
+      try {
+        const link = new URL(env(name) || "");
+        if (
+          host === "play.google.com" &&
+          !/^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$/.test(
+            link.searchParams.get("id") || "",
+          )
+        )
+          return null;
+        return link.protocol === "https:" &&
+          link.hostname === host &&
+          !link.port &&
+          !link.username &&
+          !link.password &&
+          !link.hash &&
+          path.test(link.pathname)
+          ? link.href
+          : null;
+      } catch {
+        return null;
+      }
+    };
+    return {
+      apps,
+      apkUrl,
+      iosStoreUrl: storeLink(
+        "ONESHOT_IOS_STORE_URL",
+        "apps.apple.com",
+        /^\/[a-z]{2}\/app\/(?:[^/]+\/)?id\d+$/,
+      ),
+      playStoreUrl: storeLink(
+        "ONESHOT_PLAY_STORE_URL",
+        "play.google.com",
+        /^\/store\/apps\/details$/,
+      ),
+    };
   }
   if (path === "/api/ecosystem/sso/grant" && req.method === "POST") {
     issuerRequest(req);
