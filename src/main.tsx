@@ -1,6 +1,6 @@
 import React, { Component, type ReactNode } from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import Root from "./Root";
 import "./design-tokens.css";
 import "./styles.css";
 class ErrorBoundary extends Component<
@@ -31,6 +31,6 @@ class ErrorBoundary extends Component<
 }
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
-    <App />
+    <Root />
   </ErrorBoundary>,
 );

@@ -1,6 +1,22 @@
 # 1SHOTCAM.COM — OneShot Ecosystem
 
-An Arabic React/Vite ecosystem combining the original OneShot public storefront with the gateway workspace, encrypted administrator vault, advisory executive office and AI Workforce digital headquarters through Netlify AI Gateway. The storefront supports localized marketing and light/dark appearances.
+OneShot Hub is the Arabic-first, eight-language flagship gateway for the six-application OneShot ecosystem. Its Solar Summer homepage combines commercial positioning, a detailed application showcase and an authenticated Lite command portal. The existing catalog, payment workspace, administrator vault and Workforce headquarters remain available on their dedicated routes.
+
+## Flagship Hub and Lite portal (current implementation)
+
+The primary homepage now uses a compact 56px navigation bar, obsidian surfaces, solar orange accents, an interactive four-pillar showcase and an inline comparison matrix. Arabic, English, French, Spanish, Turkish, Chinese, Hindi and Urdu copy adapts the positioning to each audience. The six application cards explain practical benefits, seasonal identities and capability limits. The Hub does not claim unverified market leadership, 150 installed skills, universal gateway support, native apps or active Hermes tiers.
+
+`src/Root.tsx` separates the public Hub and its lazy-loaded Lite portal from the existing application bundle. Neither the Hub nor its Lite chat imports the office scene or Three.js engine. The homepage renders independently of the product catalog. The original catalog and legal routes remain available, and obsolete studio entry paths display the Hub instead of an obsolete studio.
+
+Signing in through the existing Netlify Identity account opens Lite access to database-backed employee conversations, voice, task dispatch, saved results, owned-order summaries and exact-content email approval. Checkout returns retain the existing authenticated order verification route. New accounts explicitly create an organization before using the workspace. The private portal remounts on account or role changes. A bounded attachment extraction endpoint accepts images, PDFs and text for review in the composer; original uploads are not retained. Only subsequently submitted context becomes part of the saved conversation. Voice continues to depend on device permissions and the existing speech services.
+
+The ecosystem bridge adds expiring, single-use PKCE grants and ten-minute app sessions in Netlify Database. The generated `add_ecosystem_sso_grants` migration is new and is applied by the platform; prior migrations were not changed. The original Identity token stays encrypted on the Hub server, and app sessions carry no browser-visible role authority. Fixed origins, atomic redemption and account-wide bridge revocation constrain handoffs. The existing Identity feature activation script completed. Independent apps still need the receiver routes and shared backend client before their launcher can offer SSO; this repository change alone does not deploy those other projects. See [Hub integration and release notes](docs/hub-ecosystem.md).
+
+The web app manifest, icons, install prompt and public offline page add PWA installation. API, Identity and private workspace responses are never cached by the new service worker. Android downloads stay unavailable unless an operator-configured HTTPS APK responds with an appropriate artifact content type. No APK, native notification service or persistent background voice capability was fabricated.
+
+On 2026-10-19, read-only HTTPS checks found no verified standalone SSO handshake: AI and Pay returned HTML, Brand failed DNS resolution, Workflow returned 406, and Loader returned 401. The production Hub returned 404 for the new endpoint before deployment. These responses do not establish app health or prove the apps are offline. No domains, DNS or API-host assignments were changed. Build, tests, typecheck, mobile overflow checks and authenticated end-to-end verification remain with platform/deployed validation; no deployment success is asserted.
+
+The following older sections document existing retained services and previous interface iterations. This section supersedes their descriptions of the primary homepage.
 
 ## Technology and local development
 

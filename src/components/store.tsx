@@ -88,7 +88,7 @@ export function Store({
               <img src="/oneshot.svg" width="44" height="44" alt="" />
               <span>
                 one<b>Shot</b>
-                <small>Brand Studio</small>
+                <small>Hub</small>
               </span>
             </a>
             <h1>خدمات ونشوت الأصلية</h1>

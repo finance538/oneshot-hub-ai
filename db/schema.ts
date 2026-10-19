@@ -375,3 +375,20 @@ export const workforceResearch = pgTable(
   },
   (t) => [index("workforce_research_org").on(t.organizationId, t.createdAt)],
 );
+
+// Single-use, PKCE-bound grants and short-lived ecosystem sessions. Tokens are
+// encrypted at rest; neither authorization codes nor session secrets are stored.
+export const ecosystemGrants = pgTable(
+  "ecosystem_grants",
+  {
+    codeHash: text("code_hash").primaryKey(),
+    ownerId: text("owner_id").notNull(),
+    audience: text("audience").notNull(),
+    challenge: text("challenge").notNull(),
+    encryptedToken: text("encrypted_token").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    sessionHash: text("session_hash").unique(),
+    sessionExpiresAt: timestamp("session_expires_at", { withTimezone: true }),
+  },
+  (t) => [index("ecosystem_grants_owner").on(t.ownerId)],
+);

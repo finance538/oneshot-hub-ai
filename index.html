@@ -1,51 +1,33 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
   <head>
-    <script>
-      if ("serviceWorker" in navigator)
-        navigator.serviceWorker
-          .getRegistrations()
-          .then(function (items) {
-            items.forEach(function (item) {
-              item.unregister();
-            });
-          })
-          .catch(function () {});
-      if ("caches" in window)
-        caches
-          .keys()
-          .then(function (keys) {
-            keys.forEach(function (key) {
-              caches.delete(key);
-            });
-          })
-          .catch(function () {});
-    </script>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
     />
-    <meta name="theme-color" content="#0f1115" />
-    <title>1SHOTCAM.COM — منظومة oneShot المتكاملة</title>
-    <meta name="siteName" content="1SHOTCAM.COM — منظومة oneShot المتكاملة" />
+    <meta name="theme-color" content="#0b0c0e" />
+    <title>OneShot Hub — منظومة أعمالك وفريقك الذكي</title>
+    <meta name="siteName" content="OneShot Hub — منظومة أعمالك وفريقك الذكي" />
     <meta
       name="siteDescription"
-      content="خدمات ونشوت الأصلية للتصوير والتسويق والتصميم والأتمتة. تصفح الكتالوج بالريال السعودي مع النطاق والأسعار ومواعيد التسليم."
+      content="بوابتك إلى منظومة OneShot: محادثات فريقك الذكي، المهام والاعتمادات، وتطبيقات الأعمال المتخصصة في مكان واحد."
     />
     <meta
       name="description"
-      content="خدمات ونشوت الأصلية للتصوير والتسويق والتصميم والأتمتة. تصفح الكتالوج بالريال السعودي مع النطاق والأسعار ومواعيد التسليم."
+      content="بوابتك إلى منظومة OneShot: محادثات فريقك الذكي، المهام والاعتمادات، وتطبيقات الأعمال المتخصصة في مكان واحد."
     />
     <meta
       property="og:site_name"
-      content="1SHOTCAM.COM — منظومة oneShot المتكاملة"
+      content="OneShot Hub — منظومة أعمالك وفريقك الذكي"
     />
     <meta property="og:title" content="oneShot — كل أدواتك. في لقطة واحدة." />
     <meta
       property="og:description"
       content="المتجر، المدفوعات، إدارة الأعمال والذكاء الاصطناعي في مساحة واحدة."
     />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/hub-icon-192.png" />
     <link rel="icon" href="/brand/oneshot.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
