@@ -1,3 +1,5 @@
+import { ecosystemSession, receiverApp } from "./ecosystem-session";
+import { hubOrigin } from "../../shared/ecosystem";
 import type { Order } from "../../shared/contracts";
 export interface ApiEntry {
   id: string;
@@ -102,11 +104,16 @@ export async function callBackendApi<T = Record<string, any>>(
     });
     let response: Response;
     try {
-      response = await fetch(path, {
+      const crossApp = receiverApp();
+      const sharedSession = ecosystemSession();
+      response = await fetch(crossApp ? new URL(path, hubOrigin).href : path, {
         method,
-        credentials: "same-origin",
+        credentials: crossApp ? "omit" : "same-origin",
         signal: AbortSignal.timeout(50000),
         headers: {
+          ...(crossApp && sharedSession
+            ? { Authorization: `Bearer ${sharedSession.sessionToken}` }
+            : {}),
           ...(payload !== undefined
             ? { "Content-Type": "application/json" }
             : {}),
