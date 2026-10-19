@@ -422,7 +422,7 @@ export default function Storefront({
                 <img
                   src={cdnImage("/images/photography.jpg")}
                   srcSet={cdnImageSet("/images/photography.jpg")}
-                  sizes="(max-width: 760px) calc(100vw - 64px), (max-width: 1320px) 40vw, 510px"
+                  sizes="(max-width: 580px) calc(100vw - 68px), (max-width: 760px) calc(100vw - 96px), (max-width: 1320px) 40vw, 510px"
                   alt={tr(
                     "كاميرا وعدسات للتصوير الاحترافي",
                     "Professional photography camera and lenses",
