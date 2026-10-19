@@ -3,6 +3,16 @@ import ReactDOM from "react-dom/client";
 import Root from "./Root";
 import "./design-tokens.css";
 import "./styles.css";
+// Platform plugins and their bridge are absent from the browser path.
+if (
+  (
+    window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }
+  ).Capacitor?.isNativePlatform?.()
+) {
+  void import("./lib/native-shell")
+    .then(({ connectNativeShell }) => connectNativeShell())
+    .catch(() => {});
+}
 class ErrorBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }

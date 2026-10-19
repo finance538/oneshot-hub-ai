@@ -5,7 +5,7 @@
   --store-text: var(--ui-text);
   --store-muted: var(--ui-muted);
   --store-border: var(--ui-border);
-  --store-green: #10b981;
+  --store-green: var(--ui-success);
   color: var(--store-text);
   background: var(--store-background);
   min-height: 100vh;
@@ -437,7 +437,7 @@
 }
 .store-button:hover {
   color: var(--ui-on-accent) !important;
-  background: #f77d43;
+  background: color-mix(in srgb, var(--store-accent) 88%, var(--store-text));
   border-color: #f77d43;
 }
 .store-button:active {

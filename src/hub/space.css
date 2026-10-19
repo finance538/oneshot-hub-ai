@@ -1,6 +1,6 @@
 /* "Your space" (مساحتك): ONESHOTHUB showcase. Shares .hub tokens. */
 .space {
-  --space-flame: #f05b2b;
+  --space-flame: var(--hub-orange);
   --space-obsidian: #141717;
   display: grid;
   gap: 44px;
@@ -23,7 +23,7 @@
   margin-top: 20px;
   padding: 16px 18px;
   border-inline-start: 3px solid var(--hub-orange);
-  background: #f9731610;
+  background: #cfbc9710;
   border-radius: 6px;
   font-size: 13px;
   line-height: 1.9;

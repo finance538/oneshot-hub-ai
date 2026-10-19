@@ -1,0 +1,39 @@
+# Spatial experience and application releases
+
+The flagship homepage uses obsidian, titanium, champagne and emerald. Its decorative Three.js scene leaves all five destination links as real HTML anchors, usable with a keyboard, a disabled GPU or reduced motion. WebGL loads separately; rendering stops outside the viewport and in hidden tabs, pixel density adapts to sustained slow frames, and a static sculpture remains available. GSAP animates entrance and section reveals only when reduced motion is off. Frame rate follows the display and device; 120 fps has not been measured or guaranteed.
+
+The original storefront, policy document source, product data and existing migration history were preserved. The complete original footer was reproduced on the Hub, including the establishment's full name, Saudi location, both emails, merchant link and every document link. The checked-in sources did not contain a commercial registration number; none was invented. The owner must verify the original registration and legal completeness before representing the site as bank-approved. No certification is implied by interface work.
+
+The premium-services selector reads the existing active catalog endpoint. It includes original media and advertising packages, keeps their amounts, currencies, billing periods and starting-price labels, and links to their original detail pages. AI work is not presented as equivalent to a physical shoot. The ROI calculator uses editable illustrative monthly inputs and setup cost, including negative outcomes and unavailable payback. Results estimate time value; they are not achieved savings or advertised plan prices.
+
+Zen mode changes the lighting. Ambient tones start only from a click, provide volume controls, stop when the page becomes hidden and make no health claims. The optional 25-minute focus session uses a wall-clock deadline. The concierge sends a bounded customer need and active catalog to the official Gemini SDK through Netlify AI Gateway. It has no execution tools. SKU choices are validated, and names, links and prices come from the database. Optional speech uses browser text-to-speech, not microphone recording. New experience copy is Arabic and English; the existing eight-language selector, service descriptions and workspace remain, with English fallback for new content in other languages.
+
+## Installation and offline behavior
+
+The stable manifest ID and `/hub` start route were retained. Shortcuts, categories, Arabic metadata and icons derived from the original emblem were added. Chrome/Edge installation uses the actual browser install event; other devices get specific instructions. iPhone/iPad use Safari's Add to Home Screen. A rejected prompt is not shown as completed installation. Native shells do not offer to install themselves again.
+
+`hub-sw.js` caches only five explicitly public files: the bilingual guide, its calculator script, the logo and two icons. Navigation stays network-first; unavailable navigation receives the guide. Main application HTML, current prices, APIs, Identity, SSO, orders and private work are never cached. The guide's destinations require a connection; its calculator works offline. Existing installations receive the next worker after the previous worker releases its clients. There is no forced takeover during checkout.
+
+## Notification configuration
+
+The generated `add_experience_push_subscriptions` migration adds a separate table and is applied by the platform. Subscriptions use the existing vault encryption with user/endpoint AAD; indexed endpoints are SHA-256 digests. Registration, status, removal and tests require Identity, origin checks and database rate limits. Sending permits only supported browser push-provider HTTPS hosts. Expired subscriptions are removed. Private keys, endpoints, ciphertext and raw provider responses are not returned or logged.
+
+Configure matching `ONESHOT_PUSH_PUBLIC_KEY` and `ONESHOT_PUSH_PRIVATE_KEY` VAPID values in the Functions runtime scope using administration tools. Keep `VAULT_ENCRYPTION_KEY` unchanged. Only the public VAPID key is returned by `/api/experience/config`. Missing configuration disables activation truthfully. No credentials were generated, printed or changed during implementation.
+
+After browser consent, users can disable notifications or test their current device. A production function checks at most four oldest subscription cursors every five minutes. It coalesces drafts awaiting review and failed tasks into generic notices, without names, outputs, amounts or payment outcomes. A conditional row update claims each interval before sending, preventing concurrent duplicate dispatch. Delivery is best-effort: failed delivery after claiming is not replayed, the OS controls display, and a large population increases latency. The workspace remains authoritative. The row's `updated_at` is the polling cursor and subscription refresh timestamp. This is a bounded facility, not a guaranteed delivery queue.
+
+Web Push targets supported browsers and iOS Home Screen apps (iOS/iPadOS 16.4+). It is not a native APNs/FCM SDK integration inside the Capacitor wrappers. Native push requires separate platform enrollment and implementation before being advertised.
+
+## Native source projects
+
+`android/` contains a Gradle project and `ios/App/` an Xcode/Swift Package Manager project, with bundle ID `com.oneshotcam.ecosystem`. The app uses the production HTTPS origin to preserve Identity cookies and protected APIs, and bundles the guide/calculator in `native-shell/`. Embedded navigation is restricted to the flagship origin; external HTTPS links open in the native browser. The bridge adds status-bar styling, network events, haptics and Android back-button handling. Android disables cleartext and backup; iOS retains App Transport Security. Microphone declarations support the existing user-initiated workspace voice feature.
+
+On the release workstation, install the locked dependencies, run `pnpm native:sync` to prepare offline assets and sync plugins, then `pnpm native:ios` or `pnpm native:android` to open the project. `pnpm native:assets` regenerates launch artwork from the original SVG without changing it. These preparation steps are not builds. Generated dependency paths reflect pnpm; sync regenerates them if the package layout changes.
+
+Apple distribution requires macOS/Xcode, the owner's signing team and provisioning, real screenshots, privacy/export review and review of account deletion and digital-service purchase requirements. Google Play requires the appropriate SDK/JDK, signing outside source control, an AAB, Data Safety and review. Hosted web shells and their commerce model require store approval; no signed IPA/APK/AAB, store approval, native in-app billing or store listing is claimed. Universal/App Link associations require verified Apple team IDs and Android signing fingerprints and were not fabricated.
+
+After publication, set `ONESHOT_APPLE_STORE_URL` and `ONESHOT_GOOGLE_PLAY_URL` to real listings. The API validates store hosts and URL shape, not review status. The existing verified APK path remains available on Android if configured. No fabricated listing or empty binary is linked.
+
+## Verification
+
+Source and migration files were inspected and formatted. Preservation digests confirmed all 26 baseline files (existing SQL/snapshots, storefront and policies) remained byte-for-byte unchanged. Capacitor generated and synchronized both projects, and Identity enablement completed. No build, test, typecheck, dev server, manual migration, payment, notification delivery or AI inference was run in this session. Platform validation, deployed accessibility/mobile checks, GPU performance, offline installation, notification account isolation and actual device builds remain release checks. No DNS or domain assignment was changed; the API hostname was not moved.
