@@ -42,8 +42,10 @@ import { marketingCopy } from "../marketing/copy";
 import { ecosystemApps, type EcosystemStatus } from "../../shared/ecosystem";
 import { api } from "../lib/api";
 import { hubCopy } from "./copy";
+import { spaceCopy } from "./spaceCopy";
 import "./hub.css";
 const LitePortal = lazy(() => import("./LitePortal"));
+const YourSpace = lazy(() => import("./YourSpace"));
 const SsoAuthorize = lazy(() => import("./SsoAuthorize"));
 type InstallEvent = Event & {
   prompt(): Promise<void>;
@@ -60,15 +62,16 @@ function HubPage() {
   const auth = useAuth();
   const { language, setLanguage } = useAppearance();
   const c = hubCopy[language],
+    s = spaceCopy[language],
     comparison = marketingCopy[language];
+  // /hub is the ONESHOTHUB page: the full idea, the six services, the
+  // catalog, then the signed-in command room. Sign-in always lands here.
+  const spacePage = location.pathname === "/hub";
   const [menu, setMenu] = useState(false),
     [switcher, setSwitcher] = useState(false);
   const [pillar, setPillar] = useState(0),
     [deep, setDeep] = useState(false),
     [installHelp, setInstallHelp] = useState(false);
-  const [portal, setPortal] = useState(
-    location.pathname === "/hub" || location.hash === "#command",
-  );
   const [status, setStatus] = useState<EcosystemStatus | null>(null);
   const [install, setInstall] = useState<InstallEvent | null>(null);
   const [installed, setInstalled] = useState(
@@ -112,21 +115,18 @@ function HubPage() {
     };
   }, []);
   useEffect(() => {
-    document.title = `OneShot Hub — ${c.portal}`;
+    document.title = spacePage
+      ? s.pageTitle
+      : `OneShot Hub — ${c.portal}`;
     const description = document.querySelector('meta[name="description"]');
-    description?.setAttribute("content", c.intro);
-  }, [c]);
+    description?.setAttribute("content", spacePage ? s.lead : c.intro);
+  }, [c, s, spacePage]);
   useEffect(() => {
-    if (auth.user) {
-      setPortal(true);
-      if (location.pathname === "/hub")
-        requestAnimationFrame(() =>
-          document
-            .getElementById("command")
-            ?.scrollIntoView({ block: "start" }),
-        );
-    }
-  }, [auth.user?.id]);
+    if (auth.user && spacePage && location.hash === "#command")
+      requestAnimationFrame(() =>
+        document.getElementById("command")?.scrollIntoView({ block: "start" }),
+      );
+  }, [auth.user?.id, spacePage]);
   useEffect(() => {
     const escape = (event: KeyboardEvent) => {
       if (event.key === "Escape" && (menu || switcher)) {
@@ -138,23 +138,20 @@ function HubPage() {
     window.addEventListener("keydown", escape);
     return () => window.removeEventListener("keydown", escape);
   }, [menu, switcher]);
-  function openPortal() {
-    setPortal(true);
-    setMenu(false);
-    setSwitcher(false);
-    if (!auth.user)
-      auth.openLogin(() => {
-        setPortal(true);
-        requestAnimationFrame(() =>
-          document
-            .getElementById("command")
-            ?.scrollIntoView({ block: "start" }),
-        );
-      });
-    else
+  function openSpace() {
+    // Signed-in accounts always land on the ONESHOTHUB page. On that page
+    // the button reaches the command room; elsewhere it navigates there.
+    if (spacePage)
       requestAnimationFrame(() =>
         document.getElementById("command")?.scrollIntoView({ block: "start" }),
       );
+    else location.assign(appearanceLink("/hub") + "#command");
+  }
+  function openPortal() {
+    setMenu(false);
+    setSwitcher(false);
+    if (!auth.user) auth.openLogin(openSpace);
+    else openSpace();
   }
   function appHref(id: string) {
     const app = ecosystemApps.find((item) => item.id === id)!;
@@ -247,6 +244,89 @@ function HubPage() {
         </span>
       )}
     </div>
+  );
+  const spaceShowcase = (
+    <Suspense
+      fallback={
+        <div className="hub-skeleton" role="status">
+          {c.loading}
+        </div>
+      }
+    >
+      <YourSpace
+        user={auth.user}
+        status={status}
+        appHref={appHref}
+        onEnter={openPortal}
+      />
+    </Suspense>
+  );
+  const commandRoom = (
+    <section id="command" className="hub-wrap hub-section">
+      <div className="hub-section-top">
+        <div>
+          <span className="hub-kicker">01 / LITE COMMAND</span>
+          <h2>{c.portal}</h2>
+          <p>{c.portalBody}</p>
+        </div>
+        <span className="hub-outline-label">
+          <Zap size={14} /> LITE BY DESIGN
+        </span>
+      </div>
+      {auth.user ? (
+        <>
+          <div className="hub-launchbar-wrap">{launcher(true)}</div>
+          <Suspense
+            fallback={
+              <div className="hub-skeleton" role="status">
+                {c.loading}
+              </div>
+            }
+          >
+            <LitePortal
+              key={`${auth.user.id}:${auth.user.roles?.join(",")}`}
+              user={auth.user}
+              onDeep={() => setDeep(true)}
+            />
+          </Suspense>
+        </>
+      ) : (
+        <div className="hub-command-preview">
+          <div>
+            <span className="hub-kicker">
+              YOUR NEXT MOVE STARTS HERE
+            </span>
+            <h3>{c.chat}</h3>
+            <p>{s.portalNote}</p>
+            <button
+              className="hub-button hub-primary"
+              disabled={!auth.ready}
+              onClick={openPortal}
+            >
+              <Fingerprint size={17} />
+              {c.signIn}
+            </button>
+          </div>
+          <div className="hub-command-outline" aria-hidden="true">
+            <div>
+              <span className="hub-avatar">
+                <Bot size={23} />
+              </span>
+              <span>
+                AI CEO<small>YOUR STRATEGIC PARTNER</small>
+              </span>
+              <AudioLines size={20} />
+            </div>
+            <div className="hub-sample-line" />
+            <div className="hub-sample-line short" />
+            <div className="hub-preview-input">
+              <span>{c.prompt}</span>
+              <ArrowUpRight size={18} />
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
   );
   return (
     <div className="hub">
@@ -390,6 +470,23 @@ function HubPage() {
               onLogin={() => auth.openLogin()}
             />
           </Suspense>
+        ) : spacePage ? (
+          <>
+            <section className="hub-wrap hub-section hub-space-page">
+              <div className="hub-section-top">
+                <div>
+                  <span className="hub-kicker">ONESHOT HUB / YOUR SPACE</span>
+                  <h2>{s.pageTitle}</h2>
+                  <p>{s.pageIntro}</p>
+                </div>
+                <span className="hub-outline-label">
+                  <Zap size={14} /> ONE ACCOUNT · SIX SERVICES
+                </span>
+              </div>
+              {spaceShowcase}
+            </section>
+            {commandRoom}
+          </>
         ) : (
           <>
             <section id="overview" className="hub-hero hub-wrap">
@@ -480,69 +577,7 @@ function HubPage() {
               </div>
             </div>
             <section id="command" className="hub-wrap hub-section">
-              <div className="hub-section-top">
-                <div>
-                  <span className="hub-kicker">01 / LITE COMMAND</span>
-                  <h2>{c.portal}</h2>
-                  <p>{c.portalBody}</p>
-                </div>
-                <span className="hub-outline-label">
-                  <Zap size={14} /> LITE BY DESIGN
-                </span>
-              </div>
-              {auth.user && portal ? (
-                <>
-                  <div className="hub-launchbar-wrap">{launcher(true)}</div>
-                  <Suspense
-                    fallback={
-                      <div className="hub-skeleton" role="status">
-                        {c.loading}
-                      </div>
-                    }
-                  >
-                    <LitePortal
-                      key={`${auth.user.id}:${auth.user.roles?.join(",")}`}
-                      user={auth.user}
-                      onDeep={() => setDeep(true)}
-                    />
-                  </Suspense>
-                </>
-              ) : (
-                <div className="hub-command-preview">
-                  <div>
-                    <span className="hub-kicker">
-                      YOUR NEXT MOVE STARTS HERE
-                    </span>
-                    <h3>{c.chat}</h3>
-                    <p>{c.portalBody}</p>
-                    <button
-                      className="hub-button hub-primary"
-                      disabled={!auth.ready}
-                      onClick={openPortal}
-                    >
-                      <Fingerprint size={17} />
-                      {c.signIn}
-                    </button>
-                  </div>
-                  <div className="hub-command-outline" aria-hidden="true">
-                    <div>
-                      <span className="hub-avatar">
-                        <Bot size={23} />
-                      </span>
-                      <span>
-                        AI CEO<small>YOUR STRATEGIC PARTNER</small>
-                      </span>
-                      <AudioLines size={20} />
-                    </div>
-                    <div className="hub-sample-line" />
-                    <div className="hub-sample-line short" />
-                    <div className="hub-preview-input">
-                      <span>{c.prompt}</span>
-                      <ArrowUpRight size={18} />
-                    </div>
-                  </div>
-                </div>
-              )}
+              {spaceShowcase}
             </section>
             <section id="power" className="hub-wrap hub-section">
               <div className="hub-section-top">

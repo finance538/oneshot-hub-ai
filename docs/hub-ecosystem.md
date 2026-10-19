@@ -4,7 +4,7 @@
 
 The Hub at `https://www.1shotcam.com` supplies the public flagship experience, account entry point, shared API and Lite employee workspace. `/hub` opens the lightweight portal. `/workforce` retains the existing headquarters as an explicitly launched route, with a dedicated-app banner pointing to `https://workflow.1shotcam.com`. The Hub module graph contains no office rendering imports. Existing products, legal pages, owned orders and authenticated gateway modules remain available.
 
-The ecosystem registry preserves the requested Brand domain exactly: `https://brand.oneshotcam.com`, which differs from the other applications' `1shotcam.com` domain. It is not silently rewritten. Links do not alter domain assignments or DNS.
+The ecosystem registry now points OneShot Brand at `https://brand.1shotcam.com`, matching the other applications' `1shotcam.com` domain (changed on 2026-10-19 at the owner's request from the earlier `brand.oneshotcam.com` spelling). The same origin is in the server allow-list. Links do not alter domain assignments or DNS; the Brand project itself must answer on that hostname.
 
 ## Enable shared sign-in on standalone applications
 
@@ -20,6 +20,10 @@ The bridge is implemented here, but external projects must adopt its receiver an
 The receiver generates its own verifier and state and saves that temporary navigation state in session storage. The Hub displays the fixed destination and current account, then issues a one-time code. The code travels in the URL fragment, is removed immediately on arrival and is atomically redeemed with the verifier. Codes expire after 60 seconds. The resulting opaque session is valid for at most ten minutes and is stored in that application's session storage, not in a URL. Only hashes of codes and opaque sessions are stored in the database. The central backend decrypts and checks the underlying Identity credential; roles come from Identity application metadata. The existing Identity token lookup cache has a maximum 45-second duration.
 
 Every opaque-session request checks the grant's expiry and exact origin in the database. Hub logout revokes bridge sessions before clearing its Identity session. Dedicated-app logout revokes bridge sessions and clears that application's local session; the central Identity cookie can only be cleared on the Hub origin. Failed revocation is reported, and local sign-out still proceeds. The receiver polls account validity while visible and clears private state on expiration or invalidation. Account reauthorization returns through the Hub, without sharing refresh tokens or merchant credentials. No shared parent-domain cookie is needed, including for the separately spelled Brand domain.
+
+## Your space (ONESHOTHUB page)
+
+`/hub` is the page a sign-in opens. It renders the `YourSpace` showcase before the command room: the ecosystem idea in plain words, three start steps, a six-service selector with keyboard tab navigation, the per-service benefit copy already maintained in eight languages, the live connection label from `/api/ecosystem/status`, and related catalog products fetched from `/api/products`. The mapping from service to catalog categories (`hub` → MKT/DIG, `workflow` → SOC, `ai` → AI, `pay` → AUT, `brand` → BRD/MED, `loader` → WEB) lives in the component as configuration. Product names, descriptions, SAR prices, delivery windows and images come from the database rows; catalog services keep their quote-only labelling and link to the existing detail pages. The homepage command section shows the same box so visitors see the full offer before signing in. The Hub no longer renders the Lite portal inline on the homepage; `openPortal` navigates to `/hub#command` after a successful sign-in (or immediately for signed-in accounts), and on `/hub` it scrolls to the command room.
 
 ## Lite workspace and attachments
 
