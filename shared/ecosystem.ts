@@ -34,7 +34,7 @@ export const ecosystemApps = [
   {
     id: "brand",
     name: "OneShot Brand",
-    origin: "https://brand.oneshotcam.com",
+    origin: "https://brand.1shotcam.com",
     season: "Prism Spring",
     color: "#b6c68c",
     mark: "05",
