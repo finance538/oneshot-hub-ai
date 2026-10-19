@@ -1,15 +1,14 @@
-/* Original storefront charcoal palette and compact control scale, shared by
-   the storefront and workforce. Orange is reserved for primary actions. */
+/* Calm shared surfaces keep the catalog and workspace aligned with the Hub. */
 :root {
-  --ui-bg: #0b0d0f;
-  --ui-panel: #14181d;
-  --ui-raised: #1b2027;
-  --ui-text: #f6f7f9;
-  --ui-muted: #94a3b8;
-  --ui-border: #1e293b;
-  --ui-accent: #f26522;
-  --ui-on-accent: #16110d;
-  --ui-success: #10b981;
+  --ui-bg: #101211;
+  --ui-panel: #171b17;
+  --ui-raised: #22271f;
+  --ui-text: #f0ede5;
+  --ui-muted: #a3ab9a;
+  --ui-border: #30392b;
+  --ui-accent: #cfbc97;
+  --ui-on-accent: #20231c;
+  --ui-success: #8bad99;
   --ui-radius: 12px;
   --ui-control-radius: 8px;
   --ui-control-height: 36px;
@@ -32,6 +31,8 @@
   --ui-muted: #526176;
   --ui-border: #dce3ec;
   --ui-success: #00785a;
+  --ui-accent: #79613b;
+  --ui-on-accent: #fffaf0;
 }
 @media (max-width: 760px), (pointer: coarse) {
   :root {

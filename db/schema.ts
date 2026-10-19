@@ -22,6 +22,24 @@ export const products = pgTable("products", {
   catalogDetails: jsonb("catalog_details").$type<OriginalProduct>(),
   active: boolean("active").notNull().default(true),
 });
+
+// Browser push capabilities are encrypted; only endpoint digests are indexed.
+export const pushSubscriptions = pgTable(
+  "experience_push_subscriptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ownerId: text("owner_id").notNull(),
+    endpointHash: text("endpoint_hash").notNull().unique(),
+    encryptedSubscription: text("encrypted_subscription").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [index("experience_push_owner").on(t.ownerId)],
+);
 export const vaultKeys = pgTable(
   "vault_keys",
   {

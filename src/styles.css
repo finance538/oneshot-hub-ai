@@ -10,8 +10,8 @@
   --surface-deep: var(--ui-bg);
   --line: var(--ui-border);
   --muted: var(--ui-muted);
-  --orange: #f26522;
-  --green: #10b981;
+  --orange: var(--ui-accent);
+  --green: var(--ui-success);
   --radius: 14px;
 }
 * {
@@ -96,7 +96,7 @@ p {
   line-height: 1.85;
 }
 ::selection {
-  background: #f265224d;
+  background: #cfbc974d;
   color: white;
 }
 html {

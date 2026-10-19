@@ -8,9 +8,22 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "native:prepare": "node scripts/native-prepare.mjs",
+    "native:assets": "node scripts/native-assets.mjs",
+    "native:sync": "node scripts/native-prepare.mjs && cap sync",
+    "native:ios": "cap open ios",
+    "native:android": "cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/browser": "^8.0.5",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/network": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.4",
     "@google/genai": "2.30.0",
     "@netlify/database": "2.0.1",
     "@netlify/functions": "6.0.2",
@@ -18,6 +31,7 @@
     "@sparticuz/chromium": "^153.0.0",
     "drizzle-kit": "1.0.0-beta.22",
     "drizzle-orm": "1.0.0-beta.22",
+    "gsap": "^3.15.0",
     "imapflow": "^2.5.2",
     "ipaddr.js": "^2.5.0",
     "lucide-react": "1.56.0",
@@ -27,16 +41,21 @@
     "playwright-core": "^1.64.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "three": "0.186.1"
+    "three": "0.186.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@types/mailparser": "^3.9.0",
     "@types/node": "22.20.5",
     "@types/nodemailer": "^8.0.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@types/three": "0.186.0",
+    "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "6.1.2",
+    "prettier": "^3.9.10",
+    "sharp": "^0.35.5",
     "typescript": "6.0.3",
     "vite": "8.3.4"
   }

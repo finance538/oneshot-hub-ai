@@ -1,0 +1,1646 @@
+.hub.hub-luxury {
+  --hub-bg: #101211;
+  --hub-panel: #171a18;
+  --hub-raised: #20231f;
+  --hub-line: #30342e;
+  --hub-text: #f0ede5;
+  --hub-muted: #a3a69c;
+  --hub-orange: #cfbc97;
+  --lux-gold: #cfbc97;
+  --lux-emerald: #8bad99;
+  --lux-titanium: #9c9b8f;
+  background: var(--hub-bg);
+  transition: background-color 0.7s;
+}
+.hub.hub-luxury[data-zen="true"] {
+  --hub-bg: #101914;
+  --hub-panel: #17231c;
+  --hub-muted: #b2b9ab;
+  --lux-gold: #c7c0a8;
+}
+.hub-luxury .hub-header {
+  height: 76px;
+  background: #101211ec;
+  border-color: #cbbc9721;
+  padding-inline: max(24px, calc((100vw - 1390px) / 2));
+}
+.hub-luxury .hub-logo small {
+  letter-spacing: 2.5px;
+}
+.hub-luxury .hub-desktop-nav a,
+.hub-luxury .hub-desktop-nav button {
+  font-size: 12px;
+  color: #c5c5ba;
+  padding-block: 12px;
+}
+.hub-luxury .hub-account {
+  border-color: #cfbc9745;
+  color: var(--lux-gold);
+  min-height: 40px;
+}
+.hub-luxury .hub-primary {
+  background: var(--lux-gold);
+  color: #191c17;
+}
+.hub-luxury .hub-icon {
+  min-height: 40px;
+  min-width: 40px;
+}
+.hub-luxury .hub-switcher,
+.hub-luxury .hub-mobile-nav {
+  top: 76px;
+}
+.lux-experience {
+  --lux-radius: 4px;
+}
+.lux-wrap {
+  width: min(1390px, 100%);
+  margin-inline: auto;
+  padding-inline: clamp(22px, 5vw, 76px);
+}
+.lux-section {
+  padding-block: clamp(65px, 8vw, 116px);
+  scroll-margin-top: 90px;
+}
+.lux-anchor {
+  display: block;
+  scroll-margin-top: 110px;
+}
+.hub-luxury .hub-logo img,
+.hub-luxury .store-logo-emblem {
+  filter: grayscale(1) sepia(0.25);
+}
+.hub-luxury ::selection {
+  background: #cfbc9740;
+  color: #f2efe4;
+}
+.hub-luxury .ui-dialog {
+  --ui-accent: #cfbc97;
+  --ui-panel: #171d16;
+  --ui-border: #3b4434;
+}
+.lux-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--lux-gold);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2.1px;
+  line-height: 1.8;
+}
+[dir="rtl"] .lux-eyebrow {
+  letter-spacing: 0.6px;
+}
+.lux-tiny-diamond {
+  width: 5px;
+  height: 5px;
+  background: var(--lux-gold);
+  transform: rotate(45deg);
+}
+.lux-hero {
+  display: grid;
+  grid-template-columns: 1fr 1.12fr;
+  gap: 24px;
+  min-height: min(760px, 90svh);
+  align-items: center;
+  padding-top: 52px;
+  padding-bottom: 70px;
+  position: relative;
+}
+.lux-hero:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 26% 45%, #9b9c6b08, transparent 60%);
+}
+.lux-hero-copy {
+  z-index: 2;
+  padding-block: 22px;
+}
+.hub .lux-hero h1 {
+  font-size: clamp(52px, 6.6vw, 91px);
+  font-weight: 450;
+  letter-spacing: -3.5px;
+  line-height: 1.32;
+  margin-block: 23px 24px;
+}
+[dir="ltr"] .hub .lux-hero h1 {
+  font-family: "Outfit", sans-serif;
+  font-weight: 400;
+  line-height: 1.14;
+}
+.lux-hero h1 em {
+  color: var(--lux-gold);
+  font-style: normal;
+}
+.hub .lux-hero-copy > p {
+  max-width: 460px;
+  font-size: 14px;
+  line-height: 2.05;
+}
+.lux-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 26px;
+  margin-top: 36px;
+}
+.lux-button {
+  min-height: 49px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 12px 23px;
+  border: 1px solid #cfbc9754;
+  border-radius: 3px;
+  color: var(--hub-text);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    transform 0.25s,
+    background-color 0.25s,
+    border-color 0.25s;
+  cursor: pointer;
+  text-decoration: none;
+}
+.hub a.lux-button-gold,
+.lux-button-gold {
+  background: var(--lux-gold);
+  color: #20231c;
+  border-color: var(--lux-gold);
+}
+.lux-button:hover {
+  transform: translateY(-2px);
+  border-color: var(--lux-gold);
+  background: #cfbc9712;
+}
+.lux-button-gold:hover {
+  background: #e0d0af;
+  color: #20231c;
+}
+.lux-button:active {
+  transform: translateY(0);
+}
+.lux-text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 0;
+  background: none;
+  border: 0;
+  color: var(--lux-gold, #cfbc97);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 40px;
+}
+.lux-text-button:hover {
+  color: #ece0c6;
+}
+.lux-hero-footnote {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #94998e;
+  font-size: 9px;
+  letter-spacing: 0.7px;
+  margin-top: 35px;
+}
+.lux-hero-footnote > i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #74786e;
+}
+.lux-spatial {
+  position: relative;
+  min-height: 540px;
+  height: 100%;
+  max-height: 650px;
+  direction: ltr;
+}
+.lux-scene-caption {
+  position: absolute;
+  top: 20px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  font:
+    9px "Outfit",
+    sans-serif;
+  letter-spacing: 2px;
+  color: #767e70;
+  z-index: 3;
+}
+.lux-spatial-art,
+.lux-canvas,
+.lux-spatial-fallback {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.lux-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.lux-spatial-fallback {
+  display: grid;
+  place-items: center;
+  transition: opacity 0.5s;
+  background: radial-gradient(ellipse at center, #adb8940d, transparent 60%);
+}
+.lux-spatial-art.is-ready .lux-spatial-fallback {
+  opacity: 0;
+}
+.lux-spatial-art:not(.is-ready) .lux-canvas {
+  opacity: 0;
+}
+.lux-spatial-fallback > i {
+  position: absolute;
+  width: 72%;
+  aspect-ratio: 1;
+  border: 1px solid #cfbc973e;
+  border-radius: 50%;
+  transform: rotate(-35deg) scaleY(0.55);
+  box-shadow: inset 0 0 35px #bfc1a30a;
+}
+.lux-spatial-fallback > i:nth-child(2) {
+  transform: rotate(55deg) scaleY(0.75);
+  width: 63%;
+}
+.lux-spatial-fallback > i:nth-child(3) {
+  transform: rotate(12deg) scaleY(0.8);
+  width: 56%;
+}
+.lux-crystal {
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(
+    140deg,
+    #8e948534,
+    #d6ccb933 40%,
+    #2b332a88 41%,
+    #a6af9633
+  );
+  transform: rotate(30deg);
+  border: 1px solid #c7b69e7a;
+  box-shadow:
+    inset 0 0 35px #b6bd9120,
+    0 35px 65px #080b0966;
+  border-radius: 28px;
+}
+.lux-scene-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  color: #f1e8d4;
+  pointer-events: none;
+  text-shadow: 0 1px 15px #101211;
+}
+.lux-scene-center > img {
+  filter: grayscale(1) sepia(0.3);
+  margin-bottom: 8px;
+}
+.lux-scene-center > span {
+  font:
+    24px "Outfit",
+    sans-serif;
+  letter-spacing: -0.8px;
+}
+.lux-scene-center > small {
+  font:
+    6px "Outfit",
+    sans-serif;
+  letter-spacing: 3px;
+  margin-top: 8px;
+}
+.lux-node {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 13px;
+  border: 1px solid #cfbc9730;
+  background: linear-gradient(130deg, #34382e8c, #111712d9);
+  backdrop-filter: blur(16px);
+  border-radius: 5px;
+  box-shadow: 0 12px 30px #080b092b;
+  transition:
+    transform 0.25s,
+    border-color 0.25s;
+  min-width: 149px;
+}
+.lux-node:hover {
+  border-color: #cfbc97a8;
+  transform: translateY(-5px);
+}
+.lux-node > span:not(.lux-node-icon) {
+  display: grid;
+  gap: 1px;
+}
+.lux-node small {
+  font:
+    6px "Outfit",
+    sans-serif;
+  letter-spacing: 1.5px;
+  color: #a3aa97;
+}
+.lux-node strong {
+  font:
+    500 15px "Outfit",
+    sans-serif;
+}
+.lux-node > svg {
+  margin-left: auto;
+  color: #b8bea8;
+}
+.lux-node-icon {
+  width: 31px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: var(--lux-gold);
+}
+.lux-node-0 {
+  left: 4%;
+  top: 21%;
+}
+.lux-node-1 {
+  right: 0;
+  top: 32%;
+}
+.lux-node-2 {
+  right: 7%;
+  top: 67%;
+}
+.lux-node-3 {
+  left: 1%;
+  top: 59%;
+}
+.lux-node-4 {
+  left: 31%;
+  top: 82%;
+}
+.lux-scene-bottom {
+  position: absolute;
+  bottom: -20px;
+  left: 15px;
+  right: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #7e8777;
+  font:
+    8px "Outfit",
+    sans-serif;
+  letter-spacing: 1px;
+}
+.lux-scene-bottom > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lux-scene-bottom i {
+  height: 4px;
+  width: 4px;
+  border-radius: 50%;
+  background: #a3b99b;
+}
+.lux-scene-bottom button {
+  background: none;
+  border: 0;
+  color: #9ba68e;
+  padding: 10px;
+  display: grid;
+  place-items: center;
+}
+.lux-sensory {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+  border-top: 1px solid #cfbc9724;
+  border-bottom: 1px solid #cfbc9724;
+  padding-block: 21px;
+}
+.lux-sensory > div,
+.lux-sensory button {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.lux-sensory > div:first-child {
+  font-size: 11px;
+  color: #b6b9ab;
+  letter-spacing: 0.4px;
+}
+.lux-sensory > div:first-child svg {
+  color: var(--lux-gold);
+}
+.lux-sensory button {
+  font: inherit;
+  font-size: 11px;
+  border: 0;
+  background: transparent;
+  color: #a9afa0;
+  padding: 10px 12px;
+  min-height: 40px;
+}
+.lux-sensory button:hover,
+.lux-sensory button[aria-pressed="true"] {
+  color: var(--lux-gold);
+}
+.lux-toggle {
+  height: 15px;
+  width: 27px;
+  border: 1px solid #78816c;
+  border-radius: 12px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  direction: ltr;
+}
+.lux-toggle:before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #78816c;
+  transition: transform 0.3s;
+}
+.lux-toggle.is-on {
+  border-color: var(--lux-emerald);
+}
+.lux-toggle.is-on:before {
+  transform: translateX(12px);
+  background: var(--lux-emerald);
+}
+.lux-focus-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  padding-block: 16px;
+  border-bottom: 1px solid #cfbc971c;
+  font-size: 11px;
+}
+.lux-focus-tools > label {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.lux-focus-tools input {
+  width: 90px;
+  accent-color: var(--lux-gold);
+}
+.lux-focus-tools [role="status"] {
+  color: var(--hub-muted);
+  font-size: 10px;
+}
+.lux-section-heading {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  align-items: end;
+  gap: 60px;
+  margin-bottom: 45px;
+}
+.hub .lux-section-heading h2,
+.hub .lux-command h2,
+.hub .lux-install h2 {
+  white-space: pre-line;
+  font-size: clamp(30px, 3.5vw, 48px);
+  font-weight: 450;
+  line-height: 1.55;
+  margin-top: 15px;
+  letter-spacing: -1px;
+}
+.hub .lux-section-heading > p {
+  max-width: 390px;
+  font-size: 13px;
+  justify-self: end;
+}
+.lux-app-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.14fr;
+  gap: 30px;
+}
+.lux-app-tabs {
+  display: grid;
+}
+.lux-app-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  text-align: start;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid #cfbc9724;
+  padding: 20px 18px;
+  color: #8f9988;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+.lux-app-tabs button[aria-selected="true"] {
+  color: var(--lux-gold);
+  background: linear-gradient(90deg, #cfbc9705, #cfbc9712);
+  border-inline-start: 2px solid var(--lux-gold);
+}
+.lux-app-tab-number {
+  font:
+    10px "Outfit",
+    sans-serif;
+}
+.lux-app-tabs button > span:not(.lux-app-tab-number) {
+  display: grid;
+  gap: 5px;
+  flex: 1;
+}
+.lux-app-tabs strong {
+  font:
+    500 18px "Outfit",
+    sans-serif;
+  color: #d8d9cd;
+}
+.lux-app-tabs small {
+  font-size: 10px;
+}
+.lux-app-panel {
+  border: 1px solid #c7bd992d;
+  padding: 30px 34px;
+  background:
+    radial-gradient(ellipse at 70% 0%, #b3b5970c, transparent 65%), #171c17;
+  display: flex;
+  flex-direction: column;
+}
+.lux-app-panel > .lux-eyebrow {
+  font:
+    9px "Outfit",
+    sans-serif;
+  letter-spacing: 2px;
+}
+.lux-app-art {
+  position: relative;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: #cec3a4;
+  margin-bottom: 15px;
+}
+.lux-app-art > div {
+  position: absolute;
+  width: 95px;
+  height: 95px;
+  border: 1px solid #b8c49b36;
+  border-radius: 15px;
+  transform: rotate(-28deg);
+  background: #b9bc9c06;
+}
+.lux-app-art > div:nth-child(2) {
+  width: 124px;
+  height: 124px;
+  transform: rotate(-12deg);
+}
+.lux-app-art > div:nth-child(3) {
+  width: 156px;
+  height: 156px;
+  transform: rotate(6deg);
+  border-color: #b8c49b17;
+}
+.lux-app-art > span {
+  position: absolute;
+  inset-inline-end: 0;
+  top: 0;
+  font:
+    500 72px "Outfit",
+    sans-serif;
+  color: #cfbc9717;
+}
+.lux-app-panel > p {
+  font-size: 12px;
+  margin-top: 12px;
+}
+.lux-app-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-block: 22px;
+  color: #b4bba5;
+}
+.lux-app-features span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+}
+.lux-app-features svg {
+  color: #9db29c;
+}
+.lux-app-panel-bottom {
+  margin-top: auto;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+}
+.lux-app-panel-bottom > small {
+  color: #a5ab9b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lux-verified-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--lux-emerald);
+}
+.lux-value {
+  border-top: 1px solid #cfbc971c;
+}
+.lux-value-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid #cfbc9735;
+}
+.lux-traditional {
+  background: #191c18;
+}
+.lux-photo {
+  position: relative;
+  height: 235px;
+  overflow: hidden;
+}
+.lux-photo:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #191c18, transparent 80%);
+}
+.lux-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.45) brightness(0.7);
+}
+.lux-photo > span {
+  position: absolute;
+  inset-inline-start: 32px;
+  top: 25px;
+  z-index: 1;
+  color: #e8ddc6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+}
+.lux-traditional-copy {
+  padding: 0 34px 32px;
+}
+.lux-field {
+  display: grid;
+  gap: 8px;
+  font-size: 11px;
+  color: #b9bdaf;
+}
+.lux-field select,
+.lux-field input,
+.lux-field textarea {
+  color: #e9e6dc;
+  background: #111610;
+  border: 1px solid #c5bd9d40;
+  border-radius: 3px;
+  min-height: 44px;
+  padding: 10px 12px;
+  width: 100%;
+  font: inherit;
+  font-size: 12px;
+}
+.lux-field select option {
+  background: #1a2119;
+}
+.lux-catalog-price {
+  display: flex;
+  align-items: baseline;
+  gap: 15px;
+  margin-block: 22px 12px;
+}
+.lux-catalog-price strong {
+  font:
+    400 32px "Outfit",
+    "IBM Plex Sans Arabic",
+    sans-serif;
+  color: #e3dfd0;
+}
+.lux-catalog-price > span {
+  font-size: 10px;
+  color: #a6ab9b;
+}
+.lux-traditional-copy > p {
+  font-size: 12px;
+}
+.lux-traditional-copy > a {
+  margin-top: 13px;
+}
+.lux-intelligence {
+  padding: 42px;
+  background:
+    radial-gradient(ellipse at 90% 100%, #92aa8130, transparent 65%), #1e281f;
+  border-inline-start: 1px solid #cfbc9729;
+  display: flex;
+  align-items: start;
+  flex-direction: column;
+}
+.hub .lux-intelligence h3 {
+  white-space: pre-line;
+  font-size: clamp(25px, 3.1vw, 38px);
+  line-height: 1.55;
+  margin-block: 25px 20px;
+  font-weight: 450;
+}
+.lux-intelligence > p {
+  font-size: 13px;
+}
+.lux-process {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  margin-block: 25px;
+}
+.lux-process > span {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font:
+    10px "Outfit",
+    sans-serif;
+  color: #a8b599;
+  border-bottom: 1px solid #c6c6a31a;
+  padding-bottom: 12px;
+}
+.lux-process b {
+  font:
+    12px "IBM Plex Sans Arabic",
+    "Outfit",
+    sans-serif;
+  color: #c7cdba;
+}
+.lux-intelligence > small {
+  margin-top: 20px;
+  color: #a6b49a;
+  line-height: 1.9;
+}
+.lux-catalog-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  padding: 21px;
+  border-bottom: 1px solid #cfbc9735;
+  font-size: 11px;
+  color: var(--lux-gold) !important;
+}
+.lux-roi {
+  padding-top: 28px;
+}
+.lux-roi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 55px;
+  align-items: start;
+}
+.lux-roi-controls {
+  padding-block: 24px;
+}
+.lux-range {
+  display: grid;
+  gap: 17px;
+  margin-block: 28px;
+  font-size: 12px;
+}
+.lux-range > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.lux-range output {
+  color: var(--lux-gold);
+}
+.lux-range input {
+  width: 100%;
+  accent-color: var(--lux-gold);
+  height: 24px;
+  cursor: pointer;
+}
+.lux-number-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.lux-number-fields .lux-field:last-child {
+  grid-column: 1 / -1;
+}
+.hub p.lux-fineprint {
+  margin-top: 20px;
+  font-size: 10px;
+  line-height: 1.9;
+}
+.lux-roi-result {
+  padding: 32px 36px;
+  background: #1b241c;
+  border: 1px solid #bdc1a42e;
+}
+.lux-saving {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-block: 15px;
+  color: #cdd7bb;
+}
+.lux-saving strong {
+  font:
+    400 clamp(55px, 6vw, 82px) "Outfit",
+    sans-serif;
+  letter-spacing: -4px;
+  line-height: 1.3;
+}
+.lux-saving > span {
+  font-size: 12px;
+}
+.lux-saving.is-negative {
+  color: #d6a58c;
+}
+.lux-roi-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #a7b59b;
+}
+.lux-roi-bars {
+  display: grid;
+  gap: 8px;
+  margin-block: 25px;
+}
+.lux-roi-bars i {
+  display: block;
+  height: 7px;
+  background: #6e7961;
+  transform-origin: right;
+}
+.lux-roi-bars i + i {
+  background: var(--lux-gold);
+}
+[dir="ltr"] .lux-roi-bars i {
+  transform-origin: left;
+}
+.lux-roi-result dl {
+  font-size: 11px;
+  margin: 0;
+}
+.lux-roi-result dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding-block: 13px;
+  border-bottom: 1px solid #bec7ac19;
+}
+.lux-roi-result dt {
+  color: #aab29e;
+}
+.lux-roi-result dd {
+  margin: 0;
+  color: #e0e1d2;
+}
+.lux-roi-result > small {
+  display: block;
+  margin-top: 18px;
+  color: #95a089;
+  font-size: 9px;
+  line-height: 1.9;
+}
+.lux-command {
+  padding: 54px;
+  border: 1px solid #cfbc9730;
+  background: linear-gradient(120deg, #1c211a, #151a15);
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 35px;
+}
+.lux-command p {
+  max-width: 470px;
+  font-size: 13px;
+  margin-block: 18px 28px;
+}
+.lux-command-emblem {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+}
+.lux-command-emblem > span {
+  position: absolute;
+  height: 225px;
+  width: 225px;
+  border: 1px solid #b5bd9d2a;
+  border-radius: 50%;
+}
+.lux-command-emblem > span:nth-child(2) {
+  height: 160px;
+  width: 160px;
+  border-color: #c9c6a64a;
+}
+.lux-command-emblem > img {
+  filter: grayscale(1) sepia(0.5);
+  opacity: 0.8;
+}
+.lux-command-emblem > small {
+  position: absolute;
+  bottom: 12px;
+  font:
+    8px "Outfit",
+    sans-serif;
+  letter-spacing: 2px;
+  color: #8f9a7f;
+}
+.lux-install {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 65px;
+  align-items: center;
+}
+.lux-install h2 {
+  margin-bottom: 20px;
+}
+.lux-install p {
+  max-width: 460px;
+  font-size: 13px;
+}
+.lux-install-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  margin-block: 28px 23px;
+}
+.lux-install-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 23px;
+  margin-bottom: 18px;
+}
+.lux-install-notes > span {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #b4b8a8;
+  font-size: 10px;
+}
+.lux-install small {
+  display: block;
+  color: #8f9984;
+  max-width: 450px;
+  line-height: 1.9;
+}
+.lux-notification-login {
+  margin-top: 12px;
+}
+.lux-installed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #a3c4ad;
+}
+.lux-push-controls {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  align-items: center;
+}
+.lux-push-controls > p {
+  width: 100%;
+  font-size: 11px;
+}
+.lux-device-art {
+  display: grid;
+  justify-items: center;
+  position: relative;
+  direction: ltr;
+}
+.lux-device-art:before {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  border: 1px solid #c6c2a81b;
+  inset: 75px auto auto;
+}
+.lux-phone {
+  position: relative;
+  background: linear-gradient(145deg, #2e3529, #11180f 60%);
+  border: 5px solid #4b5043;
+  outline: 1px solid #979681;
+  border-radius: 36px;
+  width: 216px;
+  height: 425px;
+  box-shadow:
+    22px 35px 50px #080b094d,
+    inset 0 0 0 1px #747965;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 20px;
+  transform: rotate(-8deg);
+}
+.lux-phone-island {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 18px;
+  width: 65px;
+  background: #0c100c;
+  border-radius: 20px;
+}
+.lux-phone > span {
+  align-self: stretch;
+  display: flex;
+  justify-content: space-between;
+  font:
+    8px "Outfit",
+    sans-serif;
+  color: #cad1be;
+}
+.lux-phone > span i {
+  font-size: 7px;
+}
+.lux-phone > img {
+  margin-block: 42px 10px;
+  filter: grayscale(1) sepia(0.4);
+}
+.lux-phone > strong {
+  font:
+    400 25px "Outfit",
+    sans-serif;
+  color: #e2dfca;
+}
+.lux-phone > small {
+  margin-top: 15px;
+  font:
+    7px/1.9 "Outfit",
+    sans-serif;
+  text-align: center;
+  letter-spacing: 2px;
+}
+.lux-phone-orbit {
+  flex: 1;
+  position: relative;
+  width: 120px;
+  display: grid;
+  place-items: center;
+}
+.lux-phone-orbit > i {
+  position: absolute;
+  width: 96px;
+  height: 45px;
+  border: 1px solid #c0c19a55;
+  border-radius: 50%;
+  transform: rotate(35deg);
+}
+.lux-phone-orbit > i:nth-child(2) {
+  transform: rotate(-40deg);
+  width: 86px;
+  height: 53px;
+}
+.lux-phone-orbit > i:nth-child(3) {
+  width: 30px;
+  height: 30px;
+  background: #bbc39a24;
+  border-radius: 7px;
+  transform: rotate(35deg);
+}
+.lux-phone-dock {
+  display: flex;
+  gap: 27px;
+  color: #b5c09e;
+  border: 1px solid #a1b38930;
+  padding: 14px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+.lux-home-indicator {
+  position: absolute;
+  bottom: 7px;
+  width: 65px;
+  height: 3px;
+  background: #a6af97;
+  border-radius: 3px;
+}
+.lux-device-caption {
+  margin-top: 35px;
+  font:
+    8px "Outfit",
+    sans-serif;
+  letter-spacing: 2px;
+  color: #8c967f;
+}
+.lux-closing {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-block: 40px;
+  border-block: 1px solid #cfbc9727;
+}
+.lux-closing > span {
+  font:
+    10px "Outfit",
+    sans-serif;
+  letter-spacing: 1.8px;
+  color: #8d9980;
+}
+.lux-closing > a {
+  font-size: 11px;
+  color: var(--lux-gold);
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+.lux-concierge {
+  color: #e6e5d8;
+  display: grid;
+  gap: 18px;
+}
+.lux-concierge p,
+.lux-install-help p {
+  font-size: 13px;
+  line-height: 1.95;
+  color: #b4baa8;
+}
+.lux-concierge form {
+  display: grid;
+  gap: 15px;
+}
+.lux-concierge > small {
+  color: #9da78e;
+  font-size: 10px;
+  line-height: 1.9;
+}
+.lux-prompt-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.lux-prompt-options button {
+  border: 1px solid #a9b28d44;
+  color: #bac3a7;
+  background: #263021;
+  border-radius: 4px;
+  padding: 9px;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+.lux-recommendation {
+  padding: 22px;
+  border: 1px solid #a9b28d44;
+  background: #1c261a;
+  display: grid;
+  gap: 12px;
+}
+.lux-recommendation small {
+  color: #a7b890;
+}
+.lux-recommendation strong {
+  color: #d4c3a0;
+}
+.lux-error {
+  color: #ddb298 !important;
+}
+.lux-skeleton {
+  min-height: 180px;
+  background: linear-gradient(90deg, #1c2219, #282f23, #1c2219);
+  color: #b5bda7;
+  padding: 24px;
+}
+.lux-loading-toast {
+  position: fixed;
+  bottom: 24px;
+  inset-inline-end: 24px;
+  background: #263021;
+  border: 1px solid #a9b28d44;
+  padding: 18px 28px;
+  z-index: 50;
+}
+.lux-spinner {
+  animation: lux-spin 1s linear infinite;
+}
+@keyframes lux-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.hub-luxury .store-footer {
+  padding: 65px clamp(22px, 5vw, 76px) 30px;
+  max-width: 1390px;
+  margin-inline: auto;
+  background: transparent;
+}
+.hub-luxury .store-footer-columns {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.3fr 1fr;
+  gap: 35px;
+}
+.hub-luxury .store-footer-columns > div {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: start;
+}
+.hub-luxury .store-footer-columns p,
+.hub-luxury .store-footer-columns a {
+  font-size: 11px;
+  line-height: 1.9;
+  color: #a2aa96;
+}
+.hub-luxury .store-footer-columns h3 {
+  font-size: 13px;
+  color: #d6d9ca;
+  margin-bottom: 9px;
+}
+.hub-luxury .store-footer-policies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px 25px;
+  padding-block: 28px;
+  margin-top: 25px;
+  border-block: 1px solid #cfbc9725;
+}
+.hub-luxury .store-footer-policies a {
+  font-size: 10px;
+  color: #bbc1ad;
+}
+.hub-luxury .store-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+  padding-top: 25px;
+  color: #8a957c;
+  font-size: 9px;
+}
+.hub-luxury .store-footer-bottom > span {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.hub-luxury .store-logo {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.hub-luxury .store-logo > span {
+  font:
+    24px "Outfit",
+    sans-serif;
+  color: #e6e5d8;
+}
+.hub-luxury .store-logo small {
+  margin-inline-start: 6px;
+  color: var(--lux-gold);
+  font-size: 10px;
+}
+.hub-luxury .store-accent {
+  color: var(--lux-gold) !important;
+}
+@media (min-width: 1600px) {
+  .lux-hero {
+    min-height: 760px;
+  }
+}
+@media (max-width: 1100px) {
+  .hub-luxury .hub-desktop-nav {
+    gap: 13px;
+  }
+  .hub-luxury .hub-desktop-nav a,
+  .hub-luxury .hub-desktop-nav button {
+    font-size: 10px;
+  }
+  .lux-hero {
+    grid-template-columns: 1fr 1.05fr;
+    gap: 12px;
+    min-height: 610px;
+  }
+  .lux-spatial {
+    min-height: 480px;
+  }
+  .lux-node {
+    min-width: 128px;
+    padding: 10px;
+    gap: 5px;
+  }
+  .lux-node strong {
+    font-size: 13px;
+  }
+  .lux-node-icon {
+    width: 24px;
+  }
+  .lux-node-1 {
+    right: -5%;
+  }
+  .lux-node-0 {
+    left: -6%;
+  }
+  .lux-node-3 {
+    left: -9%;
+  }
+  .lux-intelligence {
+    padding: 30px;
+  }
+  .lux-roi-grid {
+    gap: 30px;
+  }
+  .lux-sensory-controls {
+    gap: 0 !important;
+  }
+}
+@media (max-width: 800px) {
+  .hub-luxury .hub-header {
+    height: 65px;
+    gap: 15px;
+    padding-inline: 20px;
+  }
+  .hub-luxury .hub-desktop-nav {
+    display: none;
+  }
+  .hub-luxury .hub-mobile-menu {
+    display: grid;
+  }
+  .hub-luxury .hub-controls {
+    margin-inline-start: auto;
+  }
+  .hub-luxury .hub-switcher,
+  .hub-luxury .hub-mobile-nav {
+    top: 65px;
+  }
+  .lux-hero {
+    grid-template-columns: 1fr;
+    padding-top: 30px;
+    padding-bottom: 50px;
+    gap: 10px;
+  }
+  .lux-hero-copy {
+    max-width: 600px;
+  }
+  .hub .lux-hero h1 {
+    font-size: 64px;
+    letter-spacing: -2px;
+    margin-top: 18px;
+  }
+  .lux-hero-copy > p {
+    max-width: 500px;
+  }
+  .lux-spatial {
+    height: 470px;
+    min-height: 470px;
+    width: min(540px, 100%);
+    justify-self: center;
+  }
+  .lux-node-0 {
+    left: 4%;
+  }
+  .lux-node-1 {
+    right: 0;
+  }
+  .lux-node-3 {
+    left: 0;
+  }
+  .lux-sensory {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .lux-sensory-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .lux-section-heading {
+    gap: 25px;
+    grid-template-columns: 1fr;
+  }
+  .hub .lux-section-heading > p {
+    justify-self: start;
+    max-width: 480px;
+  }
+  .lux-app-layout {
+    gap: 20px;
+    grid-template-columns: 0.9fr 1.1fr;
+  }
+  .lux-app-tabs button {
+    gap: 12px;
+    padding: 17px 12px;
+  }
+  .lux-app-tab-number {
+    display: none;
+  }
+  .lux-app-panel {
+    padding: 25px;
+  }
+  .lux-app-panel-bottom {
+    align-items: start;
+    flex-direction: column;
+  }
+  .lux-value-grid {
+    grid-template-columns: 1fr;
+  }
+  .lux-intelligence {
+    border-inline-start: 0;
+    border-top: 1px solid #cfbc9729;
+    padding: 32px;
+  }
+  .lux-intelligence > p {
+    max-width: 500px;
+  }
+  .lux-roi-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  .lux-command {
+    padding: 30px;
+    grid-template-columns: 1fr;
+  }
+  .lux-command-emblem {
+    min-height: 250px;
+  }
+  .lux-install {
+    gap: 45px;
+    grid-template-columns: 1fr;
+  }
+  .lux-device-art {
+    margin-top: 20px;
+  }
+  .hub-luxury .store-footer-columns {
+    grid-template-columns: 1fr 1fr;
+    gap: 35px;
+  }
+}
+@media (max-width: 480px) {
+  .hub-luxury .hub-logo > span {
+    font-size: 21px;
+  }
+  .hub-luxury .hub-logo small {
+    display: none;
+  }
+  .hub-luxury .hub-language {
+    max-width: 60px;
+  }
+  .hub-luxury .hub-controls {
+    gap: 7px;
+  }
+  .hub-luxury .hub-account {
+    padding: 7px;
+  }
+  .lux-hero {
+    padding-top: 22px;
+  }
+  .hub .lux-hero h1 {
+    font-size: 56px;
+  }
+  .hub .lux-hero-copy > p {
+    font-size: 13px;
+  }
+  .lux-eyebrow {
+    font-size: 9px;
+    letter-spacing: 1.3px;
+  }
+  .lux-hero-actions {
+    gap: 15px;
+  }
+  .lux-hero-actions .lux-button {
+    padding-inline: 18px;
+  }
+  .lux-spatial {
+    height: 390px;
+    min-height: 390px;
+  }
+  .lux-node {
+    min-width: 113px;
+    padding: 8px;
+    gap: 4px;
+  }
+  .lux-node small {
+    font-size: 5px;
+    letter-spacing: 1px;
+  }
+  .lux-node-icon {
+    width: 22px;
+  }
+  .lux-node strong {
+    font-size: 12px;
+  }
+  .lux-node > svg {
+    width: 10px;
+  }
+  .lux-node-4 {
+    left: 31%;
+  }
+  .lux-node-2 {
+    right: 0;
+  }
+  .lux-scene-caption {
+    font-size: 7px;
+  }
+  .lux-scene-center > span {
+    font-size: 20px;
+  }
+  .lux-scene-center > img {
+    width: 28px;
+    height: 28px;
+  }
+  .lux-app-layout {
+    grid-template-columns: 1fr;
+  }
+  .lux-app-tabs {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lux-app-tabs button {
+    gap: 8px;
+    padding: 16px 8px;
+  }
+  .lux-app-tabs strong {
+    font-size: 14px;
+  }
+  .lux-app-tabs small {
+    font-size: 8px;
+  }
+  .lux-app-tabs button > svg:last-child {
+    display: none;
+  }
+  .lux-app-tabs button[aria-selected="true"] {
+    border-inline-start: 0;
+    border-bottom: 2px solid var(--lux-gold);
+  }
+  .lux-app-panel {
+    padding: 24px;
+  }
+  .lux-app-panel-bottom {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .lux-traditional-copy {
+    padding-inline: 24px;
+  }
+  .lux-intelligence {
+    padding: 28px 24px;
+  }
+  .lux-roi-result {
+    padding: 26px;
+  }
+  .lux-command {
+    padding: 27px;
+  }
+  .lux-photo {
+    height: 205px;
+  }
+  .lux-number-fields {
+    gap: 14px;
+  }
+  .lux-field {
+    font-size: 10px;
+  }
+  .hub-luxury .store-footer-columns {
+    grid-template-columns: 1fr;
+  }
+  .lux-sensory button {
+    padding-inline: 9px;
+    font-size: 10px;
+  }
+  .lux-focus-tools {
+    gap: 10px 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lux-experience *,
+  .lux-experience *:before,
+  .lux-experience *:after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
