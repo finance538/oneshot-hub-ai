@@ -1,5 +1,6 @@
 import { Modal } from "../components/Modal";
 import { MarketingComparison } from "../marketing/MarketingComparison";
+import { MarketingMarket, MarketingModes } from "../marketing/MarketingIntro";
 import { marketingCopy } from "../marketing/copy";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
@@ -302,6 +303,9 @@ export default function Workforce({
 }) {
   const { language, outputLanguage, setOutputLanguage, tr } = useAppearance();
   const t = (key: string) => wfText(language, key);
+  useEffect(() => {
+    document.title = `${marketingCopy[language].headline} | oneShot AI Workforce`;
+  }, [language]);
   const [tab, setTabState] = useState<"market" | "office">(
       new URLSearchParams(window.location.search).get("view") === "office"
         ? "office"
@@ -855,6 +859,7 @@ export default function Workforce({
                 </span>
                 <h1>{marketingCopy[language].headline}</h1>
                 <p>{marketingCopy[language].intro}</p>
+                <MarketingMarket />
                 <button
                   className="wf-primary"
                   onClick={() => {
@@ -868,25 +873,7 @@ export default function Workforce({
                 </button>
                 <p className="wf-muted">{t("prototype")}</p>
               </div>
-              <div className="wf-hero-art" aria-hidden="true">
-                <div className="wf-orbit" />
-                <div className="wf-art-desk">
-                  <BriefcaseBusiness size={38} />
-                  <span>CEO</span>
-                  <i />
-                </div>
-                <div className="wf-art-desk">
-                  <Mail size={28} />
-                  <span>MAIL</span>
-                </div>
-                <div className="wf-art-desk">
-                  <Sparkles size={28} />
-                  <span>CONTENT</span>
-                </div>
-                <span className="wf-art-caption">
-                  {marketingCopy[language].team}
-                </span>
-              </div>
+              <MarketingModes />
             </section>
             <MarketingComparison />
             <section className="wf-market">

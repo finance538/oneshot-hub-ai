@@ -7,6 +7,16 @@ export type MarketingCopy = {
   headline: string;
   intro: string;
   examples: string;
+  marketLabel: string;
+  modesTitle: string;
+  chatTitle: string;
+  chatBody: string;
+  officeTitle: string;
+  officeBody: string;
+  modeAction: string;
+  brandTitle: string;
+  brandBody: string;
+  brandAction: string;
   team: string;
   signInHeadquarters: string;
   enterHeadquarters: string;
@@ -27,9 +37,22 @@ export type MarketingCopy = {
 
 export const marketingCopy = {
   ar: {
-    badge: "مقر رقمي وفريق AI بلغتك",
-    headline: "مقرّك الرقمي. فريقك في مكان واحد.",
-    intro: "خطّط مع مديرك التنفيذي، وتعاون مع موظفي AI بالنص والصوت.",
+    marketLabel: "أمثلة من سوقك",
+    modesTitle: "فريق واحد. طريقتان للعمل.",
+    chatTitle: "شات سريع",
+    chatBody: "ابدأ بسؤال أو خطة. محادثات محفوظة مع موظفيك، بالنص والصوت.",
+    officeTitle: "مقرّك التفاعلي",
+    officeBody:
+      "واجهة مكتب مصوّرة تجمع مكاتب الفريق وشاشات العمل وغرفة الاجتماعات.",
+    modeAction: "اختر المساحة التي تناسبك؛ الفريق والمحادثات نفسها في الوضعين.",
+    brandTitle: "هوية واحدة، في كل ظهور.",
+    brandBody:
+      "استكشف الشعارات والألوان والمواد الترويجية وتصدير الأصول في موقع OneShot Brand المستقل.",
+    brandAction: "افتح استوديو الهوية",
+    badge: "للتجارة السعودية والعربية · منظومة عمل رقمية متكاملة",
+    headline: "لا تكتفِ بأداة. امتلك مقرّك الرقمي وفريقك.",
+    intro:
+      "من أول طلب في متجرك إلى خطتك للتوسع: ابدأ بمدير تنفيذي استشاري مجاني، وجرّب كفاءات AI تتعاون معها بالعربية وبأسلوبك الخليجي.",
     examples:
       "سلة، زد، Shopify وWhatsApp — أمثلة قريبة من التجارة الخليجية والعربية.",
     team: "استكشف فريقك",
@@ -58,7 +81,7 @@ export const marketingCopy = {
         "فريق بشري بخبرة ومسؤوليات مباشرة، يحتاج تنسيقاً وإدارة.",
         "مناسب للأسئلة المتكررة؛ التخطيط والتنفيذ يعتمدان على تصميمه وربطه.",
         "تخصصات متنوعة؛ قد تتطلب نقل السياق أو إعداد تكاملات.",
-        "سوق كفاءات وتجارب، شات سريع أو مقر تفاعلي، صوت وغرفة اجتماعات.",
+        "سوق كفاءات للتجربة، شات سريع أو مقر تفاعلي، صوت واجتماعات؛ واستوديو هوية على موقع مستقل.",
       ],
       [
         "البشر ينفذون ضمن الصلاحيات والإجراءات المتفق عليها.",
@@ -84,10 +107,24 @@ export const marketingCopy = {
     scrollHint: "مرّر الجدول أفقياً لعرض الخيارات الأربعة.",
   },
   en: {
-    badge: "For global founders · Your AI workforce & digital HQ",
-    headline: "Build your headquarters. Bring your team together.",
+    marketLabel: "Familiar market examples",
+    modesTitle: "One team. Two ways to work.",
+    chatTitle: "Quick chat",
+    chatBody:
+      "Start with a question or a plan. Saved conversations with your AI team, through text and voice.",
+    officeTitle: "Interactive headquarters",
+    officeBody:
+      "An illustrated office with team desks, work screens and a meeting room.",
+    modeAction:
+      "Choose your workspace; both modes share the same team and conversations.",
+    brandTitle: "One identity. Every touchpoint.",
+    brandBody:
+      "Explore logos, colors, campaign graphics and asset exports on the separate OneShot Brand website.",
+    brandAction: "Open Brand Studio",
+    badge: "For global founders · An all-in-one AI workforce & digital HQ",
+    headline: "More than a tool. Your digital HQ and AI team.",
     intro:
-      "Plan with your advisory CEO. Work with your AI team through chat and voice.",
+      "From your first Shopify store to your next market: start with a free advisory CEO, try specialist AI roles, and bring planning and daily work into one headquarters.",
     examples:
       "Think Shopify, WooCommerce, Stripe and Gmail — familiar contexts for global commerce.",
     team: "Explore your team",
@@ -116,7 +153,7 @@ export const marketingCopy = {
         "Human expertise and direct accountability, with coordination and management needs.",
         "Useful for recurring questions; planning and actions depend on design and integrations.",
         "Specialist capabilities, sometimes requiring context transfers or integrations.",
-        "A talent market with demos, quick chat or an interactive HQ, voice and a meeting room.",
+        "A talent market with demos, quick chat or interactive HQ, voice and meetings; plus a separate Brand Studio website.",
       ],
       [
         "People execute within agreed responsibilities and permissions.",
@@ -142,8 +179,23 @@ export const marketingCopy = {
     scrollHint: "Scroll horizontally to compare all four options.",
   },
   fr: {
-    badge: "Entrepreneurs francophones · Votre équipe IA, votre QG numérique",
-    headline: "Votre entreprise mérite plus qu’un outil : un quartier général.",
+    marketLabel: "Des repères pour votre marché",
+    modesTitle: "Une équipe. Deux façons de travailler.",
+    chatTitle: "Chat direct",
+    chatBody:
+      "Une question, un projet : échangez par écrit ou à la voix avec votre équipe IA et retrouvez vos conversations.",
+    officeTitle: "Votre QG interactif",
+    officeBody:
+      "Un bureau illustré avec les postes de votre équipe, leurs écrans de travail et une salle de réunion.",
+    modeAction:
+      "Choisissez votre espace : la même équipe et les mêmes conversations vous accompagnent.",
+    brandTitle: "Une identité qui signe chaque échange.",
+    brandBody:
+      "Explorez logos, couleurs, visuels de campagne et exports sur le site indépendant OneShot Brand.",
+    brandAction: "Ouvrir l’atelier de marque",
+    badge:
+      "La plateforme intégrée des entrepreneurs francophones · Équipe IA & QG numérique",
+    headline: "Plus qu’un outil. Votre QG, votre équipe IA.",
     intro:
       "De la boutique indépendante aux ambitions internationales, réunissez conseil, création et organisation dans un espace de travail en français.",
     examples:
@@ -174,7 +226,7 @@ export const marketingCopy = {
         "Expertise humaine et responsabilités directes, avec un besoin de coordination.",
         "Adaptés aux questions récurrentes ; planification et actions dépendent des intégrations.",
         "Des fonctions spécialisées, parfois avec des transferts de contexte manuels.",
-        "Un marché de talents à essayer, un chat rapide ou un QG interactif, la voix et une salle de réunion.",
+        "Des talents à essayer, un chat ou un QG interactif, la voix et les réunions ; un atelier de marque sur un site distinct.",
       ],
       [
         "Les personnes agissent dans le cadre de leurs responsabilités et autorisations.",
@@ -200,8 +252,23 @@ export const marketingCopy = {
     scrollHint: "Faites défiler horizontalement pour voir les quatre options.",
   },
   tr: {
-    badge: "Türkçe e-ticaret için · Dijital merkeziniz, yapay zekâ ekibiniz",
-    headline: "Bir araçla yetinmeyin. İşinizin dijital merkezini kurun.",
+    marketLabel: "Pazarınızdan tanıdık örnekler",
+    modesTitle: "Tek ekip. İki çalışma biçimi.",
+    chatTitle: "Hızlı sohbet",
+    chatBody:
+      "Bir soru veya planla başlayın. Yapay zekâ ekibinizle yazılı ve sesli görüşün; konuşmalarınız kaydedilsin.",
+    officeTitle: "Etkileşimli merkeziniz",
+    officeBody:
+      "Ekip masaları, çalışma ekranları ve toplantı odasını bir araya getiren görsel ofis.",
+    modeAction:
+      "Çalışma alanınızı seçin; her iki görünümde de ekip ve konuşmalar aynıdır.",
+    brandTitle: "Her temas noktasında aynı kimlik.",
+    brandBody:
+      "Logo, renk, kampanya görselleri ve dosya dışa aktarma seçeneklerini ayrı OneShot Brand sitesinde keşfedin.",
+    brandAction: "Marka stüdyosunu açın",
+    badge:
+      "Türkçe e-ticaret ve işletmeler için bütünleşik yapay zekâ ekip merkezi",
+    headline: "Bir araçtan fazlası. Dijital merkeziniz ve yapay zekâ ekibiniz.",
     intro:
       "Mağazanızın günlük işlerinden büyüme planlarına: danışman CEO, uzman demoları ve marka çalışmalarını Türkçe bir çalışma alanında buluşturun.",
     examples:
@@ -232,7 +299,7 @@ export const marketingCopy = {
         "İnsan uzmanlığı ve doğrudan sorumluluk; koordinasyon ve yönetim gerektirir.",
         "Tekrarlanan sorulara uygundur; planlama ve işlemler entegrasyonlara bağlıdır.",
         "Uzmanlaşmış özellikler; bağlam aktarımı veya entegrasyon gerekebilir.",
-        "Denemeler sunan yetenek pazarı, hızlı sohbet veya etkileşimli merkez, ses ve toplantı odası.",
+        "Denemeli yetenek pazarı, hızlı sohbet veya etkileşimli merkez, ses ve toplantılar; ayrıca ayrı bir marka stüdyosu sitesi.",
       ],
       [
         "İnsanlar belirlenen görev ve yetkiler çerçevesinde işlem yapar.",
@@ -258,8 +325,23 @@ export const marketingCopy = {
     scrollHint: "Dört seçeneği görmek için tabloyu yatay kaydırın.",
   },
   es: {
-    badge: "Para negocios en español · Tu equipo IA y tu sede digital",
-    headline: "Tu negocio necesita más que herramientas. Dale una sede.",
+    marketLabel: "Ejemplos cercanos a tu mercado",
+    modesTitle: "Un equipo. Dos formas de trabajar.",
+    chatTitle: "Chat directo",
+    chatBody:
+      "Empieza por una idea o un plan. Habla con tu equipo de IA por texto y voz y conserva tus conversaciones.",
+    officeTitle: "Tu sede interactiva",
+    officeBody:
+      "Una oficina ilustrada con puestos de equipo, pantallas de trabajo y sala de reuniones.",
+    modeAction:
+      "Elige tu espacio: el equipo y las conversaciones son los mismos en ambos modos.",
+    brandTitle: "Una marca que se reconoce en cada contacto.",
+    brandBody:
+      "Explora logotipos, colores, piezas de campaña y exportaciones en el sitio independiente OneShot Brand.",
+    brandAction: "Abrir el estudio de marca",
+    badge:
+      "Emprende en español · Tu sede digital y equipo de IA en una plataforma",
+    headline: "Más que una herramienta. Tu sede y tu equipo de IA.",
     intro:
       "De tu tienda local a nuevos mercados: reúne planificación, especialistas y creación de marca en un espacio pensado para emprender en español.",
     examples:
@@ -290,7 +372,7 @@ export const marketingCopy = {
         "Experiencia humana y responsabilidad directa; requiere coordinación.",
         "Útiles para consultas frecuentes; planificar y actuar depende de las integraciones.",
         "Funciones especializadas; puede ser necesario trasladar contexto entre herramientas.",
-        "Un mercado de talentos con demos, chat rápido o sede interactiva, voz y sala de reuniones.",
+        "Talentos con demos, chat o sede interactiva, voz y reuniones; más un estudio de marca en un sitio independiente.",
       ],
       [
         "Las personas ejecutan según las funciones y permisos acordados.",
@@ -317,8 +399,20 @@ export const marketingCopy = {
       "Desplaza la tabla horizontalmente para ver las cuatro opciones.",
   },
   zh: {
-    badge: "面向跨境电商 · 你的 AI 团队与数字总部",
-    headline: "不止添一款工具，为业务建立数字总部。",
+    marketLabel: "贴近你的业务场景",
+    modesTitle: "同一支团队，两种工作方式。",
+    chatTitle: "快捷聊天",
+    chatBody:
+      "从一个问题或一份计划开始，用文字和语音与 AI 团队交流，随时回看已保存的对话。",
+    officeTitle: "互动数字总部",
+    officeBody: "在插画式办公界面中，查看团队工位、工作屏幕并进入会议室。",
+    modeAction: "自由选择工作空间；两种模式共用同一支团队和对话记录。",
+    brandTitle: "走向不同市场，保持同一个品牌。",
+    brandBody:
+      "前往独立的 OneShot Brand 网站，探索标志、配色、推广素材及资源导出。",
+    brandAction: "打开品牌工作室",
+    badge: "为跨境商家打造的一体化 AI 团队与品牌数字总部",
+    headline: "不只多一个工具，更要有自己的数字总部和 AI 团队。",
     intro:
       "从产品定位到海外市场规划，把顾问、专业角色体验与品牌内容放在同一个工作空间，支持你的全球业务思考。",
     examples:
@@ -344,7 +438,7 @@ export const marketingCopy = {
         "拥有人的经验与直接责任，也需要协调和管理。",
         "适合常见问答；规划和执行能力取决于设计与集成。",
         "提供专业功能，但可能需要手动传递上下文或配置集成。",
-        "可体验的人才市场、快捷聊天或互动总部，以及语音和会议室。",
+        "可体验的人才市场、快捷聊天或互动总部、语音与会议室；另有独立的品牌工作室网站。",
       ],
       [
         "人员在约定的职责和授权范围内执行工作。",
@@ -366,8 +460,22 @@ export const marketingCopy = {
     scrollHint: "横向滚动表格，查看全部四种选择。",
   },
   hi: {
-    badge: "हिंदी में बढ़ते कारोबार के लिए · आपका AI दल और डिजिटल कार्यालय",
-    headline: "सिर्फ एक टूल नहीं। अपने कारोबार का डिजिटल कार्यालय बनाइए।",
+    marketLabel: "आपके बाजार के परिचित उदाहरण",
+    modesTitle: "एक टीम। काम करने के दो तरीके।",
+    chatTitle: "सीधी चैट",
+    chatBody:
+      "एक सवाल या योजना से शुरुआत करें। AI टीम से लिखकर या बोलकर बात करें और सहेजी हुई बातचीत फिर देखें।",
+    officeTitle: "आपका इंटरैक्टिव कार्यालय",
+    officeBody:
+      "टीम की डेस्क, काम की स्क्रीन और बैठक कक्ष वाला चित्रित डिजिटल कार्यालय।",
+    modeAction:
+      "अपना कार्यस्थल चुनें; दोनों तरीकों में टीम और बातचीत एक ही रहती है।",
+    brandTitle: "हर जगह आपके ब्रांड की एक पहचान।",
+    brandBody:
+      "अलग OneShot Brand वेबसाइट पर लोगो, रंग, प्रचार सामग्री और एसेट एक्सपोर्ट के विकल्प देखें।",
+    brandAction: "ब्रांड स्टूडियो खोलें",
+    badge: "हिंदी में बढ़ते कारोबार के लिए एक मंच · डिजिटल कार्यालय और AI टीम",
+    headline: "सिर्फ टूल नहीं। आपका डिजिटल कार्यालय और AI टीम।",
     intro:
       "नई दुकान से बढ़ते स्टार्टअप तक: सलाहकार CEO, विशेषज्ञों के डेमो और ब्रांड सामग्री को एक ही कार्यस्थल पर साथ लाइए।",
     examples:
@@ -393,7 +501,7 @@ export const marketingCopy = {
         "मानवीय अनुभव और सीधी जिम्मेदारी, साथ में समन्वय की जरूरत।",
         "बार-बार पूछे जाने वाले सवालों के लिए उपयोगी; योजना और कार्रवाई इंटीग्रेशन पर निर्भर हैं।",
         "विशेष सुविधाएं; संदर्भ साझा करने या इंटीग्रेशन की जरूरत हो सकती है।",
-        "डेमो वाला प्रतिभा बाजार, तेज चैट या इंटरैक्टिव कार्यालय, आवाज और बैठक कक्ष।",
+        "डेमो वाला प्रतिभा बाजार, चैट या इंटरैक्टिव कार्यालय, आवाज और बैठकें; साथ में अलग ब्रांड स्टूडियो वेबसाइट।",
       ],
       [
         "लोग तय जिम्मेदारियों और अनुमतियों के दायरे में काम करते हैं।",
@@ -419,8 +527,22 @@ export const marketingCopy = {
     scrollHint: "चारों विकल्प देखने के लिए तालिका को आड़ा स्क्रॉल करें।",
   },
   ur: {
-    badge: "اردو میں کاروبار کے لیے · آپ کی AI ٹیم اور ڈیجیٹل دفتر",
-    headline: "صرف ایک ٹول نہیں۔ اپنے کاروبار کا ڈیجیٹل دفتر بنائیں۔",
+    marketLabel: "آپ کی مارکیٹ سے مانوس مثالیں",
+    modesTitle: "ایک ٹیم۔ کام کے دو طریقے۔",
+    chatTitle: "فوری چیٹ",
+    chatBody:
+      "سوال یا منصوبے سے آغاز کریں۔ اپنی AI ٹیم سے لکھ کر یا بول کر بات کریں اور محفوظ گفتگو دوبارہ دیکھیں۔",
+    officeTitle: "آپ کا انٹرایکٹو دفتر",
+    officeBody:
+      "ٹیم کی میزوں، کام کی اسکرینوں اور میٹنگ روم کے ساتھ ایک تصویری ڈیجیٹل دفتر۔",
+    modeAction:
+      "اپنی جگہ منتخب کریں؛ دونوں طریقوں میں ٹیم اور گفتگو ایک ہی رہتی ہے۔",
+    brandTitle: "ہر جگہ آپ کے برانڈ کی ایک پہچان۔",
+    brandBody:
+      "الگ OneShot Brand ویب سائٹ پر لوگو، رنگ، تشہیری مواد اور اثاثے ایکسپورٹ کرنے کے اختیارات دیکھیں۔",
+    brandAction: "برانڈ اسٹوڈیو کھولیں",
+    badge: "اردو میں کاروبار بڑھائیں · ایک پلیٹ فارم پر ڈیجیٹل دفتر اور AI ٹیم",
+    headline: "ایک ٹول سے بڑھ کر۔ آپ کا ڈیجیٹل دفتر اور AI ٹیم۔",
     intro:
       "پاکستان، خلیج اور دنیا بھر کے اردو بولنے والے تاجروں کے لیے: مشاورتی CEO، ماہرین کے ڈیمو اور برانڈ کے کام ایک جگہ۔",
     examples:
@@ -446,7 +568,7 @@ export const marketingCopy = {
         "انسانی تجربہ اور براہ راست ذمہ داری، ساتھ ہی انتظام اور رابطے کی ضرورت۔",
         "بار بار پوچھے جانے والے سوالات کے لیے مفید؛ منصوبہ بندی اور عمل انضمام پر منحصر ہیں۔",
         "خصوصی صلاحیتیں؛ سیاق منتقل کرنے یا انضمام کی ضرورت پڑ سکتی ہے۔",
-        "ڈیمو کے ساتھ مہارتوں کی مارکیٹ، فوری چیٹ یا انٹرایکٹو دفتر، آواز اور اجلاس کا کمرہ۔",
+        "ڈیمو کے ساتھ مہارتوں کی مارکیٹ، چیٹ یا انٹرایکٹو دفتر، آواز اور میٹنگز؛ ساتھ میں الگ برانڈ اسٹوڈیو ویب سائٹ۔",
       ],
       [
         "لوگ طے شدہ ذمہ داریوں اور اختیارات کے تحت کام کرتے ہیں۔",
