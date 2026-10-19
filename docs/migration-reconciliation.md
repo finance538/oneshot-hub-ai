@@ -2,7 +2,15 @@
 
 The owner requires preservation of all preview data. Do not reset either preview database, remove application records, or rewrite applied migration files to make validation pass.
 
-## Verified failure
+## Current preview repair — 2026-10-19
+
+The latest read-only status inspection targeted `agent-6ad5d45b17f621f0f26b83`. It reported 15 applied migrations, including the original collaboration and catalog migrations. The two restoration migrations were pending on this branch and were byte-for-byte duplicates of those originals. Their snapshot histories caused Drizzle to report conflicting additions of `workforce_chat_turns.collaboration`.
+
+Netlify's pending-migration reset removed only `20261018083007_restore_workforce_collaboration` and `20261018083019_restore_workforce_catalog`, including the redundant snapshot. It did not reset the database or undo applied changes. The three missing applied SQL files, `20261018165651_migrate_core_to_netlify`, `20261018165652_seed_core_sales_employee`, and `20261019030302_add_ecosystem_sso_grants`, were pulled into a separate temporary directory and copied back without changing existing migrations or snapshots. All 12 previously present applied SQL files matched the stored history.
+
+After repair, migration status reported 15 applied migrations, zero pending migrations, and no missing or out-of-order entries. The previous voice declaration fix remained intact. Migration generation, builds, tests and typechecks were not run; the platform must perform validation. No migrations were applied manually, database records changed, or deployment success claimed. The branches described below were not rechecked, so the historical findings do not establish their current readiness.
+
+## Historical failure
 
 Project: `c7dc12f9-272f-4464-aad2-dd7917776515`  
 Pull request: https://github.com/finance538/oneshot-hub-ai/pull/8  

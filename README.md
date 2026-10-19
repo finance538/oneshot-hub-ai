@@ -15,11 +15,13 @@ Install with `pnpm install`. Link the project with Netlify CLI, then run `netlif
 
 The template service was unavailable, so the application was assembled directly with React and Vite. No template demo content remains.
 
+The live voice hook's duplicate `id` declaration was removed to address the reported Vite/Rolldown parse error. Speech playback retains the session identifier captured before asynchronous voice loading for cancellation checks. The edited source was inspected; automatic platform build validation and deployed voice verification remain pending. Existing migration-history and external-service prerequisites remain unresolved by this fix.
+
 ## Persistent data
 
-**Deployment remains blocked by divergent preview migration histories.** The owner requires preserving both previews. See the [verified reconciliation report](docs/migration-reconciliation.md) for the affected branches, required platform intervention, and remaining source conflicts. Passing the agent-preview migration check does not establish pull-request deployment readiness.
+The latest migration-generation failure came from an unapplied restoration migration that repeated the already-applied collaboration-column addition on another snapshot branch. Netlify's pending-migration reset removed that duplicate and an identical pending catalog seed. Three applied migrations missing from the checkout were recovered from the current preview's stored SQL history. Existing applied SQL and snapshots were preserved, and no database records were changed.
 
-The current preview migration-order repair replaced two unapplied, older migrations with later versions using Netlify migration reset and Drizzle generation. Applied migrations on this branch were preserved; see [migration reconciliation](docs/workforce-operations.md#migration-reconciliation) for branch-specific release requirements.
+Read-only migration status now reports all 15 applied migrations present, zero pending migrations, and no missing or out-of-order entries on the current preview. Migration generation and build validation remain with the platform and were not run during this repair. The [migration reconciliation report](docs/migration-reconciliation.md) records the current repair and the separate historical branch investigation; other branches and production were not reverified. Existing external-service prerequisites remain in effect.
 
 The migration CLI `drizzle-kit` is pinned to `1.0.0-beta.22`, matching `drizzle-orm`, and is a regular dependency so production-only installs retain it. Install the committed lockfile before automatic migration generation; an unpinned temporary `npx` download can select the incompatible stable CLI.
 
