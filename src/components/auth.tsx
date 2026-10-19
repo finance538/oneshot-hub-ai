@@ -13,7 +13,13 @@ import {
 } from "@netlify/identity";
 import { LogIn, LogOut, UserRound, ArrowLeft } from "lucide-react";
 import { Modal, Notice, Busy } from "./common";
-import { clearApiSession } from "../lib/api";
+import { api, clearApiSession } from "../lib/api";
+import {
+  clearEcosystemSession,
+  ecosystemSession,
+  ecosystemUser,
+  receiverApp,
+} from "../lib/ecosystem-session";
 export interface SessionUser {
   id: string;
   name?: string;
@@ -33,13 +39,18 @@ export function useAuth() {
   useEffect(() => {
     let alive = true;
     const unsubscribe = onAuthChange((event, u) => {
-      if (alive) {
+      if (alive && !receiverApp()) {
         if (event !== "token_refresh") clearApiSession();
         setUser(u);
       }
     });
     (async () => {
       try {
+        if (receiverApp()) {
+          const current = await ecosystemUser();
+          if (alive) setUser(current);
+          return;
+        }
         const result = await handleAuthCallback();
         if (result?.type === "invite") {
           setCallback({ type: "invite", token: result.token });
@@ -67,16 +78,78 @@ export function useAuth() {
   }, []);
   async function signOut() {
     afterLogin.current = undefined;
+    let sharedRevokeFailed = false;
     try {
-      await logout();
+      await api("/api/ecosystem/sso/revoke", {}, { quiet: true });
+    } catch {
+      sharedRevokeFailed = true;
+    }
+    try {
+      if (receiverApp()) clearEcosystemSession();
+      else await logout();
       clearApiSession();
       setUser(null);
+      if (sharedRevokeFailed) {
+        setError(
+          "تم الخروج من هذا الجهاز. تعذّر تأكيد إغلاق الجلسات المشتركة؛ تنتهي خلال عشر دقائق كحد أقصى.",
+        );
+        setOpen(true);
+      }
     } catch {
       setError("تعذّر تسجيل الخروج. حاول مجدداً.");
       setOpen(true);
     }
   }
+  useEffect(() => {
+    if (!user || !receiverApp()) return;
+    const session = ecosystemSession();
+    if (!session) {
+      clearApiSession();
+      setUser(null);
+      return;
+    }
+    const timer = setTimeout(
+      () => {
+        clearEcosystemSession();
+        clearApiSession();
+        setUser(null);
+      },
+      Math.max(0, Date.parse(session.expiresAt) - Date.now()),
+    );
+    let alive = true;
+    const verify = async () => {
+      if (document.hidden) return;
+      try {
+        const current = await ecosystemUser();
+        if (!alive) return;
+        if (
+          current?.id !== user.id ||
+          current?.roles?.join(",") !== user.roles?.join(",")
+        ) {
+          clearApiSession();
+          setUser(current);
+        }
+      } catch {
+        /* A network failure is not evidence of a changed account. */
+      }
+    };
+    const interval = setInterval(() => void verify(), 30000);
+    document.addEventListener("visibilitychange", verify);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", verify);
+    };
+  }, [user?.id, user?.roles?.join(",")]);
   function openLogin(onSuccess?: () => void) {
+    if (receiverApp()) {
+      const start = new URL("/sso/start", location.origin);
+      const language = new URLSearchParams(location.search).get("lang");
+      if (language) start.searchParams.set("lang", language);
+      location.assign(start.href);
+      return;
+    }
     afterLogin.current = onSuccess;
     setOpen(true);
   }
@@ -109,24 +182,38 @@ export function useAuth() {
       )}
     </div>
   );
-  const dialog = open ? (
-    <AuthDialog
-      callback={callback}
-      initialError={error}
-      onClose={() => {
-        afterLogin.current = undefined;
-        setOpen(false);
-        setError("");
-      }}
-      onDone={() => {
-        const onSuccess = afterLogin.current;
-        afterLogin.current = undefined;
-        setOpen(false);
-        setCallback(null);
-        onSuccess?.();
-      }}
-    />
-  ) : null;
+  const dialog =
+    open && receiverApp() ? (
+      <Modal
+        title="OneShot · Unified sign-in"
+        onClose={() => {
+          setOpen(false);
+          setError("");
+        }}
+      >
+        {error && <Notice>{error}</Notice>}
+        <button className="button primary" onClick={() => openLogin()}>
+          OneShot Hub · تسجيل الدخول الموحد
+        </button>
+      </Modal>
+    ) : open ? (
+      <AuthDialog
+        callback={callback}
+        initialError={error}
+        onClose={() => {
+          afterLogin.current = undefined;
+          setOpen(false);
+          setError("");
+        }}
+        onDone={() => {
+          const onSuccess = afterLogin.current;
+          afterLogin.current = undefined;
+          setOpen(false);
+          setCallback(null);
+          onSuccess?.();
+        }}
+      />
+    ) : null;
   return { user, ready, openLogin, control, dialog };
 }
 function AuthDialog({

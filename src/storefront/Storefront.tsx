@@ -76,7 +76,7 @@ function Logo() {
     <a
       className="store-logo"
       href={appearanceLink("/")}
-      aria-label={`oneShot Brand Studio · ${tr("الرئيسية", "Home")}`}
+      aria-label={`OneShot Hub · ${tr("الرئيسية", "Home")}`}
     >
       <img
         className="store-logo-emblem"
@@ -87,7 +87,7 @@ function Logo() {
       />
       <span dir="ltr">
         one<b>Shot</b>
-        <small>Brand Studio</small>
+        <small>Hub</small>
       </span>
     </a>
   );
@@ -144,7 +144,7 @@ export default function Storefront({
             "Photography, Marketing, Design & Business Integrations",
           );
   useEffect(() => {
-    document.title = `${title} | oneShot Brand Studio`;
+    document.title = `${title} | OneShot Hub`;
   }, [title]);
 
   const nav = [

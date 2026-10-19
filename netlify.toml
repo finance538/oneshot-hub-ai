@@ -25,7 +25,6 @@
   for = "/*"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"
-    Clear-Site-Data = '"cache"'
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), geolocation=()"
