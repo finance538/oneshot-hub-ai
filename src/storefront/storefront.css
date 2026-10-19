@@ -1454,9 +1454,9 @@
   text-align: center;
   margin-top: 18px;
 }
-[lang="en"] .storefront .store-button > .lucide-arrow-left,
-[lang="en"] .store-hero-caption > .lucide-arrow-left,
-[lang="en"] .store-back > svg {
+[dir="ltr"] .storefront .store-button > .lucide-arrow-left,
+[dir="ltr"] .store-hero-caption > .lucide-arrow-left,
+[dir="ltr"] .store-back > svg {
   transform: rotate(180deg);
 }
 
