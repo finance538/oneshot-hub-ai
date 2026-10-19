@@ -1,6 +1,12 @@
 import { Modal } from "../components/Modal";
 import type { Conversation } from "./useConversation";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { Monitor, Users, ArrowUpRight, Activity } from "lucide-react";
 import type { ChatTurn, Employee, Workspace } from "../../shared/workforce";
 import { useAppearance } from "../storefront/i18n";
@@ -16,6 +22,9 @@ const seats = [
   { x: 19, y: 79 },
   { x: 81, y: 79 },
 ];
+// One proportional coordinate system for the illustration and its hit targets.
+const roomWidth = 1000;
+const roomHeight = 625;
 export function OfficeScene({
   catalog,
   conversation,
@@ -53,6 +62,31 @@ export function OfficeScene({
   const [focused, setFocused] = useState(false),
     [pan, setPan] = useState(0),
     [activityOpen, setActivityOpen] = useState(false);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  useLayoutEffect(() => {
+    const node = viewportRef.current;
+    if (!node) return;
+    const resize = () => {
+      setViewport({ width: node.clientWidth, height: node.clientHeight });
+      setPan(0);
+    };
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  const fitScale = Math.min(
+    viewport.width / roomWidth,
+    viewport.height / roomHeight,
+  );
+  const zoom = focused
+    ? Math.max(fitScale * 1.24, Math.min(0.95, viewport.height / 420))
+    : fitScale;
+  const panLimit = Math.min(
+    200,
+    Math.max(0, (roomWidth * zoom - viewport.width) / 2),
+  );
   const pointer = useRef<{
     id: number;
     x: number;
@@ -139,6 +173,7 @@ export function OfficeScene({
         </Modal>
       )}
       <div
+        ref={viewportRef}
         className="hq-viewport"
         aria-label={
           ar
@@ -162,7 +197,7 @@ export function OfficeScene({
           if (Math.abs(delta) > 8) {
             start.moved = true;
             moved.current = true;
-            setPan(Math.max(-200, Math.min(200, start.pan + delta)));
+            setPan(Math.max(-panLimit, Math.min(panLimit, start.pan + delta)));
           }
         }}
         onPointerUp={() => {
@@ -179,9 +214,11 @@ export function OfficeScene({
           className="hq-world"
           style={
             {
-              "--hq-x": `${focused ? 50 - target.x : 0}%`,
-              "--hq-y": `${focused ? (53 - target.y) * 0.65 : 0}%`,
-              "--hq-zoom": focused ? 1.24 : 1,
+              "--hq-width": `${roomWidth}px`,
+              "--hq-height": `${roomHeight}px`,
+              "--hq-x": `${focused ? ((50 - target.x) / 100) * roomWidth * zoom : 0}px`,
+              "--hq-y": `${focused ? ((50 - target.y) / 100) * roomHeight * zoom : 0}px`,
+              "--hq-zoom": zoom,
               "--hq-pan": `${pan}px`,
             } as CSSProperties
           }
@@ -336,6 +373,16 @@ export function OfficeScene({
             </option>
           ))}
         </select>
+        <button
+          type="button"
+          onClick={() => onWorkstation(selected)}
+          disabled={
+            paused || !catalog.some((employee) => employee.id === selected)
+          }
+        >
+          <ArrowUpRight size={17} />
+          <span>{t("screens")}</span>
+        </button>
       </nav>
     </section>
   );

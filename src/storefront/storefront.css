@@ -76,6 +76,10 @@
 .storefront :where(h1, h2, h3, p, li) {
   overflow-wrap: anywhere;
 }
+.storefront :where(header, footer, form, label, div),
+.storefront :where(.store-actions, .store-card-bottom) > * {
+  min-width: 0;
+}
 .storefront :where(button) {
   background: transparent;
 }
@@ -426,6 +430,10 @@
   font-weight: 600;
   line-height: 1.6;
   text-align: center;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .store-button:hover {
   color: var(--ui-on-accent) !important;
@@ -559,6 +567,8 @@
   overflow: hidden;
 }
 .store-media-image img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   transition: transform 0.5s;
@@ -1208,8 +1218,9 @@
   flex-wrap: wrap;
 }
 .store-footer-apk-text {
-  flex: 1;
-  min-width: 280px;
+  flex: 1 1 240px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .apk-badge {
   display: inline-block;
@@ -1501,11 +1512,13 @@
     margin-top: 24px;
   }
   .store-hero-visual {
-    min-height: 240px;
-    aspect-ratio: 16 / 9;
+    min-height: 0;
+    aspect-ratio: 1;
+    max-height: 420px;
   }
   .store-hero-visual > img {
-    object-position: center 35%;
+    object-fit: contain;
+    object-position: center;
   }
   .store-hero-note {
     margin-top: 18px;
@@ -1536,7 +1549,7 @@
     letter-spacing: 1px;
   }
   .store-hero {
-    padding: 20px;
+    padding: 16px;
   }
   .store-hero .store-actions {
     display: grid;
@@ -1544,9 +1557,6 @@
   .store-hero .store-pill {
     font-size: 11px;
     padding-inline: 10px;
-  }
-  .store-hero-visual {
-    min-height: 215px;
   }
   .store-hero-caption {
     inset-inline: 16px;
@@ -1676,7 +1686,8 @@
     gap: 16px;
   }
   .store-media-image {
-    height: 180px;
+    height: auto;
+    aspect-ratio: 4 / 3;
   }
   .store-media-content {
     padding: 16px;
@@ -1785,7 +1796,7 @@
     grid-template-columns: 1fr;
   }
   .store-media-image {
-    height: 230px;
+    height: auto;
   }
   .store-media-content {
     padding: 20px;
@@ -1797,7 +1808,7 @@
     width: auto;
   }
   .store-product-card {
-    padding: 24px;
+    padding: 18px;
   }
   .store-product-card h3 {
     font-size: 16px;
@@ -2011,14 +2022,11 @@
     font-size: 22px;
   }
   .store-hero h1 {
-    font-size: 30px;
+    font-size: clamp(26px, 6.6vw, 32px);
     line-height: 1.5;
   }
   .store-hero-copy > p {
     font-size: 13px;
-  }
-  .store-hero-visual {
-    min-height: 240px;
   }
   .store-section {
     margin-top: 48px;
@@ -2031,5 +2039,64 @@
   .store-hero .store-button {
     flex: 1 1 150px;
     padding: 8px 12px;
+  }
+  .store-hero-visual-label {
+    top: 14px;
+    inset-inline: 14px;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  .store-hero-caption {
+    inset-inline: 14px;
+    bottom: 14px;
+  }
+  .store-card-bottom,
+  .store-product-meta,
+  .store-footer-bottom,
+  .store-code-tabs {
+    flex-wrap: wrap;
+  }
+  .store-code-tabs > button,
+  .store-drawer-nav a,
+  .store-workspace-links a {
+    min-height: 44px;
+  }
+  .store-footer-apk-card {
+    padding: 18px;
+  }
+  .store-footer-apk-card > .store-button {
+    width: 100%;
+  }
+  .store-inquiry-inner {
+    padding: 20px 16px;
+  }
+  .storefront :is(input, textarea, select) {
+    max-width: 100%;
+    font-size: 16px;
+  }
+  .store-footer-inner {
+    padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (max-width: 380px) {
+  .store-journey {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .store-journey li,
+  .store-journey li + li {
+    flex-direction: row;
+    align-items: center;
+    border: 0;
+    padding: 0;
+  }
+  .store-product-actions,
+  .store-loading-grid,
+  .store-footer-columns,
+  .store-footer-policies {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .store-footer-columns > div:first-child {
+    grid-column: auto;
   }
 }
