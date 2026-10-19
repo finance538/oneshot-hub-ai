@@ -19,6 +19,10 @@
   --ui-section-size: clamp(21px, 2.2vw, 28px);
   --ui-gutter: clamp(16px, 3vw, 32px);
   --ui-content-width: 1280px;
+  --ui-safe-inline: max(
+    env(safe-area-inset-left, 0px),
+    env(safe-area-inset-right, 0px)
+  );
 }
 [data-theme="light"] {
   --ui-bg: #f8fafc;
@@ -29,9 +33,14 @@
   --ui-border: #dce3ec;
   --ui-success: #00785a;
 }
-@media (pointer: coarse) {
+@media (max-width: 760px), (pointer: coarse) {
   :root {
     --ui-control-height: 44px;
+  }
+}
+@media (max-width: 760px) {
+  :root {
+    --ui-gutter: max(16px, var(--ui-safe-inline));
   }
 }
 body:has(dialog[open]) {
