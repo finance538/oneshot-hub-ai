@@ -159,7 +159,7 @@ const BUILTIN_ALLOWED_ORIGINS = new Set([
   "https://pay.1shotcam.com",
   "https://admin.1shotcam.com",
   "https://workflow.1shotcam.com",
-  "https://brand.oneshotcam.com",
+  "https://brand.1shotcam.com",
   "https://loader.1shotcam.com",
   "https://1shotcam-ecosystem.netlify.app",
 ]);
