@@ -4,7 +4,7 @@ export const ecosystemApps = [
     name: "OneShot Hub",
     origin: "https://www.1shotcam.com",
     season: "Solar Summer",
-    color: "#f97316",
+    color: "#cfbc97",
     mark: "01",
   },
   {
@@ -20,7 +20,7 @@ export const ecosystemApps = [
     name: "OneShot AI",
     origin: "https://ai.1shotcam.com",
     season: "Frost Winter",
-    color: "#a8c7d4",
+    color: "#a8b8ad",
     mark: "03",
   },
   {
@@ -28,7 +28,7 @@ export const ecosystemApps = [
     name: "OneShot Pay",
     origin: "https://pay.1shotcam.com",
     season: "Copper Autumn",
-    color: "#c2916c",
+    color: "#bba58a",
     mark: "04",
   },
   {
@@ -36,7 +36,7 @@ export const ecosystemApps = [
     name: "OneShot Brand",
     origin: "https://brand.1shotcam.com",
     season: "Prism Spring",
-    color: "#b6c68c",
+    color: "#9daf91",
     mark: "05",
   },
   {
@@ -44,7 +44,7 @@ export const ecosystemApps = [
     name: "OneShot Loader Test",
     origin: "https://loader.1shotcam.com",
     season: "Eclipse Lab",
-    color: "#b0a8bf",
+    color: "#a6aca0",
     mark: "06",
   },
 ] as const;
@@ -59,6 +59,4 @@ export interface AppConnection {
 export interface EcosystemStatus {
   apps: AppConnection[];
   apkUrl: string | null;
-  iosStoreUrl?: string | null;
-  playStoreUrl?: string | null;
 }

@@ -4,175 +4,232 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
-    <meta name="theme-color" content="#101312" />
-    <title>OneShot · مساحة هادئة دون اتصال</title>
+    <meta name="theme-color" content="#101211" />
+    <title>OneShot · دليلك دون اتصال</title>
     <style>
       * {
         box-sizing: border-box;
       }
       body {
         margin: 0;
-        background: #101812;
-        color: #e5dfcb;
+        background: #101211;
+        color: #e5e4d8;
         font:
-          16px/1.9 Tahoma,
+          15px/1.9 Tahoma,
           sans-serif;
-        min-height: 100svh;
+        min-height: 100vh;
       }
       main {
-        max-width: 760px;
+        max-width: 840px;
         margin: auto;
-        padding: 48px max(24px, env(safe-area-inset-right));
+        padding: 55px 24px;
       }
       header {
         display: flex;
+        gap: 15px;
         align-items: center;
-        gap: 12px;
-        border-bottom: 1px solid #394434;
-        padding-bottom: 20px;
-      }
-      header small {
-        margin-inline-start: auto;
-        color: #aab69b;
-        font-size: 11px;
+        border-bottom: 1px solid #cfbc9730;
+        padding-bottom: 25px;
       }
       h1 {
-        font-size: clamp(30px, 6vw, 46px);
-        font-weight: 500;
-        line-height: 1.6;
-        margin: 36px 0 16px;
+        font-size: 25px;
+        margin: 0;
+        color: #cfbc97;
       }
-      h1 span {
-        color: #bcbd9a;
+      h2 {
+        font-size: 22px;
+        font-weight: 400;
       }
       p,
       small {
-        color: #acb79f;
+        color: #aab29e;
+      }
+      .badge {
+        font-size: 11px;
+        color: #a7be9f;
+      }
+      nav {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 30px 0;
       }
       a {
-        color: #e2d2b0;
-      }
-      a.button {
-        display: inline-flex;
-        padding: 10px 24px;
-        background: #d4c1a0;
-        color: #1c281c;
+        color: #d5c5a4;
         text-decoration: none;
-        border-radius: 5px;
-        margin: 12px 0;
+        border: 1px solid #cfbc9738;
+        padding: 12px 18px;
+        border-radius: 4px;
       }
-      section {
-        border: 1px solid #3a4933;
-        border-radius: 8px;
-        padding: 24px;
-        margin-top: 32px;
-        background: #1b261c;
+      a:hover {
+        background: #cfbc9712;
       }
-      h2 {
-        font-size: 20px;
-        font-weight: 500;
+      a small {
+        display: block;
+        font-size: 11px;
+      }
+      .calculator {
+        padding: 25px;
+        background: #1b241c;
+        border: 1px solid #b9c29f30;
+        margin-top: 35px;
+      }
+      .fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
       }
       label {
-        display: block;
-        font-size: 13px;
-        margin-top: 14px;
+        font-size: 12px;
+        display: grid;
+        gap: 5px;
       }
       input {
-        display: block;
         width: 100%;
-        padding: 10px;
-        background: #111b14;
-        color: #e3d9c0;
-        border: 1px solid #5b674b;
-        border-radius: 4px;
-        font: 18px sans-serif;
-        min-height: 44px;
+        padding: 12px;
+        background: #101810;
+        color: #e5e4d8;
+        border: 1px solid #a5b38d50;
+        border-radius: 3px;
+        font: inherit;
       }
       output {
+        font-size: 28px;
+        color: #cfbc97;
         display: block;
-        font: 40px sans-serif;
-        color: #d4c1a0;
-        margin-top: 20px;
+        margin-top: 22px;
+      }
+      .reconnect {
+        display: inline-block;
+        margin-top: 25px;
       }
       footer {
-        border-top: 1px solid #394434;
-        margin-top: 32px;
+        font-size: 11px;
+        border-top: 1px solid #cfbc9725;
+        margin-top: 35px;
         padding-top: 20px;
+      }
+      footer a {
+        border: 0;
+        padding: 0;
+      }
+      #connection {
         font-size: 12px;
+        color: #aebd9e;
       }
-      a:focus-visible,
-      input:focus-visible {
-        outline: 2px solid #d4c1a0;
-        outline-offset: 5px;
+      :focus-visible {
+        outline: 2px solid #cfbc97;
+        outline-offset: 4px;
       }
-      .en {
-        font-size: 12px;
-      }
-      #online {
-        color: #b4cbaa;
+      @media (max-width: 500px) {
+        nav,
+        .fields {
+          grid-template-columns: 1fr;
+        }
+        main {
+          padding-top: 30px;
+        }
       }
     </style>
   </head>
   <body>
     <main>
       <header>
-        <img src="/oneshot.svg" width="34" height="34" alt="" /><strong
-          dir="ltr"
-          >oneShot</strong
-        ><small>مساحتك الهادئة · OFFLINE</small>
+        <img src="/oneshot.svg" width="42" height="42" alt="" />
+        <div>
+          <h1>OneShot</h1>
+          <span class="badge">دليل المنظومة · متاح دون اتصال</span>
+        </div>
       </header>
-      <h1>الاتصال ينتظر.<br /><span>أفكارك لا تنتظر.</span></h1>
+      <h2>مساحتك الهادئة، حتى عند انقطاع الاتصال.</h2>
       <p>
-        هذه مساحة عامة متاحة دون إنترنت. خطط لميزانيتك هنا، ثم عد إلى حسابك عند
-        عودة الاتصال.
+        يمكنك استكشاف وجهاتنا واستخدام الحاسبة هنا. تسجيل الدخول والمحادثات
+        والأسعار الحالية والطلبات والمدفوعات تحتاج اتصالاً بالإنترنت؛ لا تُحفظ
+        بيانات حسابك في هذا الدليل.
       </p>
-      <p class="en" lang="en" dir="ltr">
-        You are offline. Explore a budget estimate below. Sign-in, chat, orders
-        and payments require an internet connection. Private data is never
-        stored here.
+      <p lang="en" dir="ltr">
+        Your offline guide and calculator are available. Sign-in, chat, current
+        prices and payments require a connection. Private account data is not
+        cached.
       </p>
-      <p id="online" role="status"></p>
-      <a class="button" href="/hub">العودة لمساحتي · Reconnect</a>
-      <section aria-labelledby="calculator-title">
-        <h2 id="calculator-title">حاسبة فرق الميزانية · Budget estimate</h2>
+      <div id="connection" role="status">تحقق من اتصالك للوصول إلى خدماتك.</div>
+      <nav aria-label="وجهات OneShot">
+        <a href="https://www.1shotcam.com/hub"
+          >OneShot Hub<small>مركز أعمالك وفريقك</small></a
+        >
+        <a href="https://workflow.1shotcam.com"
+          >OneShot Workflow<small>الفريق ومسارات العمل</small></a
+        >
+        <a href="https://ai.1shotcam.com"
+          >OneShot AI<small>مساحة الذكاء الاصطناعي</small></a
+        >
+        <a href="https://pay.1shotcam.com"
+          >OneShot Pay<small>مساحة المدفوعات</small></a
+        >
+        <a href="https://brand.1shotcam.com"
+          >OneShot Brand<small>الهوية والمحتوى</small></a
+        >
+        <a href="https://loader.1shotcam.com"
+          >OneShot Loader<small>مختبر الاختبار</small></a
+        >
+      </nav>
+      <section class="calculator" aria-labelledby="calculator-title">
+        <h2 id="calculator-title">احسب قيمة وقتك</h2>
         <p>
-          <small
-            >قيم توضيحية قابلة للتعديل، وليست أسعار باقات أو وفراً
-            مضموناً.</small
-          >
+          هذه أرقام افتراضية قابلة للتعديل، وليست أسعار باقات أو وفراً مضموناً.
         </p>
-        <label for="current"
-          >تكلفتك الحالية شهرياً · SAR<input
-            id="current"
-            type="number"
-            min="0"
-            max="1000000"
-            value="12000" /></label
-        ><label for="digital"
-          >ميزانيتك الرقمية شهرياً · SAR<input
-            id="digital"
-            type="number"
-            min="0"
-            max="1000000"
-            value="2400" /></label
-        ><output id="saving" for="current digital" aria-live="polite" dir="ltr"
-          >9,600 SAR</output
+        <div class="fields">
+          <label
+            >ساعات العمل المتكرر شهرياً<input
+              id="hours"
+              type="number"
+              min="0"
+              max="744"
+              value="32"
+          /></label>
+          <label
+            >نسبة الأتمتة المتوقعة %<input
+              id="share"
+              type="number"
+              min="0"
+              max="100"
+              value="60"
+          /></label>
+          <label
+            >قيمة الساعة · ر.س<input
+              id="rate"
+              type="number"
+              min="0"
+              max="1000000"
+              value="125"
+          /></label>
+          <label
+            >تكلفة الحل شهرياً · ر.س<input
+              id="cost"
+              type="number"
+              min="0"
+              max="1000000"
+              value="490"
+          /></label>
+        </div>
+        <output id="result" aria-live="polite"></output
         ><small
-          >الفارق الشهري = التكلفة الحالية − الميزانية الرقمية. لا يشمل الضرائب
-          أو الإعداد. لا تُحفظ هذه المدخلات.</small
+          >صافي القيمة = الساعات × نسبة الأتمتة × قيمة الساعة − تكلفة الحل. لا
+          يشمل التأسيس.</small
         >
       </section>
+      <a class="reconnect" href="/">إعادة الاتصال · Reconnect</a>
       <footer>
-        مؤسسة يحيى أحمد يحيى الهوساوي للتصوير الفوتوغرافي<br /><a
-          href="mailto:support@1shotcam.com"
+        مؤسسة يحيى أحمد يحيى الهوساوي للتصوير الفوتوغرافي · المملكة العربية
+        السعودية<br /><a href="mailto:support@1shotcam.com"
           >support@1shotcam.com</a
         >
         · <a href="mailto:finance@1shotcam.com">finance@1shotcam.com</a>
-        <p>السياسات والتفاصيل المحدّثة متاحة عند عودة الاتصال.</p>
+        <p>السياسات والأسعار المعتمدة متاحة على الموقع عند الاتصال.</p>
       </footer>
     </main>
-    <script src="/offline.js" defer></script>
+    <script src="/offline-guide.js" defer></script>
   </body>
 </html>

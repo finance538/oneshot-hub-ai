@@ -1,6 +1,6 @@
 import { getUser } from "@netlify/identity";
 import { ecosystemRoute } from "../lib/ecosystem.js";
-import { notificationRoute } from "../lib/notifications.js";
+import { experienceRoute } from "../lib/experience.js";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import {
@@ -93,8 +93,8 @@ export default async (req: Request) => {
     if (!["GET", "POST", "DELETE", "PATCH"].includes(method))
       throw new ApiError(405, "طريقة الطلب غير مدعومة.");
     if (method !== "GET") assertOrigin(req);
-    if (path.startsWith("/api/notifications/"))
-      return json(await notificationRoute(req, path));
+    if (path.startsWith("/api/experience/"))
+      return json(await experienceRoute(req, path));
     if (path.startsWith("/api/ecosystem/"))
       return json(await ecosystemRoute(req, path));
     if (isLegacyCorePath(path)) return json(await legacyCoreRoute(req, path));
