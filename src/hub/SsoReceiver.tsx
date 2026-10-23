@@ -1,18 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { hubOrigin } from "../../shared/ecosystem";
-import { receiverApp, saveEcosystemSession } from "../lib/ecosystem-session";
-import { isLanguage } from "../../shared/workforce";
 import {
-  storedLanguage,
-  useAppearance,
-  appearanceLink,
-} from "../storefront/i18n";
+  receiverApp,
+  saveEcosystemSession,
+  ecosystemUser,
+  googleLoginUrl,
+} from "../lib/ecosystem-session";
+import { isLanguage } from "../../shared/workforce";
+import { useAppearance, appearanceLink } from "../storefront/i18n";
 import { safeReturnPath } from "../lib/routes";
-const bytesToUrl = (bytes: Uint8Array) =>
-  btoa(String.fromCharCode(...bytes))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
 const pendingKey = "oneshot.ecosystem.pkce.v1";
 export default function SsoReceiver() {
   const { tr } = useAppearance();
@@ -31,39 +27,19 @@ export default function SsoReceiver() {
           ),
         );
       if (location.pathname === "/sso/start") {
-        const verifier = bytesToUrl(crypto.getRandomValues(new Uint8Array(32)));
-        const state = bytesToUrl(crypto.getRandomValues(new Uint8Array(32)));
-        const challenge = bytesToUrl(
-          new Uint8Array(
-            await crypto.subtle.digest(
-              "SHA-256",
-              new TextEncoder().encode(verifier),
-            ),
-          ),
-        );
-        const language = storedLanguage();
-        const returnTo = safeReturnPath(
-          new URLSearchParams(location.search).get("returnTo"),
-          app.origin,
-        );
-        sessionStorage.setItem(
-          pendingKey,
-          JSON.stringify({
-            verifier,
-            state,
-            language,
-            returnTo,
-            createdAt: Date.now(),
-          }),
-        );
-        const destination = new URL("/sso/authorize", hubOrigin);
-        destination.search = new URLSearchParams({
-          appId: app.id,
-          challenge,
-          state,
-          lang: language,
-        }).toString();
-        location.replace(destination.href);
+        const returnTo =
+          safeReturnPath(
+            new URLSearchParams(location.search).get("returnTo"),
+            app.origin,
+          ) ||
+          (app.id === "workflow"
+            ? "/workforce"
+            : app.id === "pay"
+              ? "/?module=gateway"
+              : "/");
+        const destination = new URL(returnTo, app.origin).href;
+        if (await ecosystemUser()) location.replace(destination);
+        else location.replace(googleLoginUrl(destination));
         return;
       }
       const fragment = new URLSearchParams(location.hash.slice(1));

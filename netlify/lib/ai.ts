@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { geminiClient } from "./gemini.js";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import { conversations, messages, orders, staff } from "../../db/schema.js";
@@ -99,7 +99,7 @@ export async function executiveChat(
     const tools = [];
     if (body.searchGrounding === true) tools.push({ googleSearch: {} });
     if (body.mapsGrounding === true) tools.push({ googleMaps: {} });
-    const response = await new GoogleGenAI({}).models.generateContent({
+    const response = await geminiClient().models.generateContent({
       model,
       contents: [
         ...history.map((m) => ({

@@ -163,7 +163,7 @@ test("legal footer data and policies remain intact", () => {
     "utf8",
   );
   for (const needle of [
-    "مؤسسة يحيى أحمد يحيى الهوساوي للتصوير الفوتوغرافي",
+    "مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي",
     "finance@1shotcam.com",
     "support@1shotcam.com",
     "المملكة العربية السعودية",

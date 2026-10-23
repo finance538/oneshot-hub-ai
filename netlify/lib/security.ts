@@ -1,3 +1,10 @@
+import { persistOwnerRole } from "./identity-owner.js";
+import {
+  cookieValue,
+  sharedSessionUser,
+  verifiedIdentityUser,
+} from "./shared-session.js";
+import { SESSION_COOKIE, productionOrigin } from "../../shared/auth-policy.js";
 import { getUser, type User } from "@netlify/identity";
 import {
   createCipheriv,
@@ -54,6 +61,8 @@ export async function resolveUserFromToken(req: Request): Promise<User | null> {
         grant.encryptedToken,
         `ecosystem:${grant.codeHash}:${grant.audience}`,
       );
+      if (typeof saved?.ownerId === "string" && saved.ownerId === grant.ownerId)
+        return verifiedIdentityUser(grant.ownerId);
       if (typeof saved?.token !== "string" || saved.token.startsWith("osh_"))
         return null;
       token = saved.token;
@@ -95,12 +104,6 @@ export async function resolveUserFromToken(req: Request): Promise<User | null> {
       : typeof appMeta.roles === "string"
         ? [appMeta.roles]
         : [];
-    if (
-      data.email?.toLowerCase() === "finance@1shotcam.com" &&
-      !roles.includes("admin")
-    ) {
-      roles.push("admin");
-    }
     const name =
       typeof userMeta.full_name === "string"
         ? userMeta.full_name
@@ -108,7 +111,7 @@ export async function resolveUserFromToken(req: Request): Promise<User | null> {
           ? userMeta.name
           : undefined;
 
-    const user: User = {
+    const user: User = await persistOwnerRole({
       id: data.id,
       email: data.email,
       name,
@@ -118,7 +121,7 @@ export async function resolveUserFromToken(req: Request): Promise<User | null> {
       createdAt: data.created_at,
       updatedAt: data.updated_at,
       confirmedAt: data.confirmed_at,
-    };
+    });
 
     if (tokenUserCache.size > 200) {
       for (const [k, v] of tokenUserCache.entries()) {
@@ -135,21 +138,9 @@ export async function resolveUserFromToken(req: Request): Promise<User | null> {
 export async function resolveUser(req?: Request): Promise<User | null> {
   // Explicit bearer credentials must never fall back to a different cookie account.
   if (req?.headers.has("authorization")) return resolveUserFromToken(req);
-  let cookieUser = await getUser();
-  if (cookieUser) {
-    if (
-      cookieUser.email?.toLowerCase() === "finance@1shotcam.com" &&
-      !cookieUser.roles?.includes("admin")
-    ) {
-      cookieUser = {
-        ...cookieUser,
-        roles: [...(cookieUser.roles || []), "admin"],
-      };
-    }
-    return cookieUser;
-  }
-  if (req) return resolveUserFromToken(req);
-  return null;
+  if (req && cookieValue(req, SESSION_COOKIE)) return sharedSessionUser(req);
+  const cookieUser = await getUser();
+  return cookieUser ? persistOwnerRole(cookieUser) : null;
 }
 
 export async function authenticate(
@@ -219,6 +210,14 @@ export function isAllowedOrigin(
 
 export function assertOrigin(req: Request) {
   const origin = req.headers.get("origin");
+  if (
+    cookieValue(req, SESSION_COOKIE) &&
+    (!origin ||
+      (productionOrigin(new URL(req.url).origin)
+        ? !productionOrigin(origin)
+        : origin !== new URL(req.url).origin))
+  )
+    throw new ApiError(403, "مصدر الطلب غير مسموح.");
   if (origin && !isAllowedOrigin(origin, req.url))
     throw new ApiError(403, "مصدر الطلب غير مسموح.");
 }
@@ -286,12 +285,8 @@ export async function limit(actor: string, action: string, max = 20) {
       "RATE_LIMIT",
     );
 }
-const DEFAULT_VAULT_KEY = createHash("sha256")
-  .update("oneshot-ecosystem-c7dc12f9-272f-4464-aad2-dd7917776515-vault-v1")
-  .digest("hex");
-
 function encryptionKey() {
-  const value = env("VAULT_ENCRYPTION_KEY") || DEFAULT_VAULT_KEY;
+  const value = env("VAULT_ENCRYPTION_KEY");
   if (!value || !/^[0-9a-f]{64}$/i.test(value))
     throw new ApiError(
       503,
@@ -301,7 +296,7 @@ function encryptionKey() {
   return Buffer.from(value, "hex");
 }
 export function vaultReady() {
-  const v = env("VAULT_ENCRYPTION_KEY") || DEFAULT_VAULT_KEY;
+  const v = env("VAULT_ENCRYPTION_KEY");
   return !!v && /^[0-9a-f]{64}$/i.test(v);
 }
 export function webhookReady() {
