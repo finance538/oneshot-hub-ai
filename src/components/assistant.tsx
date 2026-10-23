@@ -39,6 +39,14 @@ interface SpeechRecognizer {
   stop: () => void;
   abort: () => void;
 }
+const OLLAMA_MODELS = [
+  "command-r7b-arabic-128k",
+  "dolphin3:8b",
+  "huihui_ai/qwen3-abliterated:8b",
+];
+function providerFor(model: string): "ollama" | "gemini" {
+  return OLLAMA_MODELS.includes(model) ? "ollama" : "gemini";
+}
 export function Assistant({ staffId }: { staffId?: string }) {
   const { language } = useAppearance();
   const [model, setModel] = useState("gemini-3-flash-preview"),
@@ -123,7 +131,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
         endpoints.ceo,
         {
           message: prompt,
-          provider: "gemini",
+          provider: providerFor(model),
           model,
           persona,
           conversationId: conversation,
@@ -221,20 +229,40 @@ export function Assistant({ staffId }: { staffId?: string }) {
         <div className="ai-toolbar">
           <div className="ai-provider">
             <Bot size={19} />
-            <span dir="ltr">Gemini · Netlify</span>
+            <span dir="ltr">
+              {providerFor(model) === "ollama"
+                ? "Ollama · محلي"
+                : "Gemini · Netlify"}
+            </span>
           </div>
           <select
-            aria-label={t("نموذج Gemini")}
+            aria-label={t("نموذج الذكاء الاصطناعي")}
             value={model}
             onChange={(e) => {
               setModel(e.target.value);
-              if (e.target.value !== "gemini-2.5-flash") setMaps(false);
+              if (providerFor(e.target.value) === "ollama") {
+                setMaps(false);
+                setSearch(false);
+              } else if (e.target.value !== "gemini-2.5-flash") {
+                setMaps(false);
+              }
             }}
             disabled={busy}
           >
-            <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
-            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+            <optgroup label="Gemini">
+              <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+            </optgroup>
+            <optgroup label="Ollama · محلي">
+              <option value="command-r7b-arabic-128k">
+                Command R7B Arabic 128K
+              </option>
+              <option value="dolphin3:8b">Dolphin 3 8B</option>
+              <option value="huihui_ai/qwen3-abliterated:8b">
+                Qwen 3 Abliterated 8B
+              </option>
+            </optgroup>
           </select>
           <button
             className="button subtle small"
