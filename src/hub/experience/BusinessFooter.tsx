@@ -102,16 +102,16 @@ export default function BusinessFooter() {
           </div>
           <div>
             <h3>{tr("دليل التجار الذكي", "Merchant Smart Guide")}</h3>
-            <a href="/guides/payment-gateways.html">
+            <a href={appearanceLink("/guides/payment-gateways")}>
               {tr("ربط بوابات الدفع", "Payment gateways")}
             </a>
-            <a href="/guides/store-automation.html">
+            <a href={appearanceLink("/guides/store-automation")}>
               {tr("أتمتة المتاجر", "Store automation")}
             </a>
-            <a href="/guides/ai-employees.html">
+            <a href={appearanceLink("/guides/ai-employees")}>
               {tr("موظفو الذكاء الاصطناعي", "AI employees")}
             </a>
-            <a href="/guides/commercial-photography.html">
+            <a href={appearanceLink("/guides/commercial-photography")}>
               {tr("التصوير التجاري", "Commercial photography")}
             </a>
           </div>

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Languages, Search } from "lucide-react";
-import { AppearanceProvider, useAppearance } from "../storefront/i18n";
+import { useAppearance, appearanceLink } from "../storefront/i18n";
 import BusinessFooter from "../hub/experience/BusinessFooter";
 import { findTool, toolPages } from "../../shared/tools/catalog";
 import {
@@ -29,7 +29,9 @@ export function resolveToolsRoute(pathname: string): Route {
   if (parts[0] === "solutions") {
     const page = parts[1] ? findTool(parts[1]) : undefined;
     // Static hosting answers /solutions/* with 301s; this covers the SPA path.
-    location.replace(page ? toolPath(page.cluster, page.slug) : "/tools");
+    location.replace(
+      appearanceLink(page ? toolPath(page.cluster, page.slug) : "/tools"),
+    );
     return { kind: "missing" };
   }
   if (parts.length === 1) return { kind: "hub" };
@@ -191,9 +193,5 @@ function Shell() {
 }
 
 export default function ToolsApp() {
-  return (
-    <AppearanceProvider>
-      <Shell />
-    </AppearanceProvider>
-  );
+  return <Shell />;
 }

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, type ReactNode } from "react";
 import type { Product } from "../../shared/contracts";
 import OriginalStorefront from "../storefront/Storefront";
-import { AppearanceProvider } from "../storefront/i18n";
+import { useAppearance } from "../storefront/i18n";
 import { CatalogContext } from "../storefront/catalog";
 import { documents } from "../storefront/documents";
 import { Notice } from "./common";
@@ -34,6 +34,7 @@ export function Store({
   onOrders: () => void;
   accountControl: ReactNode;
 }) {
+  const { tr } = useAppearance();
   const records = useMemo(
     () =>
       [...products]
@@ -68,27 +69,32 @@ export function Store({
         ),
     [products],
   );
-  const isDocument = Object.hasOwn(
-    documents,
-    window.location.pathname.replace(/^\/|\/$/g, ""),
-  );
+  const isDocument =
+    window.location.pathname.replace(/\/+$/, "") === "/api-integration" ||
+    Object.hasOwn(documents, window.location.pathname.replace(/^\/|\/$/g, ""));
   const guideSlug = window.location.pathname.match(
     /^\/guides(?:\/([\w-]+))?\/?$/,
   );
   if (guideSlug)
     return (
-      <AppearanceProvider>
+      <>
         <GuidePage slug={guideSlug[1]} />
         <Suspense fallback={null}>
           <GrowthDock onLogin={onLogin} />
         </Suspense>
-      </AppearanceProvider>
+      </>
     );
   return (
-    <AppearanceProvider>
+    <>
       <CatalogContext.Provider value={records}>
         {window.location.pathname.startsWith("/workforce") ? (
-          <Suspense fallback={<p role="status">جارٍ تحميل مساحة الفريق…</p>}>
+          <Suspense
+            fallback={
+              <p role="status">
+                {tr("جارٍ تحميل مساحة الفريق…", "Loading the team workspace…")}
+              </p>
+            }
+          >
             <Workforce
               key={user?.id || "guest"}
               user={user}
@@ -105,10 +111,15 @@ export function Store({
                 <small>Hub</small>
               </span>
             </a>
-            <h1>خدمات ونشوت الأصلية</h1>
+            <h1>{tr("خدمات ونشوت الأصلية", "OneShot services")}</h1>
             {loading ? (
               <>
-                <p role="status">جارٍ تحميل الكتالوج من قاعدة البيانات…</p>
+                <p role="status">
+                  {tr(
+                    "جارٍ تحميل الكتالوج من قاعدة البيانات…",
+                    "Loading the service catalog…",
+                  )}
+                </p>
                 <div className="store-loading-grid" aria-hidden="true">
                   {[1, 2, 3, 4].map((i) => (
                     <div key={i} />
@@ -119,14 +130,17 @@ export function Store({
               <>
                 <Notice>
                   {error ||
-                    "الكتالوج الأصلي غير متاح بعد. تظهر المنتجات بعد تطبيق ترحيل الكتالوج أثناء النشر."}
+                    tr(
+                      "الكتالوج غير متاح حالياً. حاول لاحقاً أو تواصل معنا.",
+                      "The catalog is currently unavailable. Try again later or contact us.",
+                    )}
                 </Notice>
                 <button className="store-button" onClick={onRetry}>
-                  إعادة تحميل الكتالوج
+                  {tr("إعادة تحميل الكتالوج", "Reload catalog")}
                 </button>
               </>
             )}
-            <a href="/support">الدعم والتواصل</a>
+            <a href="/support">{tr("الدعم والتواصل", "Support & contact")}</a>
           </div>
         ) : (
           <OriginalStorefront
@@ -139,6 +153,6 @@ export function Store({
           />
         )}
       </CatalogContext.Provider>
-    </AppearanceProvider>
+    </>
   );
 }

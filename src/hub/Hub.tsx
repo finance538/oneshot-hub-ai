@@ -24,7 +24,6 @@ import {
 import { useAuth } from "../components/auth";
 import { Modal } from "../components/Modal";
 import {
-  AppearanceProvider,
   useAppearance,
   languageNames,
   workforceLanguages,
@@ -44,11 +43,7 @@ const LitePortal = lazy(() => import("./LitePortal"));
 const YourSpace = lazy(() => import("./YourSpace"));
 const SsoAuthorize = lazy(() => import("./SsoAuthorize"));
 export default function Hub() {
-  return (
-    <AppearanceProvider>
-      <HubPage />
-    </AppearanceProvider>
-  );
+  return <HubPage />;
 }
 function HubPage() {
   const auth = useAuth();
@@ -128,6 +123,11 @@ function HubPage() {
     if (!auth.user) auth.openLogin(openSpace);
     else openSpace();
   }
+  useEffect(() => {
+    if (location.pathname !== "/sign-in" || !auth.ready) return;
+    if (auth.user) location.replace(appearanceLink("/hub") + "#command");
+    else auth.openLogin(openSpace);
+  }, [auth.ready, auth.user?.id]);
   function appHref(id: string) {
     const app = ecosystemApps.find((item) => item.id === id)!;
     const url = new URL(
@@ -464,7 +464,10 @@ function HubPage() {
         </Modal>
       )}
       <Suspense fallback={null}>
-        <GrowthDock onLogin={() => auth.openLogin()} />
+        <GrowthDock
+          key={auth.user?.id || "guest"}
+          onLogin={() => auth.openLogin()}
+        />
         <VaultLauncher />
       </Suspense>
       {auth.dialog}

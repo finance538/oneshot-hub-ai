@@ -13,7 +13,7 @@ export default function SsoAuthorize({
   ready: boolean;
   onLogin: () => void;
 }) {
-  const { language } = useAppearance(),
+  const { language, tr } = useAppearance(),
     c = hubCopy[language];
   const params = new URLSearchParams(location.search);
   const app = ecosystemApps.find(
@@ -31,7 +31,10 @@ export default function SsoAuthorize({
       <h1>{c.signIn}</h1>
       {!valid ? (
         <p role="alert">
-          Invalid sign-in request. Return to the application and start again.
+          {tr(
+            "طلب الدخول غير صالح. ارجع إلى التطبيق وابدأ مجدداً.",
+            "Invalid sign-in request. Return to the application and start again.",
+          )}
         </p>
       ) : (
         <div className="hub-task-panel">

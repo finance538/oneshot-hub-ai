@@ -279,8 +279,8 @@ function RadarBoard({ lang }: { lang: "ar" | "en" }) {
       ) : null}
       <p className="tools-hint">
         {ar
-          ? "تفعيل Pro يعرض شارة Pro ويحجب الرسم البياني والمخرجات المتقدمة خلف رابط OneShot Pay؛ تبقى الحاسبة الأساسية والمحتوى مجانيين لمحركات البحث. فتح Pro بعد الشراء يتطلب ربط صلاحيات OneShot Pay."
-          : "Pro shows a badge and gates the chart and advanced outputs behind a OneShot Pay link; the core calculator and content stay free for search. Unlocking after purchase requires OneShot Pay entitlements."}
+          ? "تفعيل Pro يحجب المخرجات المتقدمة ويعرض رابط استفسار للتوفر؛ تبقى الحاسبة الأساسية مجانية. يلزم ربط صلاحيات الشراء قبل بيع أي وصول مدفوع."
+          : "Pro gates advanced outputs with an availability inquiry link; the core calculator stays free. Purchase entitlements must be connected before selling paid access."}
       </p>
     </div>
   );
