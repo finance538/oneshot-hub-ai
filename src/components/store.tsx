@@ -7,7 +7,9 @@ import { documents } from "../storefront/documents";
 import { Notice } from "./common";
 
 import type { SessionUser } from "./auth";
+import GuidePage from "../growth/GuidePage";
 const Workforce = lazy(() => import("../workforce/Workforce"));
+const GrowthDock = lazy(() => import("../growth/GrowthDock"));
 
 export function Store({
   user,
@@ -70,6 +72,18 @@ export function Store({
     documents,
     window.location.pathname.replace(/^\/|\/$/g, ""),
   );
+  const guideSlug = window.location.pathname.match(
+    /^\/guides(?:\/([\w-]+))?\/?$/,
+  );
+  if (guideSlug)
+    return (
+      <AppearanceProvider>
+        <GuidePage slug={guideSlug[1]} />
+        <Suspense fallback={null}>
+          <GrowthDock onLogin={onLogin} />
+        </Suspense>
+      </AppearanceProvider>
+    );
   return (
     <AppearanceProvider>
       <CatalogContext.Provider value={records}>
