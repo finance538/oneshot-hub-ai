@@ -1,3 +1,4 @@
+import { requestQuote } from "../commerce/events";
 import { useEffect, useState, type CSSProperties } from "react";
 import {
   ArrowUpLeft,
@@ -40,7 +41,7 @@ export default function ToolPage({
   }, [page, ar, path]);
   const funnel = funnelHref(cluster, page.slug);
   const proHref = (() => {
-    return `mailto:support@1shotcam.com?subject=${encodeURIComponent(`OneShot Pro · ${page.slug}`)}`;
+    return "/support?quote=1";
   })();
   const Arrow = ar ? ArrowUpLeft : ArrowUpRight;
   const cta = (
@@ -103,7 +104,11 @@ export default function ToolPage({
             <a
               className="tools-cta"
               href={proHref}
-              onClick={() => trackTool(page.slug, "funnel")}
+              onClick={(event) => {
+                event.preventDefault();
+                trackTool(page.slug, "funnel");
+                requestQuote({ kind: "pro", toolSlug: page.slug });
+              }}
               rel="noopener"
             >
               <Sparkles size={16} aria-hidden="true" />

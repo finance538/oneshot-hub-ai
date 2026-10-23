@@ -1,3 +1,7 @@
+import { CustomerJourney, PriceBadge } from "../commerce/Journey";
+import { requestQuote, requestCheckout } from "../commerce/events";
+import OfficialContact from "../commerce/OfficialContact";
+import { instantCheckout } from "../../shared/commerce";
 import { Modal } from "../components/Modal";
 import { MarketingComparison } from "../marketing/MarketingComparison";
 import { MarketingMarket, MarketingModes } from "../marketing/MarketingIntro";
@@ -116,7 +120,11 @@ export default function Storefront({
   const { language, tr, number } = useAppearance();
   const ar = language === "ar";
   const [menu, setMenu] = useState(false);
-  const [inquiry, setInquiry] = useState<Inquiry | null>(null);
+  function setInquiry(inquiry: Inquiry) {
+    const service = records.find((p) => p.sku === inquiry.sku);
+    if (service && instantCheckout(service)) requestCheckout(service.sku);
+    else requestQuote({ sku: inquiry.sku });
+  }
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   useStudioReveal(path);
 
@@ -349,6 +357,7 @@ export default function Storefront({
               )}
               {["support", "accounts"].includes(documentKey) && (
                 <div className="store-actions">
+                  <OfficialContact />
                   <a
                     className="store-button"
                     href="mailto:support@1shotcam.com"
@@ -368,7 +377,10 @@ export default function Storefront({
           </article>
         ) : path.startsWith("/products/") ? (
           product ? (
-            <ProductDetails product={product} onOrder={setInquiry} />
+            <>
+              <CustomerJourney />
+              <ProductDetails product={product} onOrder={setInquiry} />
+            </>
           ) : (
             <div className="store-empty">
               <Search size={38} />
@@ -386,7 +398,10 @@ export default function Storefront({
             </a>
           </div>
         ) : path === "/products" ? (
-          <Catalog onOrder={setInquiry} />
+          <>
+            <CustomerJourney />
+            <Catalog onOrder={setInquiry} />
+          </>
         ) : (
           <>
             <section className="store-hero" id="section-hero">
@@ -428,39 +443,7 @@ export default function Storefront({
             <div id="section-workforce">
               <MarketingComparison />
             </div>
-            <ol
-              className="store-journey"
-              aria-label={tr("خطوات طلب الخدمة", "How to request a service")}
-            >
-              {[
-                [
-                  "اختر خدمتك",
-                  "Choose your service",
-                  "تصفح الأعمال والحلول",
-                  "Explore services and solutions",
-                ],
-                [
-                  "راجع التفاصيل",
-                  "Review the details",
-                  "النطاق والسعر ووقت التسليم",
-                  "Scope, price and delivery",
-                ],
-                [
-                  "تواصل مع الفريق",
-                  "Talk to our team",
-                  "نؤكد معك تفاصيل التنفيذ",
-                  "Confirm your project brief",
-                ],
-              ].map(([labelAr, labelEn, textAr, textEn], index) => (
-                <li key={labelEn}>
-                  <b dir="ltr">0{index + 1}</b>
-                  <span>
-                    <strong>{tr(labelAr, labelEn)}</strong>
-                    <small>{tr(textAr, textEn)}</small>
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <CustomerJourney />
 
             <Catalog onOrder={setInquiry} preview />
 
@@ -514,6 +497,9 @@ export default function Storefront({
                         SKU: {item.sku}
                       </small>
                       <h3>{tr(item.nameAr, item.nameEn)}</h3>
+                      <PriceBadge
+                        details={records.find((p) => p.sku === item.sku)}
+                      />
                       <p>{tr(item.descriptionAr, item.descriptionEn)}</p>
                       <span className="store-delivery">
                         <Clock3 size={14} />
@@ -547,7 +533,11 @@ export default function Storefront({
                             })
                           }
                         >
-                          {tr("طلب الخدمة", "Request Service")}
+                          {instantCheckout(
+                            records.find((p) => p.sku === item.sku),
+                          )
+                            ? tr("ادفع بأمان", "Pay securely")
+                            : tr("طلب عرض سعر", "Request a quote")}
                           <ArrowLeft size={14} />
                         </button>
                       </div>
@@ -781,6 +771,7 @@ export default function Storefront({
                       </dd>
                     </div>
                   </dl>
+                  <PriceBadge details={googleAdsPackage} />
                   <div className="store-ads-price">
                     <small>
                       {tr("سعر الباقة المنشور", "Published package price")}
@@ -802,7 +793,9 @@ export default function Storefront({
                       })
                     }
                   >
-                    {tr("طلب باقة جوجل آدز", "Request Google Ads Package")}
+                    {instantCheckout(googleAdsPackage)
+                      ? tr("ادفع بأمان", "Pay securely")
+                      : tr("طلب عرض سعر", "Request a quote")}
                     <ArrowLeft size={16} />
                   </button>
                   <p>
@@ -876,19 +869,18 @@ export default function Storefront({
                 </h3>
                 <p>
                   {tr(
-                    "تواصل مع فريقنا عبر البريد، أو سجّل دخولك لإدارة حسابك.",
-                    "Email our team, or sign in to manage your account.",
+                    "أرسل نطاق مشروعك واحصل على رقم متابعة، أو سجّل دخولك لإدارة حسابك.",
+                    "Send your project scope and receive a reference, or sign in to manage your account.",
                   )}
                 </p>
-                <a
-                  className="store-button whatsapp"
-                  href="mailto:support@1shotcam.com"
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  className="store-button"
+                  type="button"
+                  onClick={() => requestQuote()}
                 >
                   <MessageCircle size={17} />
-                  {tr("راسل فريق الدعم", "Email support")}
-                </a>
+                  {tr("طلب عرض سعر", "Request a quote")}
+                </button>
                 <button className="store-button secondary" onClick={onLogin}>
                   <KeyRound size={17} />
                   {tr(
@@ -972,7 +964,7 @@ export default function Storefront({
               <a className="store-accent" href="mailto:finance@1shotcam.com">
                 finance@1shotcam.com
               </a>
-              <a href="mailto:support@1shotcam.com">support@1shotcam.com</a>
+              <OfficialContact />
               <a href={appearanceLink("/dashboard")}>
                 {tr("مساحة التاجر", "Merchant Workspace")}
               </a>
@@ -1006,9 +998,6 @@ export default function Storefront({
           </div>
         </div>
       </footer>
-      {inquiry && (
-        <InquiryDialog inquiry={inquiry} onClose={() => setInquiry(null)} />
-      )}
     </div>
   );
 }
@@ -1175,13 +1164,7 @@ function Catalog({
                   </ul>
                 )}
                 <div className="store-product-price">
-                  <small>
-                    {item.pricing.billingCycle === "monthly"
-                      ? tr("شهرياً", "Monthly")
-                      : item.pricing.type === "starts_at"
-                        ? tr("يبدأ من", "Starting at")
-                        : tr("سعر ثابت", "Fixed price")}
-                  </small>
+                  <PriceBadge details={item} />
                   <strong>
                     {number(item.pricing.amount)} <span>SAR</span>
                   </strong>
@@ -1207,7 +1190,9 @@ function Catalog({
                     }
                   >
                     {item.status === "ready_to_sell"
-                      ? tr("طلب الخدمة", "Request")
+                      ? instantCheckout(item)
+                        ? tr("ادفع بأمان", "Pay securely")
+                        : tr("طلب عرض سعر", "Request a quote")
                       : tr("قيد الإعداد والاختبار", "In preparation")}
                     <ArrowLeft size={13} />
                   </button>
@@ -1389,6 +1374,7 @@ function ProductDetails({
           <span className="store-kicker">
             {tr("السعر المنشور", "PUBLISHED PRICE")}
           </span>
+          <PriceBadge details={product} />
           <strong>
             {number(product.pricing.amount)} <span>SAR</span>
           </strong>
@@ -1421,14 +1407,16 @@ function ProductDetails({
             }
           >
             {product.status === "ready_to_sell"
-              ? tr("اطلب هذه الخدمة", "Request This Service")
+              ? instantCheckout(product)
+                ? tr("ادفع بأمان", "Pay securely")
+                : tr("طلب عرض سعر", "Request a quote")
               : tr("قيد الإعداد والاختبار", "In preparation and testing")}
             <ArrowLeft size={16} />
           </button>
           <p>
             {tr(
-              "تواصل مع الفريق لتأكيد النطاق والتسليم واستلام رابط الدفع الخاص بطلبك.",
-              "Contact our team to confirm the scope, delivery and receive a payment link for your order.",
+              "راجع النطاق ثم ادفع للخدمة ذات السعر الثابت، أو أرسل طلب عرض للخدمات المخصصة والشهرية.",
+              "Review the scope and pay for fixed-price services, or request a quote for custom and monthly services.",
             )}
           </p>
           <a href={appearanceLink("/refund")}>
@@ -1598,93 +1586,5 @@ function IntegrationSection() {
         </a>
       </div>
     </section>
-  );
-}
-
-function InquiryDialog({
-  inquiry,
-  onClose,
-}: {
-  inquiry: Inquiry;
-  onClose: () => void;
-}) {
-  const { tr, number } = useAppearance();
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const dialog = ref.current;
-    const previousOverflow = document.body.style.overflow;
-    dialog?.showModal();
-    document.body.style.overflow = "hidden";
-    return () => {
-      dialog?.close();
-      document.body.style.overflow = previousOverflow;
-    };
-  }, []);
-  const message =
-    tr(
-      "مرحباً ونشوت، أرغب في طلب الخدمة: {title}\nرمز الخدمة: {sku}\nالسعر المنشور: {price} SAR\nيرجى تأكيد نطاق الخدمة والتسليم.",
-      "Hello oneShot, I would like to request: {title}\nSKU: {sku}\nPublished price: {price} SAR\nPlease confirm the scope and delivery.",
-    )
-      .replace("{title}", inquiry.title)
-      .replace("{sku}", inquiry.sku)
-      .replace(
-        "{price}",
-        (inquiry.startsAt ? tr("يبدأ من ", "From ") : "") +
-          number(inquiry.amount),
-      ) + (inquiry.monthly ? tr(" / شهرياً", " / month") : "");
-  return (
-    <dialog
-      className="store-inquiry"
-      ref={ref}
-      aria-labelledby="store-inquiry-title"
-      onCancel={(event) => {
-        event.preventDefault();
-        onClose();
-      }}
-      onClick={(event) => {
-        if (event.target === ref.current) onClose();
-      }}
-    >
-      <div className="store-inquiry-inner">
-        <div className="store-inquiry-heading">
-          <span className="store-kicker">ONESHOT · {inquiry.sku}</span>
-          <button
-            className="store-icon"
-            aria-label={tr("إغلاق", "Close")}
-            onClick={onClose}
-          >
-            <X size={21} />
-          </button>
-        </div>
-        <span className="store-feature-icon">
-          <ShoppingBag size={25} />
-        </span>
-        <h2 id="store-inquiry-title">{inquiry.title}</h2>
-        <strong className="store-inquiry-price">
-          {inquiry.startsAt && tr("يبدأ من ", "From ")}
-          {number(inquiry.amount)}{" "}
-          <span>SAR{inquiry.monthly ? tr(" / شهرياً", " / month") : ""}</span>
-        </strong>
-        <p>
-          {tr(
-            "تواصل مع فريقنا لتأكيد نطاق الخدمة وموعد التسليم واستلام رابط دفع خاص بطلبك. يتضمن طلب التواصل اسم الخدمة ورمزها وسعرها المنشور.",
-            "Contact our team to confirm the scope and delivery, and receive a payment link for your order. Your message includes the service, SKU and published price.",
-          )}
-        </p>
-        <a
-          className="store-button secondary"
-          href={`mailto:support@1shotcam.com?subject=${encodeURIComponent(`OneShot · ${inquiry.sku} · ${inquiry.title}`)}&body=${encodeURIComponent(message)}`}
-        >
-          <Mail size={17} />
-          {tr("طلب عبر البريد الإلكتروني", "Request by Email")}
-        </a>
-        <small>
-          {tr(
-            "لم يتم إنشاء طلب أو خصم أي مبلغ بعد.",
-            "No order has been placed and no payment has been taken.",
-          )}
-        </small>
-      </div>
-    </dialog>
   );
 }

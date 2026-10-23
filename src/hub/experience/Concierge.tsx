@@ -1,3 +1,4 @@
+import { PriceBadge } from "../../commerce/Journey";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowUpLeft,
@@ -200,6 +201,16 @@ export default function Concierge({ onClose }: { onClose: () => void }) {
               )}
             </small>
             <h3>{answer.name}</h3>
+            <PriceBadge
+              details={{
+                pricing: {
+                  type: answer.pricingType,
+                  billingCycle: answer.billingCycle,
+                  amount: answer.amount,
+                  currency: answer.currency,
+                },
+              }}
+            />
             <p>{answer.reason}</p>
             <strong>
               {new Intl.NumberFormat(language, {

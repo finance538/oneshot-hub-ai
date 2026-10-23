@@ -1,3 +1,4 @@
+import { verifiedRevenue } from "./revenue.js";
 // Public tool telemetry and the owner radar. Visitors send only a known slug
 // and an event name; nothing typed into a calculator ever reaches the server.
 import { eq, gte, sql } from "drizzle-orm";
@@ -108,6 +109,8 @@ async function radar(req: Request) {
       };
     });
   return {
+    verified: await verifiedRevenue(),
+    telemetryKind: "interaction_estimates",
     rows,
     pro: [...pro],
     tracked: toolPages.length,

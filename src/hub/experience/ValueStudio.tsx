@@ -1,3 +1,4 @@
+import { PriceBadge } from "../../commerce/Journey";
 import { useMemo, useState } from "react";
 import {
   ArrowUpLeft,
@@ -146,18 +147,9 @@ export default function ValueStudio({
                   </label>
                   <div className="lux-catalog-price">
                     <strong>
-                      {currency(
-                        details!.pricing.amount,
-                        details!.pricing.currency,
-                      )}
+                      {currency(chosen.priceCents / 100, chosen.currency)}
                     </strong>
-                    <span>
-                      {details!.pricing.type === "starts_at"
-                        ? tr("يبدأ من", "Starting at")
-                        : details!.pricing.billingCycle === "monthly"
-                          ? tr("شهرياً", "Per month")
-                          : tr("السعر المدرج", "Listed price")}
-                    </span>
+                    <PriceBadge details={details} />
                   </div>
                   <p>
                     {language === "ar"

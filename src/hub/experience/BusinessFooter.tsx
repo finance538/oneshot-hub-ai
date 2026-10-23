@@ -1,3 +1,4 @@
+import OfficialContact from "../../commerce/OfficialContact";
 import { ShieldCheck } from "lucide-react";
 import { appearanceLink, useAppearance } from "../../storefront/i18n";
 import { documents } from "../../storefront/documents";
@@ -101,26 +102,11 @@ export default function BusinessFooter() {
             <p>{tr("المملكة العربية السعودية", "Kingdom of Saudi Arabia")}</p>
           </div>
           <div>
-            <h3>{tr("دليل التجار الذكي", "Merchant Smart Guide")}</h3>
-            <a href={appearanceLink("/guides/payment-gateways")}>
-              {tr("ربط بوابات الدفع", "Payment gateways")}
-            </a>
-            <a href={appearanceLink("/guides/store-automation")}>
-              {tr("أتمتة المتاجر", "Store automation")}
-            </a>
-            <a href={appearanceLink("/guides/ai-employees")}>
-              {tr("موظفو الذكاء الاصطناعي", "AI employees")}
-            </a>
-            <a href={appearanceLink("/guides/commercial-photography")}>
-              {tr("التصوير التجاري", "Commercial photography")}
-            </a>
-          </div>
-          <div>
             <h3>{tr("التواصل والاعتماد", "Contact & Brand")}</h3>
             <a className="store-accent" href="mailto:finance@1shotcam.com">
               finance@1shotcam.com
             </a>
-            <a href="mailto:support@1shotcam.com">support@1shotcam.com</a>
+            <OfficialContact />
             <a href={appearanceLink("/dashboard")}>
               {tr("مساحة التاجر", "Merchant Workspace")}
             </a>

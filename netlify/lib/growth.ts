@@ -72,6 +72,8 @@ export async function growthBudget(req: Request) {
       ? body.currency
       : "SAR";
   return {
+    kind: "estimates",
+    collectedRevenue: false,
     result: calculateBudget(
       {
         dailyBudget: num(body.dailyBudget, "الميزانية اليومية", 100000),
@@ -202,7 +204,14 @@ export function estimateBudgetPlan(budgetSar: number, avgOrderSar: number) {
       roasHigh: Math.round((revenueHigh / budgetSar) * 100) / 100,
     };
   }
-  return { budgetSar, avgOrderSar, plan, assumptions };
+  return {
+    kind: "estimates" as const,
+    collectedRevenue: false,
+    budgetSar,
+    avgOrderSar,
+    plan,
+    assumptions,
+  };
 }
 
 function fallbackDraft(input: {

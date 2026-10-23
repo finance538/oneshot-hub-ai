@@ -197,6 +197,7 @@ function apiModule(fetch: typeof globalThis.fetch, prepare = async () => {}) {
       "../../shared/ecosystem": { hubOrigin: "https://www.1shotcam.com" },
       "./auth-session": { prepareIdentitySession: prepare },
       "./preferences": { storedLanguage: () => "en" },
+      "./diagnostics": { reportClientDiagnostic: () => {} },
     },
     { fetch },
   );
