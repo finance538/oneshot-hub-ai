@@ -38,6 +38,8 @@ import {
 import { isLegacyCorePath, legacyCoreRoute } from "../lib/legacy-core.js";
 import { nativeGateways, nativeTopologies } from "../lib/payment-providers.js";
 import { workforceRoute } from "../lib/workforce.js";
+import { growthBudget, growthCampaign } from "../lib/growth.js";
+import { seoGuides } from "../../shared/growth.js";
 import { growthRoute } from "../lib/growth.js";
 import { executiveChat, overview } from "../lib/ai.js";
 import { gateways, endpoints } from "../../shared/contracts.js";
@@ -101,6 +103,12 @@ export default async (req: Request) => {
     if (isLegacyCorePath(path)) return json(await legacyCoreRoute(req, path));
     if (path.startsWith("/api/workforce/"))
       return json(await workforceRoute(req, path));
+    if (path === "/api/growth/guides" && method === "GET")
+      return json({ guides: seoGuides });
+    if (path === "/api/growth/campaign" && method === "POST")
+      return json(await growthCampaign(req));
+    if (path === "/api/growth/budget" && method === "POST")
+      return json(await growthBudget(req));
     if (path.startsWith("/api/growth/"))
       return json(await growthRoute(req, path));
     if (path === "/api/health" && method === "GET") {

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>أتمتة المتاجر: من الطلب حتى التوصيل | دليل التجار الذكي — OneShot</title>
+  <meta name="description" content="خارطة عملية لأتمتة متجرك: الطلبات والمخزون والتنبيهات والفواتير والشحن، مع حاسبة ساعات التوفير وجدول جاهزية مواسم الذروة." />
+  <link rel="canonical" href="https://www.1shotcam.com/guides/store-automation.html" />
+  <meta property="og:title" content="أتمتة المتاجر: من الطلب حتى التوصيل" />
+  <meta property="og:description" content="خارطة الأتمتة الكاملة لمتجرك مع حاسبة التوفير وجدول الجاهزية." />
+  <meta property="og:type" content="article" />
+  <style>
+    :root { --ink: #161817; --paper: #faf8f3; --accent: #e8622c; --ok: #1d7a4f; }
+    body { font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; background: var(--paper); color: var(--ink); margin: 0; line-height: 1.9; }
+    main { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+    nav.top { max-width: 760px; margin: 0 auto; padding: 16px 20px; font-size: .85rem; }
+    nav.top a { color: var(--accent); }
+    h1 { font-size: 1.7rem; line-height: 1.5; }
+    .lead { font-size: 1.1rem; opacity: .85; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: .92rem; }
+    th, td { border: 1px solid #ddd5c6; padding: 10px 12px; text-align: right; }
+    th { background: #f0ebe0; }
+    .calc { border: 1px solid #ddd5c6; border-radius: 14px; padding: 18px; background: #fff; margin: 24px 0; }
+    .calc label { display: block; margin: 10px 0 4px; font-weight: 600; }
+    .calc input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font: inherit; }
+    .calc output { display: block; margin-top: 12px; font-weight: 700; color: var(--ok); }
+    footer { border-top: 1px solid #ddd5c6; padding: 24px 20px; text-align: center; font-size: .85rem; }
+  </style>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Article","headline":"أتمتة المتاجر: من الطلب حتى التوصيل","author":{"@type":"Organization","name":"OneShot Hub"},"mainEntityOfPage":"https://www.1shotcam.com/guides/store-automation.html","inLanguage":"ar"}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+    {"@type":"Question","name":"من أين أبدأ أتمتة متجري؟","acceptedAnswer":{"@type":"Answer","text":"ابدأ من أكثر مهمة تسرق وقتك: عادة تنبيهات الطلبات وتحديث المخزون. أتمتها أولاً ثم انتقل للفواتير والشحن."}},
+    {"@type":"Question","name":"هل الأتمتة تلغي الفريق؟","acceptedAnswer":{"@type":"Answer","text":"لا. الأتمتة تزيل التكرار (نسخ البيانات والتنبيهات) وتترك للفريق الاستثناءات وخدمة العملاء — وهذا ما تحسبه الحاسبة أدناه."}},
+    {"@type":"Question","name":"كيف أستعد لموسم الذروة؟","acceptedAnswer":{"@type":"Answer","text":"راجع جدول الجاهزية: المخزون الاحتياطي، قوالب الردود، سقوف شركات الشحن، واختبار ضغط لصفحة الدفع قبل الموسم بأسبوعين."}}
+  ]}
+  </script>
+</head>
+<body>
+  <nav class="top"><a href="/">OneShot Hub</a> ← <a href="/guides/store-automation.html">دليل التجار الذكي</a></nav>
+  <main>
+    <h1>أتمتة المتاجر: من الطلب حتى التوصيل</h1>
+    <p class="lead">الأتمتة الصحيحة ليست روبوتاً سحرياً، بل إزالة منهجية للمهام المتكررة: كل طلب يمر بمسار واحد معروف من الدفع إلى التسليم، وكل استثناء يصل لإنسان بدل أن يضيع.</p>
+
+    <h2>خارطة المسار الخمسة</h2>
+    <table>
+      <thead><tr><th>المرحلة</th><th>ما يُؤتمت</th><th>مثال عملي</th></tr></thead>
+      <tbody>
+        <tr><td>استقبال الطلب</td><td>تنبيه فوري + فاتورة تلقائية</td><td>رسالة واتساب للعميل برقم الطلب خلال دقيقة</td></tr>
+        <tr><td>المخزون</td><td>خصم الكمية + تنبيه النفاد</td><td>إيقاف البيع تلقائياً عند الصفر</td></tr>
+        <tr><td>التجهيز</td><td>قائمة تجهيز مرتبة بالأولوية</td><td>طلبات «الدفع المسبق» قبل «الدفع عند الاستلام»</td></tr>
+        <tr><td>الشحن</td><td>إنشاء البوليصة + رقم التتبع</td><td>إرسال رابط التتبع تلقائياً للعميل</td></tr>
+        <tr><td>ما بعد البيع</td><td>طلب تقييم + تذكير إعادة الشراء</td><td>رسالة بعد 7 أيام من التسليم</td></tr>
+      </tbody>
+    </table>
+
+    <h2>حاسبة ساعات التوفير</h2>
+    <div class="calc" role="group" aria-label="حاسبة التوفير من الأتمتة">
+      <label for="tasks">مهام متكررة يومياً (عدد)</label>
+      <input id="tasks" type="number" value="40" min="0" />
+      <label for="mins">متوسط زمن المهمة (دقائق)</label>
+      <input id="mins" type="number" value="4" min="0" />
+      <label for="wage">تكلفة الساعة (ر.س)</label>
+      <input id="wage" type="number" value="30" min="0" />
+      <output id="out" aria-live="polite"></output>
+    </div>
+
+    <h2>جدول جاهزية مواسم الذروة</h2>
+    <table>
+      <thead><tr><th>قبل الموسم</th><th>الإجراء</th></tr></thead>
+      <tbody>
+        <tr><td>4 أسابيع</td><td>تثبيت المخزون الاحتياطي للأصناف العشرة الأعلى مبيعاً</td></tr>
+        <tr><td>3 أسابيع</td><td>تجهيز قوالب الردود على الاستفسارات المتكررة</td></tr>
+        <tr><td>أسبوعان</td><td>اختبار طلب حقيقي كامل + اتفاق سقوف مع شركة الشحن</td></tr>
+        <tr><td>أسبوع</td><td>مراجعة صلاحيات الفريق ومناوبات خدمة العملاء</td></tr>
+      </tbody>
+    </table>
+
+    <h2>أسئلة شائعة</h2>
+    <h3>من أين أبدأ أتمتة متجري؟</h3>
+    <p>ابدأ من أكثر مهمة تسرق وقتك — عادة تنبيهات الطلبات وتحديث المخزون — ثم توسع للفواتير والشحن.</p>
+    <h3>هل الأتمتة تلغي الفريق؟</h3>
+    <p>لا. تزيل التكرار وتترك للفريق الاستثناءات وخدمة العملاء، وهذا بالضبط ما تقيسه الحاسبة أعلاه.</p>
+    <h3>كيف أستعد لموسم الذروة؟</h3>
+    <p>اتبع جدول الجاهزية أعلاه، واختبر مسار الدفع كاملاً قبل الموسم بأسبوعين على الأقل.</p>
+  </main>
+  <footer>دليل التجار الذكي — OneShot Hub · <a href="/">العودة للرئيسية</a> · <a href="/guides/ai-employees.html">موظفو الذكاء الاصطناعي</a></footer>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    function calc() {
+      const t = +$("tasks").value || 0, m = +$("mins").value || 0, w = +$("wage").value || 0;
+      const hrs = t * m / 60, save = hrs * w * 26;
+      $("out").textContent = "توفر يومياً ≈ " + hrs.toFixed(1) + " ساعة · شهرياً ≈ " + save.toFixed(0) + " ر.س قيمة وقت.";
+    }
+    ["tasks", "mins", "wage"].forEach((id) => $(id).addEventListener("input", calc));
+    calc();
+  </script>
+</body>
+</html>
