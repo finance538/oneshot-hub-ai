@@ -1,3 +1,6 @@
+import CommerceHost from "./commerce/CommerceHost";
+import GlobalControls from "./components/GlobalControls";
+import "./commerce/commerce.css";
 import { lazy, Suspense } from "react";
 import Hub from "./hub/Hub";
 import { appRoute } from "./lib/routes";
@@ -6,7 +9,17 @@ import BusinessFooter from "./hub/experience/BusinessFooter";
 const LegacyWorkspace = lazy(() => import("./App"));
 const SsoReceiver = lazy(() => import("./hub/SsoReceiver"));
 const ToolsApp = lazy(() => import("./tools/ToolsApp"));
+const CheckoutPage = lazy(() => import("./commerce/CheckoutPage"));
 export default function Root() {
+  return (
+    <>
+      <RootRoutes />
+      <CommerceHost />
+      <GlobalControls />
+    </>
+  );
+}
+function RootRoutes() {
   const { tr } = useAppearance();
   const path = location.pathname.replace(/\/+$/, "") || "/";
   if (path !== location.pathname)
@@ -20,6 +33,12 @@ export default function Root() {
     return null;
   }
   const route = appRoute(new URL(location.href));
+  if (route === "commerce")
+    return (
+      <Suspense fallback={<p role="status">OneShot…</p>}>
+        <CheckoutPage />
+      </Suspense>
+    );
   if (route === "receiver")
     return (
       <Suspense fallback={<p role="status">OneShot…</p>}>

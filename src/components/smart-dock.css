@@ -1,0 +1,90 @@
+.smart-dock-trigger {
+  display: none;
+}
+.smart-dock-menu {
+  display: grid;
+  gap: 8px;
+}
+.smart-dock-menu button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 16px;
+  border: 1px solid var(--ui-border, #454951);
+  border-radius: 10px;
+  background: var(--ui-bg, #101419);
+  color: var(--ui-text, #eee);
+  font: inherit;
+  text-align: start;
+}
+.smart-dock-menu button svg {
+  flex: none;
+  color: #dbab75;
+}
+.smart-dock-menu button[aria-pressed="true"] {
+  border-color: #74c4a7;
+}
+html[data-calm="true"] {
+  scroll-behavior: auto;
+}
+html[data-calm="true"] :is(.lux-experience, .hub) * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+@media (max-width: 768px) {
+  body {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  }
+  .growth-dock,
+  .growth-fab,
+  .tools-fab {
+    display: none !important;
+  }
+  .lux-sensory-controls > button:first-child,
+  .lux-sensory-controls > button:last-child {
+    display: none;
+  }
+  .smart-dock-trigger {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    inset-inline-end: max(16px, env(safe-area-inset-right, 0px));
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border: 1px solid #d6a06c88;
+    border-radius: 18px;
+    background: #20242b;
+    color: #edc294;
+    box-shadow: 0 8px 32px #0006;
+    z-index: 40;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .smart-dock-trigger[data-visible="true"] {
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .smart-dock-trigger:focus-visible {
+    outline: 2px solid #e9bd89;
+    outline-offset: 4px;
+  }
+  body:has(dialog[open]) .smart-dock-trigger {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+@media (max-width: 768px) {
+  .ui-dialog.smart-dock-dialog {
+    width: min(340px, calc(100vw - 32px));
+    max-height: calc(100dvh - 112px - env(safe-area-inset-bottom, 0px));
+    margin-block-start: auto;
+    margin-block-end: calc(88px + env(safe-area-inset-bottom, 0px));
+    margin-inline-start: auto;
+    margin-inline-end: max(16px, env(safe-area-inset-right, 0px));
+    border-radius: 18px;
+  }
+}

@@ -1,8 +1,10 @@
+import { instantCheckout } from "../../shared/commerce.js";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { and, eq, ne } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import {
   orders,
+  quoteRequests,
   products,
   vaultKeys,
   webhookReceipts,
@@ -79,7 +81,13 @@ export function rejectCardData(value: unknown): void {
 }
 export async function executePayment(
   body: Record<string, unknown>,
-  user: { id: string; roles?: string[] },
+  user: {
+    id: string;
+    roles?: string[];
+    email?: string;
+    emailVerified?: boolean;
+    confirmedAt?: string;
+  },
   key: string | null,
 ) {
   if (!key || !/^[a-zA-Z0-9-]{16,80}$/.test(key))
@@ -88,19 +96,21 @@ export async function executePayment(
     isAdmin = user.roles?.includes("admin");
   rejectCardData(body);
   const gateway = String(body.gatewayCode || "stripe"),
-    executionMode = body.productId
-      ? "PRODUCTION"
-      : String(body.executionMode || "SANDBOX");
-  const topology = body.productId
-    ? "HOSTED_PAGE"
-    : String(body.topologyMode || "HOSTED_PAGE");
+    executionMode =
+      body.productId || body.quoteOffer
+        ? "PRODUCTION"
+        : String(body.executionMode || "SANDBOX");
+  const topology =
+    body.productId || body.quoteOffer
+      ? "HOSTED_PAGE"
+      : String(body.topologyMode || "HOSTED_PAGE");
   if (
     !gateways.some((g) => g[0] === gateway) ||
     !["PRODUCTION", "SANDBOX"].includes(executionMode) ||
     !topologies.some((t) => t[0] === topology)
   )
     throw new ApiError(400, "إعدادات بوابة الدفع غير صالحة.");
-  if (!body.productId && !isAdmin)
+  if (!body.productId && !body.quoteOffer && !isAdmin)
     throw new ApiError(403, "مختبر بوابات الدفع متاح للمسؤول فقط.");
   if (topology === "ALL_6_MODES") {
     return {
@@ -121,18 +131,71 @@ export async function executePayment(
         "فحص خدمات Netlify والمسارات المتاحة فقط؛ لم تُنشأ أي دفعة ولم يُتحقق من حساب التاجر لدى المزود.",
     };
   }
+  // A saved product order remains recoverable if the catalog changes after an
+  // unknown transport result. Only its owner and original service/gateway may replay it.
+  if (body.productId && !body.quoteOffer) {
+    const [saved] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.idempotencyKey, key));
+    if (saved) {
+      if (
+        saved.ownerId !== user.id ||
+        saved.productId !== body.productId ||
+        saved.gateway !== gateway ||
+        saved.quoteId
+      )
+        throw new ApiError(409, "هذا المعرّف مرتبط بطلب آخر.");
+      return { order: publicOrder(saved), replayed: true };
+    }
+  }
+  let quoteId: string | null = null;
   let productId: string | null = null,
     amountCents: number,
     currency: string,
     description: string;
-  if (body.productId) {
+  if (body.quoteOffer) {
+    const [quote] = await db
+      .select()
+      .from(quoteRequests)
+      .where(eq(quoteRequests.offerId, uuid(String(body.quoteOffer))));
+    if (
+      !quote ||
+      quote.kind !== "service" ||
+      quote.status !== "quoted" ||
+      !quote.amountCents ||
+      !quote.expiresAt ||
+      quote.expiresAt <= new Date()
+    )
+      throw new ApiError(
+        409,
+        "العرض غير متاح أو انتهت صلاحيته.",
+        "QUOTE_UNAVAILABLE",
+      );
+    if (
+      !user.email ||
+      user.email.trim().toLowerCase() !== quote.email ||
+      !(user.emailVerified || user.confirmedAt)
+    )
+      throw new ApiError(
+        403,
+        "سجل الدخول بالبريد المؤكد الذي أُرسل منه طلب العرض.",
+        "QUOTE_EMAIL_REQUIRED",
+      );
+    quoteId = quote.id;
+    productId = quote.productId;
+    amountCents = quote.amountCents;
+    currency = "SAR";
+    description = `${quote.serviceName} · ${quote.reference}`.slice(0, 250);
+    key = `quote-${quote.id}`;
+  } else if (body.productId) {
     productId = stringField(body.productId, "المنتج", 100);
     const [product] = await db
       .select()
       .from(products)
       .where(and(eq(products.id, productId), eq(products.active, true)));
     if (!product) throw new ApiError(404, "هذا المنتج غير متاح.");
-    if (product.catalogDetails)
+    if (!instantCheckout(product.catalogDetails))
       throw new ApiError(
         409,
         "هذه الخدمة تتطلب تأكيد النطاق وعرض السعر من الفريق قبل الدفع.",
@@ -156,9 +219,16 @@ export async function executePayment(
       200,
     );
   }
+  if (
+    !Number.isSafeInteger(amountCents) ||
+    amountCents < 100 ||
+    amountCents > 100000000
+  )
+    throw new ApiError(400, "مبلغ الخدمة غير صالح للدفع.");
   const fingerprint = createHash("sha256")
     .update(
       JSON.stringify({
+        ...(quoteId ? { quoteId } : {}),
         productId,
         amountCents,
         currency,
@@ -198,25 +268,51 @@ export async function executePayment(
   const credentials = decrypt(vault.encrypted, `${gateway}:${environment}`);
   assertStripeCredentials(credentials, executionMode);
   const returnOrigin = checkoutOrigin();
-  const [order] = await db
-    .insert(orders)
-    .values({
-      ownerId: user.id,
-      productId,
-      amountCents,
-      currency,
-      description,
-      gateway,
-      executionMode,
-      topology,
-      processor: "netlify",
-      idempotencyKey: key,
-      fingerprint,
-    })
-    .onConflictDoNothing({ target: orders.idempotencyKey })
-    .returning();
-  if (!order)
+  const values = {
+    ownerId: user.id,
+    quoteId,
+    productId,
+    amountCents,
+    currency,
+    description,
+    gateway,
+    executionMode,
+    topology,
+    processor: "netlify",
+    idempotencyKey: key,
+    fingerprint,
+  };
+  const order = await db.transaction(async (tx) => {
+    if (quoteId) {
+      const [quote] = await tx
+        .select()
+        .from(quoteRequests)
+        .where(eq(quoteRequests.id, quoteId))
+        .for("update");
+      if (
+        !quote ||
+        quote.status !== "quoted" ||
+        !quote.expiresAt ||
+        quote.expiresAt <= new Date()
+      )
+        throw new ApiError(409, "العرض غير متاح.", "QUOTE_UNAVAILABLE");
+    }
+    const [created] = await tx
+      .insert(orders)
+      .values(values)
+      .onConflictDoNothing({ target: orders.idempotencyKey })
+      .returning();
+    return created;
+  });
+  if (!order) {
+    const [existing] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.idempotencyKey, key));
+    if (existing?.ownerId === user.id && existing.fingerprint === fingerprint)
+      return { order: publicOrder(existing), replayed: true };
     throw new ApiError(409, "العملية قيد التنفيذ بالفعل. راجع سجل الطلبات.");
+  }
   try {
     const response = await createHostedCheckout(
       order,
