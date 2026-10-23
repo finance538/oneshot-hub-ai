@@ -1,3 +1,4 @@
+import { CustomerJourney } from "../../commerce/Journey";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import {
@@ -70,6 +71,13 @@ export default function Experience({
     [paused, setPaused] = useState(false),
     [concierge, setConcierge] = useState(false);
   const [active, setActive] = useState(1);
+  useEffect(() => {
+    const handler = (event: Event) =>
+      setZen(!!(event as CustomEvent<boolean>).detail);
+    setZen(document.documentElement.dataset.calm === "true");
+    window.addEventListener("oneshot:calm", handler);
+    return () => window.removeEventListener("oneshot:calm", handler);
+  }, []);
   const [focusEnd, setFocusEnd] = useState<number | null>(null),
     [remaining, setRemaining] = useState(0),
     [completed, setCompleted] = useState(false);
@@ -168,14 +176,13 @@ export default function Experience({
             )}
           </p>
           <div className="lux-hero-actions">
-            <button
+            <a
               className="lux-button lux-button-gold"
-              disabled={!ready}
-              onClick={onEnter}
+              href={appearanceLink("/products")}
             >
-              {tr("ادخل عالم OneShot", "Enter OneShot")}
+              {tr("اختر الخدمة أو الباقة", "Choose a service or package")}
               <Arrow size={18} />
-            </button>
+            </a>
             <a className="lux-text-button" href="#ecosystem">
               {tr("استكشف المنظومة", "Explore the ecosystem")}
               <ArrowDown size={16} />
@@ -248,6 +255,9 @@ export default function Experience({
           </div>
         </div>
       </section>
+      <div className="lux-wrap">
+        <CustomerJourney />
+      </div>
       <div className="lux-sensory lux-wrap">
         <div>
           <Leaf size={18} />
@@ -256,7 +266,12 @@ export default function Experience({
           </span>
         </div>
         <div className="lux-sensory-controls">
-          <button aria-pressed={zen} onClick={() => setZen(!zen)}>
+          <button
+            aria-pressed={zen}
+            onClick={() =>
+              window.dispatchEvent(new Event("oneshot:toggle-calm"))
+            }
+          >
             <span
               className={`lux-toggle ${zen ? "is-on" : ""}`}
               aria-hidden="true"

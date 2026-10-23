@@ -9,7 +9,6 @@ import { Notice } from "./common";
 import type { SessionUser } from "./auth";
 import GuidePage from "../growth/GuidePage";
 const Workforce = lazy(() => import("../workforce/Workforce"));
-const GrowthDock = lazy(() => import("../growth/GrowthDock"));
 
 export function Store({
   user,
@@ -79,9 +78,6 @@ export function Store({
     return (
       <>
         <GuidePage slug={guideSlug[1]} />
-        <Suspense fallback={null}>
-          <GrowthDock onLogin={onLogin} />
-        </Suspense>
       </>
     );
   return (

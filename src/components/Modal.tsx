@@ -10,12 +10,14 @@ export function Modal({
   children,
   wide = false,
   drawer = false,
+  className = "",
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
   wide?: boolean;
   drawer?: boolean;
+  className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const headingId = useId();
@@ -34,7 +36,7 @@ export function Modal({
   return (
     <dialog
       ref={ref}
-      className={`ui-dialog${wide ? " ui-dialog-wide" : ""}${drawer ? " ui-dialog-drawer" : ""}`}
+      className={`ui-dialog${wide ? " ui-dialog-wide" : ""}${drawer ? " ui-dialog-drawer" : ""} ${className}`}
       aria-labelledby={headingId}
       onCancel={(event) => {
         event.preventDefault();

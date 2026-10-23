@@ -17,8 +17,10 @@ export function safeReturnPath(value: unknown, origin: string): string | null {
 
 export function appRoute(
   url: URL,
-): "receiver" | "tools" | "hub" | "workspace" | "missing" {
+): "receiver" | "tools" | "hub" | "workspace" | "commerce" | "missing" {
   const path = url.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/checkout" || /^\/quote\/[a-f0-9-]{36}$/i.test(path))
+    return "commerce";
   if (["/sso/start", "/sso/callback"].includes(path)) return "receiver";
   if (/^\/(tools|solutions)(\/|$)/.test(path) || path === "/admin/radar")
     return "tools";

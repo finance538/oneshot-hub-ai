@@ -1,3 +1,4 @@
+import { RevenueCard, EstimateNotice } from "../commerce/Revenue";
 import { useEffect, useMemo, useState } from "react";
 import { Flame, LogIn, RefreshCw } from "lucide-react";
 import { useAuth } from "../components/auth";
@@ -131,6 +132,11 @@ function RadarBoard({ lang }: { lang: "ar" | "en" }) {
 
   return (
     <div className="tools-radar">
+      <a href="/?module=ceo&panel=quotes">
+        متابعة العملاء والإدارة · Customer desk
+      </a>
+      <RevenueCard />
+      <EstimateNotice />
       <dl className="tools-kpis">
         <div>
           <dt>{ar ? "الزيارات" : "Visits"}</dt>
@@ -145,7 +151,7 @@ function RadarBoard({ lang }: { lang: "ar" | "en" }) {
           <dd>{fmt(totals.funnels)}</dd>
         </div>
         <div>
-          <dt>{ar ? "أدوات رابحة" : "Winning tools"}</dt>
+          <dt>{ar ? "أدوات نشطة" : "Engaged tools"}</dt>
           <dd>{fmt(rows.filter((r) => r.winner).length)}</dd>
         </div>
         <div>
@@ -155,8 +161,8 @@ function RadarBoard({ lang }: { lang: "ar" | "en" }) {
       </dl>
       <p className="tools-hint">
         {ar
-          ? `«أداة رابحة» تعني ${WINNER_MIN_VIEWS} زيارة على الأقل مع نسبة تحويل للنطاقات 3% فأكثر، أو استخدام 40% مع 3 نقرات تحويل. الأرقام عدادات مجهولة دون بيانات شخصية.`
-          : `"Winning" means at least ${WINNER_MIN_VIEWS} visits with a 3%+ funnel rate, or 40% usage with 3 funnel clicks. Counts are anonymous.`}
+          ? `«أداة نشطة» تعني ${WINNER_MIN_VIEWS} زيارة على الأقل مع نسبة تحويل للنطاقات 3% فأكثر، أو استخدام 40% مع 3 نقرات تحويل. الأرقام عدادات مجهولة دون بيانات شخصية.`
+          : `"Engaged" means at least ${WINNER_MIN_VIEWS} visits with a 3%+ funnel rate, or 40% usage with 3 funnel clicks. Counts are anonymous.`}
       </p>
       <div className="tools-radar-controls">
         <select

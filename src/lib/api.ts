@@ -1,9 +1,19 @@
+import { reportClientDiagnostic } from "./diagnostics";
 import { ecosystemSession, receiverApp } from "./ecosystem-session";
 import { hubOrigin } from "../../shared/ecosystem";
 import type { Order } from "../../shared/contracts";
 import { prepareIdentitySession } from "./auth-session";
 import { storedLanguage } from "./preferences";
 const englishErrors: Record<string, string> = {
+  INVALID_PHONE:
+    "Enter a valid international phone number with + and country code.",
+  QUOTE_EMAIL_REQUIRED:
+    "Sign in with the verified email used to submit this quote request.",
+  QUOTE_UNAVAILABLE: "This quote is unavailable or has expired.",
+  PRO_INQUIRY_ONLY:
+    "Pro is inquiry-only until verified subscription entitlement is connected.",
+  QUOTE_SUBMISSION_CONFLICT:
+    "This request identifier already belongs to different details.",
   AUTH_REQUIRED: "Sign in to continue.",
   ADMIN_REQUIRED: "This area requires an administrator account.",
   SESSION_CHANGED: "Your account session changed. Reload to continue.",
@@ -83,7 +93,7 @@ function clean(value: unknown): unknown {
       Object.entries(value)
         .filter(
           ([k]) =>
-            !/(secret|key$|credential|token|cardnumber|cvv|password|email|content|reply|messages)/i.test(
+            !/(secret|key$|credential|token|cardnumber|cvv|password|email|phone|customer|notes|scope|offerId|content|reply|messages)/i.test(
               k,
             ),
         )
@@ -136,15 +146,18 @@ export async function callBackendApi<T = Record<string, any>>(
     session = generation;
   for (const path of endpoints) {
     const publicRequest =
-      method === "GET" &&
-      /^\/api\/(products|health|payments\/capabilities|ecosystem\/(status|handshake)|experience\/config|workforce\/catalog|tools\/pro|growth\/(guides|seo))(?:\?|$)/.test(
-        path,
-      );
+      (method === "POST" && path === "/api/quotes") ||
+      (method === "GET" &&
+        /^\/api\/(commerce\/contact|quotes\/offers\/[^/?]+|products|health|payments\/capabilities|ecosystem\/(status|handshake)|experience\/config|workforce\/catalog|tools\/pro|growth\/(guides|seo))(?:\?|$)/.test(
+          path,
+        ));
     const id = crypto.randomUUID();
     const record = (status: number, response: unknown) => {
       if (
         !options.quiet &&
-        !/^\/api\/(workforce|ai-workforce)\//.test(path) &&
+        !/^\/api\/(workforce|ai-workforce|quotes|commerce|diagnostics|admin\/(quotes|contact|diagnostics))(?:\/|\?|$)/.test(
+          path,
+        ) &&
         session === generation
       )
         listeners.forEach((fn) =>
@@ -160,6 +173,12 @@ export async function callBackendApi<T = Record<string, any>>(
         );
     };
     const failure = (message: string, status: number, code: string): never => {
+      reportClientDiagnostic(
+        code === "INVALID_API_RESPONSE"
+          ? "API_INVALID_RESPONSE"
+          : "API_NETWORK",
+        path,
+      );
       record(status, { error: message, code });
       throw new RequestError(message, status, code);
     };
@@ -233,6 +252,7 @@ export async function callBackendApi<T = Record<string, any>>(
       throw new RequestError("تغيّرت جلسة المستخدم.", 401, "SESSION_CHANGED");
     if (typeof data.error === "string")
       data.error = requestMessage(data.error, data.code, response.status);
+    if (response.status >= 500) reportClientDiagnostic("API_SERVER", path);
     record(response.status, data);
     if (response.status === 404 && data.code === "ROUTE_NOT_FOUND") continue;
     if (!response.ok)

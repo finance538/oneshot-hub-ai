@@ -1,9 +1,10 @@
+import OwnerOperations from "../commerce/OwnerOperations";
+import { RevenueCard, EstimateNotice } from "../commerce/Revenue";
 import { useAppearance } from "../storefront/i18n";
 import { uiText as t } from "../lib/legacy-copy";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   UsersRound,
-  TrendingUp,
   ReceiptText,
   Plus,
   Power,
@@ -34,7 +35,6 @@ export function Executive() {
   useAppearance();
   const [data, setData] = useState<Overview | null>(null),
     [orders, setOrders] = useState<Order[]>([]),
-    [currency, setCurrency] = useState("USD"),
     [employee, setEmployee] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
@@ -92,8 +92,6 @@ export function Executive() {
       setBusy(false);
     }
   }
-  const totals = data?.totals.find((t) => t.currency === currency),
-    count = data?.totals.reduce((n, t) => n + t.count, 0);
   return (
     <>
       <SectionHeading
@@ -112,42 +110,12 @@ export function Executive() {
         </button>
       </SectionHeading>
       {error && <Notice>{error}</Notice>}
-      <div className="metric-grid">
-        <div className="metric-card">
-          <span>
-            <TrendingUp size={18} /> {t("إيرادات مؤكدة")}
-            <select
-              aria-label={t("عملة الإيرادات")}
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-            >
-              {["USD", "SAR", "AED", "GBP", "EUR"].map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-          </span>
-          <strong dir="ltr">
-            {data ? money(totals?.revenueCents || 0, currency) : "—"}
-          </strong>
-          <small>{t("طلبات حية مثبتة بإشعار دفع")}</small>
-        </div>
-        <div className="metric-card">
-          <span>
-            <ReceiptText size={18} /> {t("إجمالي الطلبات الحية")}
-          </span>
-          <strong>{data ? count : "—"}</strong>
-          <small>{t("جميع العملات، دون جمع مبالغها")}</small>
-        </div>
-        <div className="metric-card">
-          <span>
-            <UsersRound size={18} /> {t("أعضاء الفريق النشطون")}
-          </span>
-          <strong>
-            {data ? data.staff.filter((s) => s.active).length : "—"}
-          </strong>
-          <small>{t("مساعدون بتخصصات مخصصة")}</small>
-        </div>
-      </div>
+      <RevenueCard />
+      <EstimateNotice />
+      <p>
+        <a href="/admin/radar">{t("رادار المالك")} · Owner Radar</a>
+      </p>
+      <OwnerOperations />
       <section className="panel team-panel">
         <div className="panel-title">
           <BriefcaseBusiness size={20} />

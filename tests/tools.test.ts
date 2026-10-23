@@ -169,7 +169,16 @@ test("legal footer data and policies remain intact", () => {
     "المملكة العربية السعودية",
     "Object.entries(documents)",
   ])
-    assert.ok(footer.includes(needle), needle);
+    assert.ok(
+      (
+        footer +
+        readFileSync(
+          new URL("../src/commerce/OfficialContact.tsx", import.meta.url),
+          "utf8",
+        )
+      ).includes(needle),
+      needle,
+    );
 });
 
 test("language persistence script runs before the app bundle", () => {

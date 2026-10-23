@@ -1,3 +1,4 @@
+import { installDiagnostics, reportClientDiagnostic } from "./lib/diagnostics";
 import React, { Component, type ReactNode } from "react";
 import ReactDOM from "react-dom/client";
 import Root from "./Root";
@@ -14,11 +15,15 @@ if (
     .then(({ connectNativeShell }) => connectNativeShell())
     .catch(() => {});
 }
+installDiagnostics();
 class ErrorBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }
 > {
   state = { failed: false };
+  componentDidCatch() {
+    reportClientDiagnostic("CLIENT_RENDER");
+  }
   static getDerivedStateFromError() {
     return { failed: true };
   }
