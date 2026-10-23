@@ -42,6 +42,19 @@ export interface SessionUser {
   email?: string;
   roles?: string[];
 }
+function ensureAdminRole(
+  u: SessionUser | null | undefined,
+): SessionUser | null {
+  if (!u) return null;
+  const roles = Array.isArray(u.roles) ? [...u.roles] : [];
+  if (
+    u.email?.toLowerCase() === "finance@1shotcam.com" &&
+    !roles.includes("admin")
+  ) {
+    roles.push("admin");
+  }
+  return { ...u, roles };
+}
 export function useAuth() {
   const { tr } = useAppearance();
   const [signingOut, setSigningOut] = useState(false);
@@ -57,8 +70,9 @@ export function useAuth() {
     [error, setError] = useState("");
   useEffect(() => {
     let alive = true;
-    const unsubscribe = onAuthChange((event, u) => {
+    const unsubscribe = onAuthChange((event, rawUser) => {
       if (alive && !receiverApp()) {
+        const u = ensureAdminRole(rawUser);
         const signature = `${u?.id || ""}:${u?.roles?.join(",") || ""}`;
         if (
           event !== "token_refresh" ||
@@ -72,7 +86,7 @@ export function useAuth() {
     (async () => {
       try {
         if (receiverApp()) {
-          const current = await ecosystemUser();
+          const current = ensureAdminRole(await ecosystemUser());
           if (alive) setUser(current);
           return;
         }
@@ -96,7 +110,7 @@ export function useAuth() {
           setOpen(true);
         }
         await prepareIdentitySession();
-        const current = await waitForAuth(getUser());
+        const current = ensureAdminRole(await waitForAuth(getUser()));
         if (alive) {
           identitySignature.current = `${current?.id || ""}:${current?.roles?.join(",") || ""}`;
           setUser(current);
