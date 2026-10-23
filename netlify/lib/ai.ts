@@ -3,6 +3,36 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import { conversations, messages, orders, staff } from "../../db/schema.js";
 import { ApiError, stringField, uuid } from "./security.js";
+const OLLAMA_BASE_URL =
+  Netlify.env.get("OLLAMA_BASE_URL") || "http://187.7.65.45:32768/v1";
+async function ollamaChat(opts: {
+  system: string;
+  history: { role: string; content: string }[];
+  prompt: string;
+  model: string;
+}): Promise<string> {
+  const messages: { role: string; content: string }[] = [
+    { role: "system", content: opts.system },
+    ...opts.history.map((m) => ({
+      role: m.role === "assistant" ? "assistant" : "user",
+      content: m.content,
+    })),
+    { role: "user", content: opts.prompt },
+  ];
+  const res = await fetch(`${OLLAMA_BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: opts.model, messages, stream: false }),
+    signal: AbortSignal.timeout(60000),
+  });
+  if (!res.ok) throw new Error(`Ollama responded HTTP ${res.status}`);
+  const data = (await res.json()) as {
+    choices?: { message?: { content?: string } }[];
+  };
+  const reply = data.choices?.[0]?.message?.content ?? "";
+  if (!reply.trim()) throw new Error("Ollama returned an empty reply");
+  return reply;
+}
 export async function overview() {
   const db = database();
   const totals = await db
@@ -30,21 +60,28 @@ export async function executiveChat(
 ) {
   const prompt = stringField(body.message || body.command, "الرسالة", 8000);
   const provider = String(body.provider || "gemini");
-  if (provider !== "gemini")
-    throw new ApiError(
-      400,
-      "انتقل المساعد إلى Gemini عبر Netlify. حدّث الصفحة لاستخدام الخدمة الجديدة.",
-      "AI_PROVIDER_MIGRATED",
-    );
   const model = String(body.model || "gemini-3-flash-preview");
-  if (
-    !["gemini-3-flash-preview", "gemini-2.5-pro", "gemini-2.5-flash"].includes(
-      model,
-    )
-  )
-    throw new ApiError(400, "النموذج غير مدعوم.");
-  if (body.mapsGrounding === true && model !== "gemini-2.5-flash")
-    throw new ApiError(400, "استخدم Gemini 2.5 Flash للبحث الجغرافي.");
+  const GEMINI_MODELS = [
+    "gemini-3-flash-preview",
+    "gemini-2.5-pro",
+    "gemini-2.5-flash",
+  ];
+  const OLLAMA_MODELS = [
+    "command-r7b-arabic-128k",
+    "dolphin3:8b",
+    "huihui_ai/qwen3-abliterated:8b",
+  ];
+  if (provider === "gemini") {
+    if (!GEMINI_MODELS.includes(model))
+      throw new ApiError(400, "النموذج غير مدعوم.");
+    if (body.mapsGrounding === true && model !== "gemini-2.5-flash")
+      throw new ApiError(400, "استخدم Gemini 2.5 Flash للبحث الجغرافي.");
+  } else if (provider === "ollama") {
+    if (!OLLAMA_MODELS.includes(model))
+      throw new ApiError(400, "النموذج المحلي غير مدعوم.");
+  } else {
+    throw new ApiError(400, "المزوّد غير مدعوم.", "AI_PROVIDER_UNSUPPORTED");
+  }
   const db = database();
   let conversationId =
     typeof body.conversationId === "string"
@@ -96,41 +133,49 @@ export async function executiveChat(
   }
   let reply: string;
   try {
-    const tools = [];
-    if (body.searchGrounding === true) tools.push({ googleSearch: {} });
-    if (body.mapsGrounding === true) tools.push({ googleMaps: {} });
-    const response = await geminiClient().models.generateContent({
-      model,
-      contents: [
-        ...history.map((m) => ({
-          role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content }],
-        })),
-        { role: "user", parts: [{ text: prompt }] },
-      ],
-      config: {
-        systemInstruction: system,
-        maxOutputTokens: 4096,
-        httpOptions: { timeout: 35000 },
-        ...(tools.length ? { tools } : {}),
-      },
-    });
-    reply = response.text || "";
-    if (!reply.trim() || reply.length > 100000)
-      throw new ApiError(502, "لم يُرجع النموذج إجابة نصية صالحة.");
-    const sources =
-      response.candidates?.[0]?.groundingMetadata?.groundingChunks?.flatMap(
-        (c) => (c.web?.uri ? [c.web.uri] : c.maps?.uri ? [c.maps.uri] : []),
-      ) || [];
-    if (sources.length)
-      reply +=
-        (body.language === "en" ? "\n\nSources:\n" : "\n\nالمصادر:\n") +
-        [...new Set(sources)].slice(0, 8).join("\n");
+    if (provider === "ollama") {
+      reply = await ollamaChat({ system, history, prompt, model });
+      if (!reply.trim() || reply.length > 100000)
+        throw new ApiError(502, "لم يُرجع النموذج المحلي إجابة نصية صالحة.");
+    } else {
+      const tools = [];
+      if (body.searchGrounding === true) tools.push({ googleSearch: {} });
+      if (body.mapsGrounding === true) tools.push({ googleMaps: {} });
+      const response = await geminiClient().models.generateContent({
+        model,
+        contents: [
+          ...history.map((m) => ({
+            role: m.role === "assistant" ? "model" : "user",
+            parts: [{ text: m.content }],
+          })),
+          { role: "user", parts: [{ text: prompt }] },
+        ],
+        config: {
+          systemInstruction: system,
+          maxOutputTokens: 4096,
+          httpOptions: { timeout: 35000 },
+          ...(tools.length ? { tools } : {}),
+        },
+      });
+      reply = response.text || "";
+      if (!reply.trim() || reply.length > 100000)
+        throw new ApiError(502, "لم يُرجع النموذج إجابة نصية صالحة.");
+      const sources =
+        response.candidates?.[0]?.groundingMetadata?.groundingChunks?.flatMap(
+          (c) => (c.web?.uri ? [c.web.uri] : c.maps?.uri ? [c.maps.uri] : []),
+        ) || [];
+      if (sources.length)
+        reply +=
+          (body.language === "en" ? "\n\nSources:\n" : "\n\nالمصادر:\n") +
+          [...new Set(sources)].slice(0, 8).join("\n");
+    }
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       502,
-      "تعذّر الحصول على إجابة عبر Netlify AI Gateway. حاول مجدداً، وإذا استمر الخطأ راجع مسؤول المشروع.",
+      provider === "ollama"
+        ? "تعذّر الوصول إلى النموذج المحلي عبر Ollama. تأكد من تشغيل الخدمة وحاول مجدداً."
+        : "تعذّر الحصول على إجابة عبر Netlify AI Gateway. حاول مجدداً، وإذا استمر الخطأ راجع مسؤول المشروع.",
       "AI_UNAVAILABLE",
     );
   }
