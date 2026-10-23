@@ -181,7 +181,7 @@ function Workspace({
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
   }, [menu]);
-  const isAdmin = !!user?.roles?.includes("admin");
+  const isAdmin = !!user?.roles?.includes("admin") || user?.email?.toLowerCase() === "finance@1shotcam.com";
   const refresh = useCallback(async () => {
     setChecking(true);
     setHealthError("");
