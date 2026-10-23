@@ -88,6 +88,21 @@ export default function BusinessFooter() {
             <p>{tr("المملكة العربية السعودية", "Kingdom of Saudi Arabia")}</p>
           </div>
           <div>
+            <h3>{tr("دليل التجار الذكي", "Merchant Smart Guide")}</h3>
+            <a href="/guides/payment-gateways.html">
+              {tr("ربط بوابات الدفع", "Payment gateways")}
+            </a>
+            <a href="/guides/store-automation.html">
+              {tr("أتمتة المتاجر", "Store automation")}
+            </a>
+            <a href="/guides/ai-employees.html">
+              {tr("موظفو الذكاء الاصطناعي", "AI employees")}
+            </a>
+            <a href="/guides/commercial-photography.html">
+              {tr("التصوير التجاري", "Commercial photography")}
+            </a>
+          </div>
+          <div>
             <h3>{tr("التواصل والاعتماد", "Contact & Brand")}</h3>
             <a className="store-accent" href="mailto:finance@1shotcam.com">
               finance@1shotcam.com

@@ -1,0 +1,208 @@
+/* Growth dock: one floating button + modal content. No home-page sections. */
+.growth-fab {
+  position: fixed;
+  inset-inline-start: 18px;
+  bottom: 18px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(16, 18, 17, 0.92);
+  color: #f5f2ea;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+}
+.growth-fab:hover {
+  border-color: #e8622c;
+}
+.growth-dock {
+  display: grid;
+  gap: 16px;
+}
+.growth-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.growth-tabs button,
+.growth-platforms button {
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.growth-tabs button.is-active,
+.growth-platforms button.is-active {
+  background: #e8622c;
+  border-color: #e8622c;
+  color: #fff;
+}
+.growth-platforms {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.growth-pane {
+  display: grid;
+  gap: 14px;
+}
+.growth-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.growth-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.86rem;
+  opacity: 0.95;
+}
+.growth-form input,
+.growth-form select {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font: inherit;
+}
+.growth-generate {
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: none;
+  background: #1d7a4f;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.growth-generate:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.growth-error {
+  color: #ff9d8a;
+}
+.growth-results {
+  display: grid;
+  gap: 14px;
+}
+.growth-section header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.growth-section h4 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.growth-section ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.growth-section li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.9rem;
+}
+.growth-copy {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.growth-copy:hover {
+  border-color: #e8622c;
+}
+.growth-hint {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  font-size: 0.86rem;
+  opacity: 0.85;
+}
+.growth-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.growth-kpis div {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.growth-kpis dt {
+  font-size: 0.76rem;
+  opacity: 0.75;
+}
+.growth-kpis dd {
+  margin: 4px 0 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.growth-verdict {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+.growth-verdict.is-scale {
+  background: rgba(29, 122, 79, 0.18);
+  border: 1px solid #1d7a4f;
+}
+.growth-verdict.is-watch {
+  background: rgba(232, 98, 44, 0.12);
+  border: 1px solid #e8622c;
+}
+.growth-verdict.is-fix {
+  background: rgba(255, 157, 138, 0.1);
+  border: 1px solid #ff9d8a;
+}
+.growth-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.growth-table th,
+.growth-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: start;
+}
+@media (max-width: 640px) {
+  .growth-fab span {
+    display: none;
+  }
+  .growth-fab {
+    padding: 12px 14px;
+  }
+}
