@@ -469,7 +469,6 @@ export function createOffice(
     }
     box(paper, 0, 1.23, 0.16, 0.14, 0.28, 0.03, body);
     box(brass, 0, 1.18, 0.184, 0.037, 0.28, 0.018, body);
-    const limbs: THREE.Group[] = [];
     for (const x of [-0.115, 0.115]) {
       const leg = new THREE.Group();
       leg.position.set(x, 0.76, 0);
@@ -987,8 +986,9 @@ export function createOffice(
       activate(nearest);
     }
   }) as EventListener);
-  listen(window, "keyup", ((event: KeyboardEvent) =>
-    keys.delete(event.code)) as EventListener);
+  listen(window, "keyup", ((event: KeyboardEvent) => {
+    keys.delete(event.code);
+  }) as EventListener);
   listen(canvas, "blur", (() => {
     clearInput();
     exitLock();

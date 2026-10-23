@@ -18,6 +18,8 @@
     "db",
     "netlify",
     "vite.config.ts",
+    "scripts/tools-prerender.ts",
+    "tests",
     "drizzle.config.ts"
   ]
 }

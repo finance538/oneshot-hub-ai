@@ -9,6 +9,7 @@ import {
   uuid,
   uniqueIndex,
   index,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 export const products = pgTable("products", {
   id: text("id").primaryKey(),
@@ -431,3 +432,33 @@ export const ecosystemGrants = pgTable(
   },
   (t) => [index("ecosystem_grants_owner").on(t.ownerId)],
 );
+
+// Owner radar for the public tool pages: anonymous daily counters only (no
+// IPs, cookies or inputs), plus the owner's Pro designation per tool.
+export const toolMetrics = pgTable(
+  "tool_metrics",
+  {
+    slug: text("slug").notNull(),
+    day: text("day").notNull(),
+    cluster: text("cluster").notNull(),
+    views: integer("views").notNull().default(0),
+    uses: integer("uses").notNull().default(0),
+    funnels: integer("funnels").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.slug, t.day] }),
+    index("tool_metrics_day").on(t.day),
+  ],
+);
+
+export const toolOffers = pgTable("tool_offers", {
+  slug: text("slug").primaryKey(),
+  pro: boolean("pro").notNull().default(false),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});

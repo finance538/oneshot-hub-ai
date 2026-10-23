@@ -4092,3 +4092,28 @@ tr:last-child td {
     scroll-behavior: auto !important;
   }
 }
+
+/* Pre-rendered tool HTML shown until the app mounts (and without JS). */
+.tool-static {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  line-height: 1.8;
+}
+.tool-static a {
+  color: inherit;
+}
+.tool-static table {
+  border-collapse: collapse;
+}
+.tool-static td,
+.tool-static th {
+  padding: 4px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: start;
+}
+.footer-tool-vault {
+  display: inline-block;
+  margin-top: 12px;
+  font-weight: 600;
+}
