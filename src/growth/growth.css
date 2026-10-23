@@ -1,0 +1,348 @@
+/* Growth studio + Smart Merchant Guide — quiet surfaces, wide spacing. */
+.growth-dock {
+  position: fixed;
+  bottom: 22px;
+  inset-inline-end: 22px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(16, 18, 17, 0.92);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+}
+.growth-dock:hover {
+  border-color: #f97316;
+}
+.growth-dock svg {
+  color: #f97316;
+}
+
+.growth-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.growth-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.growth-tabs button.active {
+  background: #f97316;
+  border-color: #f97316;
+  color: #101211;
+  font-weight: 700;
+}
+
+.growth-form {
+  display: grid;
+  gap: 12px;
+}
+.growth-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+.growth-form input,
+.growth-form select,
+.growth-widget-grid input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: inherit;
+}
+.growth-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+.growth-result-blocks {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+.growth-result-blocks section h4,
+.growth-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.growth-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.growth-lines li {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.growth-tags {
+  line-height: 2;
+}
+.growth-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.growth-copy:hover {
+  border-color: #f97316;
+  color: #f97316;
+}
+.growth-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.growth-banner-img {
+  max-width: 100%;
+  border-radius: 12px;
+  margin-top: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.growth-saved {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.growth-saved li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+.growth-saved small {
+  display: block;
+  opacity: 0.7;
+}
+
+/* Guide article */
+.growth-guide .growth-lead {
+  font-size: 1.1rem;
+  line-height: 1.9;
+}
+.growth-crumbs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+.growth-section {
+  margin-top: 30px;
+}
+.growth-section h2 {
+  margin-bottom: 10px;
+}
+.growth-bullets {
+  display: grid;
+  gap: 8px;
+  padding-inline-start: 20px;
+  line-height: 1.9;
+}
+.growth-table-wrap {
+  overflow-x: auto;
+  margin-top: 12px;
+  border-radius: 12px;
+}
+.growth-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  min-width: 480px;
+}
+.growth-table th,
+.growth-table td {
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: start;
+}
+.growth-table thead th {
+  background: rgba(249, 115, 22, 0.12);
+  font-weight: 700;
+}
+.growth-widget {
+  margin-top: 14px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  background: rgba(249, 115, 22, 0.05);
+  display: grid;
+  gap: 12px;
+}
+.growth-widget h4 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.growth-widget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+.growth-widget-grid label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.88rem;
+}
+.growth-result {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.growth-result div {
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(16, 18, 17, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.growth-result dt {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+.growth-result dd {
+  margin: 4px 0 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.growth-big-result {
+  font-size: 1.05rem;
+  margin: 0;
+}
+.growth-big-result strong {
+  color: #10b981;
+  font-size: 1.3rem;
+}
+.growth-fineprint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin: 0;
+}
+.growth-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.growth-checklist button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: start;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.growth-checklist button[aria-pressed="true"] {
+  border-color: #10b981;
+}
+.growth-checklist button[aria-pressed="true"] svg {
+  color: #10b981;
+}
+.growth-cta {
+  margin-top: 32px;
+  padding: 22px;
+  border-radius: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+.growth-cta > svg {
+  color: #f97316;
+  flex-shrink: 0;
+}
+.growth-cta div {
+  flex: 1;
+  min-width: 220px;
+}
+.growth-cta p {
+  margin: 4px 0 0;
+  opacity: 0.85;
+}
+.growth-related {
+  margin-top: 26px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.growth-related a {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.88rem;
+}
+.growth-guide-index {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+.growth-guide-card {
+  display: block;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+.growth-guide-card:hover {
+  border-color: #f97316;
+}
+.growth-guide-card h2 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+}
+.growth-guide-card p {
+  margin: 0 0 8px;
+  opacity: 0.85;
+}
+.growth-guide-card small {
+  opacity: 0.65;
+}

@@ -394,6 +394,27 @@ export const workforceResearch = pgTable(
   (t) => [index("workforce_research_org").on(t.organizationId, t.createdAt)],
 );
 
+// Growth studio: merchant-owned AI campaign drafts. Copy is generated on
+// demand; only the saved draft JSON persists here.
+export const growthCampaigns = pgTable(
+  "growth_campaigns",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ownerId: text("owner_id").notNull(),
+    platform: text("platform").notNull().default("google"),
+    businessName: text("business_name").notNull().default(""),
+    product: text("product").notNull().default(""),
+    draft: jsonb("draft").$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [index("growth_campaigns_owner").on(t.ownerId)],
+);
+
 // Single-use, PKCE-bound grants and short-lived ecosystem sessions. Tokens are
 // encrypted at rest; neither authorization codes nor session secrets are stored.
 export const ecosystemGrants = pgTable(
