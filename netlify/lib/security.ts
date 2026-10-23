@@ -178,7 +178,7 @@ export function isAllowedOrigin(
     const configured = env("ALLOWED_ORIGINS") || env("CORS_ALLOWED_ORIGINS");
     if (configured) {
       const list = configured.split(/[\s,]+/).filter(Boolean);
-      if (list.includes(originUrl.origin) || list.includes("*")) return true;
+      if (list.includes(originUrl.origin)) return true;
     }
 
     if (
@@ -189,8 +189,8 @@ export function isAllowedOrigin(
     }
 
     if (
-      originUrl.hostname === "localhost" ||
-      originUrl.hostname === "127.0.0.1"
+      env("CONTEXT") !== "production" &&
+      (originUrl.hostname === "localhost" || originUrl.hostname === "127.0.0.1")
     ) {
       return true;
     }

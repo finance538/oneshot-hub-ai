@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { normalizeAdDraft } from "../../shared/ad-draft.js";
 import { and, desc, eq } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import { growthCampaigns } from "../../db/schema.js";
@@ -20,12 +21,21 @@ import {
 const SITE_URL = "https://www.1shotcam.com";
 
 const platforms: AdPlatform[] = ["google", "snap", "tiktok"];
-const kinds: BusinessKind[] = ["store", "photography", "restaurant", "services", "fashion"];
+const kinds: BusinessKind[] = [
+  "store",
+  "photography",
+  "restaurant",
+  "services",
+  "fashion",
+];
 
 function platformOf(value: unknown): AdPlatform {
   if (typeof value === "string" && (platforms as string[]).includes(value))
     return value as AdPlatform;
-  throw new ApiError(400, "المنصة غير مدعومة. اختر Google أو Snapchat أو TikTok.");
+  throw new ApiError(
+    400,
+    "المنصة غير مدعومة. اختر Google أو Snapchat أو TikTok.",
+  );
 }
 
 function kindOf(value: unknown): BusinessKind {
@@ -201,43 +211,70 @@ function fallbackDraft(input: {
   audience: string;
   platform: GrowthPlatform;
   goal: string;
+  language?: "ar" | "en";
 }) {
-  const name = input.business || "متجرك";
+  const en = input.language === "en",
+    name = input.business;
   return {
-    headlines: [
-      `${input.product} — جودة تستحق التجربة`,
-      `اطلب الآن من ${name} مع توصيل سريع`,
-      `عرض حصري: ${input.product} بضمان الجودة`,
-      `${name} — اختيار عملائنا الأول`,
-      `وفّر وقتك: ${input.product} بضغطة واحدة`,
-    ],
-    descriptions: [
-      `اكتشف ${input.product} من ${name}: جودة مضمونة، دفع آمن عبر مدى وApple Pay، ودعم بالعربية. اطلب اليوم.`,
-      `${input.goal || "نمو المبيعات"} يبدأ بخطوة: تصفح ${input.product}، اختر ما يناسبك، واستلم طلبك بسرعة.`,
-    ],
-    keywords: [
-      input.product,
-      `${input.product} السعودية`,
-      `شراء ${input.product}`,
-      `أفضل ${input.product}`,
-      `${input.product} أصلي`,
-      `متجر ${input.product}`,
-      `${input.product} توصيل سريع`,
-      `سعر ${input.product}`,
-    ],
-    negativeKeywords: ["مجاني", "تحميل", "وظائف", "مستعمل"],
+    headlines: en
+      ? [
+          input.product,
+          `Explore ${name}`,
+          `Discover ${input.product}`,
+          `View details at ${name}`,
+          "Ask our team",
+        ]
+      : [
+          input.product,
+          `اكتشف ${name}`,
+          `تعرّف على ${input.product}`,
+          `راجع التفاصيل لدى ${name}`,
+          "استفسر من فريقنا",
+        ],
+    descriptions: en
+      ? [
+          `Explore ${input.product} from ${name}. Review the details and contact the team to confirm availability.`,
+          "Compare the scope and cost before deciding.",
+        ]
+      : [
+          `تعرّف على ${input.product} من ${name}. راجع التفاصيل وتواصل مع الفريق لتأكيد التوفر.`,
+          "قارن النطاق والتكلفة قبل اتخاذ قرارك.",
+        ],
+    keywords: en
+      ? [
+          input.product,
+          `${input.product} Saudi Arabia`,
+          `${input.product} details`,
+          name,
+        ]
+      : [
+          input.product,
+          `${input.product} السعودية`,
+          `تفاصيل ${input.product}`,
+          name,
+        ],
+    negativeKeywords: en ? ["jobs", "free download"] : ["وظائف", "تحميل مجاني"],
     audience: {
       description:
         input.audience ||
-        "البالغون 25-44 في السعودية المهتمون بالتسوق الإلكتروني",
-      targeting: [
-        "الموقع: المملكة العربية السعودية",
-        "العمر: 25-44",
-        "الاهتمامات: التسوق الإلكتروني، العلامة ذات الصلة",
-        "إعادة الاستهداف: زوار صفحة المنتج خلال 30 يوماً",
-      ],
+        (en
+          ? "Define your target audience before publishing."
+          : "حدّد جمهورك المستهدف قبل النشر."),
+      targeting: en
+        ? [
+            "Confirm the target location",
+            "Use interests relevant to your product",
+            "Review consent before retargeting",
+          ]
+        : [
+            "تأكد من الموقع المستهدف",
+            "اختر اهتمامات مرتبطة بالمنتج",
+            "راجع الموافقة قبل إعادة الاستهداف",
+          ],
     },
-    callToActions: ["اطلب الآن", "تسوق الآن", "اكتشف العرض", "احجز الآن"],
+    callToActions: en
+      ? ["Explore details", "Contact us", "Compare options"]
+      : ["راجع التفاصيل", "تواصل معنا", "قارن الخيارات"],
   };
 }
 
@@ -247,9 +284,10 @@ async function generateCopy(input: {
   audience: string;
   platform: GrowthPlatform;
   goal: string;
+  language?: "ar" | "en";
 }): Promise<{ draft: Record<string, unknown>; ai: boolean }> {
   const fallback = fallbackDraft(input);
-  const prompt = `أنت خبير إعلانات Google وSnap وTikTok للسوق السعودي. اكتب بالعربية فقط (أسماء المنصات بالإنجليزية مسموحة).
+  const prompt = `أنت خبير إعلانات Google وSnap وTikTok للسوق السعودي. اكتب باللغة ${input.language === "en" ? "الإنجليزية" : "العربية"}. لا تختلق خصومات أو ضمانات أو توصيلاً سريعاً أو طرق دفع غير واردة في بيانات النشاط.
 النشاط: ${input.business} | المنتج: ${input.product} | الجمهور: ${input.audience || "غير محدد"} | المنصة: ${input.platform} | الهدف: ${input.goal || "زيادة المبيعات"}.
 أعد JSON فقط بهذا الشكل بالضبط، بدون أي نص آخر:
 {"headlines":["5 عناوين خاطفة، كل عنوان 30 حرفاً كحد أقصى"],"descriptions":["وصفان، كل وصف 90 حرفاً كحد أقصى"],"keywords":["8 كلمات مفتاحية عالية النية الشرائية بالسعودية"],"negativeKeywords":["4 كلمات مستبعدة"],"audience":{"description":"سطر واحد","targeting":["4 بنود استهداف"]},"callToActions":["4 عبارات دعوة"]}`;
@@ -267,9 +305,9 @@ async function generateCopy(input: {
       string,
       unknown
     >;
-    if (!Array.isArray(parsed.headlines) || !Array.isArray(parsed.keywords))
-      return { draft: fallback, ai: false };
-    return { draft: { ...fallback, ...parsed }, ai: true };
+    const draft = normalizeAdDraft({ ...fallback, ...parsed });
+    if (!draft) return { draft: fallback, ai: false };
+    return { draft, ai: true };
   } catch {
     return { draft: fallback, ai: false };
   }
@@ -277,7 +315,7 @@ async function generateCopy(input: {
 
 function bannerBriefs(
   platform: GrowthPlatform,
-  input: { business: string; product: string },
+  input: { business: string; product: string; language?: "ar" | "en" },
 ) {
   const targets: Exclude<GrowthPlatform, "all">[] =
     platform === "all" ? ["google", "snap", "tiktok"] : [platform];
@@ -285,14 +323,22 @@ function bannerBriefs(
     BANNER_SIZES[p].map((s, i) => ({
       platform: p,
       size: s.size,
-      use: s.use,
-      headline: i === 0 ? input.product : `${input.business} — ${input.product}`,
-      cta: "اطلب الآن",
-      palette: "خلفية فحمية #101211، لمسة برتقالية، نص أبيض",
+      use: input.language === "en" ? `${p} advertising placement` : s.use,
+      headline:
+        i === 0 ? input.product : `${input.business} — ${input.product}`,
+      cta: input.language === "en" ? "Explore details" : "راجع التفاصيل",
+      palette:
+        input.language === "en"
+          ? "Charcoal background, orange accent, white text"
+          : "خلفية فحمية #101211، لمسة برتقالية، نص أبيض",
       safeArea:
         p === "google"
-          ? "أبقِ النص داخل 80% من المساحة"
-          : "هامش أمان 250px علوي وسفلي للأزرار الأصلية",
+          ? input.language === "en"
+            ? "Keep text inside 80% of the area"
+            : "أبقِ النص داخل 80% من المساحة"
+          : input.language === "en"
+            ? "Keep 250px clear at the top and bottom for platform controls"
+            : "هامش أمان 250px علوي وسفلي للأزرار الأصلية",
     })),
   );
 }
@@ -316,7 +362,12 @@ export async function growthRoute(req: Request, path: string) {
     return { guides: GROWTH_GUIDES };
 
   if (path === "/api/growth/seo" && method === "GET") {
-    const pages = ["/", "/products", "/workforce", ...GROWTH_GUIDES.map((g) => `/guides/${g.slug}`)];
+    const pages = [
+      "/",
+      "/products",
+      "/workforce",
+      ...GROWTH_GUIDES.map((g) => `/guides/${g.slug}`),
+    ];
     return {
       site: SITE_URL,
       sitemap: pages.map((p) => `${SITE_URL}${p === "/" ? "" : p}`),
@@ -349,11 +400,8 @@ export async function growthRoute(req: Request, path: string) {
     const business = stringField(body.business, "اسم النشاط", 120);
     const product = stringField(body.product, "المنتج أو الخدمة", 200);
     const audience =
-      typeof body.audience === "string"
-        ? body.audience.slice(0, 300)
-        : "";
-    const goal =
-      typeof body.goal === "string" ? body.goal.slice(0, 200) : "";
+      typeof body.audience === "string" ? body.audience.slice(0, 300) : "";
+    const goal = typeof body.goal === "string" ? body.goal.slice(0, 200) : "";
     const platform = String(body.platform || "google");
     if (!PLATFORMS.includes(platform as GrowthPlatform))
       throw new ApiError(400, "المنصة الإعلانية غير صالحة.");
@@ -373,16 +421,24 @@ export async function growthRoute(req: Request, path: string) {
       audience,
       platform: platform as GrowthPlatform,
       goal,
+      language: body.language === "en" ? "en" : "ar",
     });
     return {
       draft,
-      budgetPlan: estimateBudgetPlan(Math.round(budgetSar), Math.round(avgOrderSar)),
+      budgetPlan: estimateBudgetPlan(
+        Math.round(budgetSar),
+        Math.round(avgOrderSar),
+      ),
       banners: bannerBriefs(platform as GrowthPlatform, {
         business,
         product,
+        language: body.language === "en" ? "en" : "ar",
       }),
       ai,
-      note: "تقديرات الميزانية والعائد استرشادية من افتراضات سوقية معلنة، وليست ضماناً للنتائج.",
+      note:
+        body.language === "en"
+          ? "Budget and return estimates use illustrative market assumptions, not guaranteed outcomes."
+          : "تقديرات الميزانية والعائد استرشادية من افتراضات سوقية معلنة، وليست ضماناً للنتائج.",
     };
   }
 
@@ -404,11 +460,18 @@ export async function growthRoute(req: Request, path: string) {
     const platform = String(body.platform || "google");
     if (!PLATFORMS.includes(platform as GrowthPlatform))
       throw new ApiError(400, "المنصة الإعلانية غير صالحة.");
-    if (!body.draft || typeof body.draft !== "object" || Array.isArray(body.draft))
+    if (
+      !body.draft ||
+      typeof body.draft !== "object" ||
+      Array.isArray(body.draft)
+    )
       throw new ApiError(400, "مسودة الحملة غير صالحة.");
-    const draft = body.draft as Record<string, unknown>;
-    if (!Array.isArray(draft.headlines) || !Array.isArray(draft.keywords))
-      throw new ApiError(400, "مسودة الحملة ناقصة العناوين أو الكلمات المفتاحية.");
+    const draft = normalizeAdDraft(body.draft);
+    if (!draft)
+      throw new ApiError(
+        400,
+        "مسودة الحملة ناقصة العناوين أو الكلمات المفتاحية.",
+      );
     const [row] = await database()
       .insert(growthCampaigns)
       .values({
@@ -450,7 +513,11 @@ export async function growthRoute(req: Request, path: string) {
     const gatewayKey = Netlify.env.get("NETLIFY_AI_GATEWAY_KEY");
     const gatewayUrl = Netlify.env.get("NETLIFY_AI_GATEWAY_URL");
     if (!gatewayKey || !gatewayUrl)
-      throw new ApiError(503, "خدمة توليد الصور غير متاحة حالياً.", "AI_UNAVAILABLE");
+      throw new ApiError(
+        503,
+        "خدمة توليد الصور غير متاحة حالياً.",
+        "AI_UNAVAILABLE",
+      );
     try {
       const ai = new GoogleGenAI({
         apiKey: gatewayKey,
@@ -470,7 +537,11 @@ export async function growthRoute(req: Request, path: string) {
       };
     } catch (error) {
       if (error instanceof ApiError) throw error;
-      throw new ApiError(502, "تعذّر توليد الصورة. حاول مجدداً.", "AI_UNAVAILABLE");
+      throw new ApiError(
+        502,
+        "تعذّر توليد الصورة. حاول مجدداً.",
+        "AI_UNAVAILABLE",
+      );
     }
   }
 

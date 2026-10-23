@@ -48,7 +48,7 @@ export async function connectNativeShell() {
         !next.password &&
         ["/", "/hub", "/products"].includes(next.pathname)
       )
-        location.assign(next.pathname);
+        location.assign(next.pathname + next.search + next.hash);
     } catch {
       /* Ignore unsupported external links. */
     }

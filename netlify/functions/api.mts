@@ -65,6 +65,13 @@ export default async (req: Request) => {
       route ? `/api/${route.replace(/^\/+/, "")}` : url.pathname
     ).replace(/\/+$/, "");
     const method = req.method;
+    if (method === "OPTIONS") {
+      assertOrigin(req);
+      return new Response(null, {
+        status: 204,
+        headers: { ...cors, "Cache-Control": "no-store" },
+      });
+    }
     // Retired studio requests must stop before auth, database work or inference.
     if (
       path === "/api/ai/chat" ||
@@ -80,16 +87,6 @@ export default async (req: Request) => {
         },
         410,
       );
-    if (method === "OPTIONS") {
-      assertOrigin(req);
-      return new Response(null, {
-        status: 204,
-        headers: {
-          ...cors,
-          "Cache-Control": "no-store",
-        },
-      });
-    }
     if (path === "/api/webhooks/callback") {
       if (method !== "POST") throw new ApiError(405, "طريقة الطلب غير مدعومة.");
       return json(await paymentWebhook(req));

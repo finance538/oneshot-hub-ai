@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { useAppearance } from "../storefront/i18n";
 import {
   AlertCircle,
   X,
@@ -33,22 +34,52 @@ export function Modal({
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const { tr } = useAppearance();
+  const backdropDown = useRef(false);
   useEffect(() => {
-    ref.current?.showModal();
-    return () => ref.current?.close();
+    const node = ref.current;
+    const trigger = document.activeElement;
+    node?.showModal();
+    return () => {
+      node?.close();
+      if (trigger instanceof HTMLElement && trigger.isConnected)
+        trigger.focus();
+    };
   }, []);
   return (
     <dialog
       ref={ref}
-      onCancel={onClose}
+      aria-label={title}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onPointerDown={(event) => {
+        backdropDown.current = event.target === event.currentTarget;
+      }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (backdropDown.current && e.target === e.currentTarget) {
+          const box = e.currentTarget.getBoundingClientRect();
+          if (
+            e.clientX < box.left ||
+            e.clientX > box.right ||
+            e.clientY < box.top ||
+            e.clientY > box.bottom
+          )
+            onClose();
+        }
+        backdropDown.current = false;
       }}
       className="modal"
     >
       <div className="modal-heading">
         <h2>{title}</h2>
-        <button className="icon-button" onClick={onClose} aria-label="إغلاق">
+        <button
+          type="button"
+          className="icon-button"
+          onClick={onClose}
+          aria-label={tr("إغلاق", "Close")}
+        >
           <X size={20} />
         </button>
       </div>
@@ -85,19 +116,30 @@ export function AccessGate({
   admin?: boolean;
   onLogin: () => void;
 }) {
+  const { tr } = useAppearance();
   return (
     <div className="access-gate">
       <div className="symbol">
         <ShieldCheck size={32} />
       </div>
-      <h2>{admin ? "مساحة إدارة محمية" : "مساحتك تبدأ بتسجيل الدخول"}</h2>
+      <h2>
+        {admin
+          ? tr("مساحة إدارة محمية", "Protected administration area")
+          : tr("مساحتك تبدأ بتسجيل الدخول", "Sign in to your workspace")}
+      </h2>
       <p>
         {admin
-          ? "الخزنة وعمليات الإدارة متاحة للحسابات التي تحمل صلاحية المسؤول."
-          : "سجّل الدخول لحفظ محادثاتك وطلباتك والعودة إليها في أي وقت."}
+          ? tr(
+              "الخزنة وعمليات الإدارة متاحة للحسابات التي تحمل صلاحية المسؤول.",
+              "Vault and administration tools require an administrator account.",
+            )
+          : tr(
+              "سجّل الدخول لحفظ محادثاتك وطلباتك والعودة إليها في أي وقت.",
+              "Sign in to save your conversations and orders.",
+            )}
       </p>
       <button className="button primary" onClick={onLogin}>
-        تسجيل الدخول <ArrowLeft size={17} />
+        {tr("تسجيل الدخول", "Sign in")} <ArrowLeft size={17} />
       </button>
     </div>
   );

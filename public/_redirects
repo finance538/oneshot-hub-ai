@@ -1,2 +1,6 @@
+/guides/payment-gateways.html /guides/payment-gateways 301!
+/guides/store-automation.html /guides/store-automation 301!
+/guides/ai-employees.html /guides/ai-employees 301!
+/guides/commercial-photography.html /guides/commercial-photography 301!
 /api/* /.netlify/functions/api?route=:splat 200!
 /* /index.html 200

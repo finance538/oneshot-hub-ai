@@ -41,7 +41,7 @@ export function publicOrder(row: typeof orders.$inferSelect) {
   };
 }
 function checkoutOrigin() {
-  const value = env("ONESHOT_CHECKOUT_ORIGIN") || "https://1shotcam.com";
+  const value = env("ONESHOT_CHECKOUT_ORIGIN") || "https://www.1shotcam.com";
   try {
     const url = new URL(value);
     if (
@@ -87,7 +87,7 @@ export async function executePayment(
   const db = database(),
     isAdmin = user.roles?.includes("admin");
   rejectCardData(body);
-  const gateway = String(body.gatewayCode || "telr"),
+  const gateway = String(body.gatewayCode || "stripe"),
     executionMode = body.productId
       ? "PRODUCTION"
       : String(body.executionMode || "SANDBOX");

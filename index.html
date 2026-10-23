@@ -7,17 +7,36 @@
       // flips direction or language. Arabic RTL is the default.
       (function () {
         var supported = ["ar", "en", "fr", "es", "tr", "zh", "hi", "ur"];
-        var lang = "ar";
+        var q = new URLSearchParams(location.search).get("lang");
+        var saved, c;
         try {
-          var q = new URLSearchParams(location.search).get("lang");
-          var c = document.cookie.match(/(?:^|; )oneshot_lang=([a-z]{2})/);
-          var saved = localStorage.getItem("oneshot.lang");
-          lang = [q, saved, c && c[1]].filter(function (v) {
+          saved = localStorage.getItem("oneshot.lang");
+        } catch (e) {}
+        try {
+          c = document.cookie.match(/(?:^|;\s*)oneshot_lang=([a-z]{2})(?:;|$)/);
+        } catch (e) {}
+        var lang =
+          [q, saved, c && c[1]].filter(function (v) {
             return supported.indexOf(v) >= 0;
           })[0] || "ar";
-        } catch (e) {}
         document.documentElement.lang = lang;
-        document.documentElement.dir = lang === "ar" || lang === "ur" ? "rtl" : "ltr";
+        document.documentElement.dir =
+          lang === "ar" || lang === "ur" ? "rtl" : "ltr";
+        try {
+          localStorage.setItem("oneshot.lang", lang);
+        } catch (e) {}
+        try {
+          var shared = /(^|\.)1shotcam\.com$/.test(location.hostname);
+          var secure = location.protocol === "https:" ? "; secure" : "";
+          if (shared)
+            document.cookie = "oneshot_lang=; path=/; max-age=0" + secure;
+          document.cookie =
+            "oneshot_lang=" +
+            lang +
+            "; path=/; max-age=31536000; samesite=lax" +
+            secure +
+            (shared ? "; domain=1shotcam.com" : "");
+        } catch (e) {}
       })();
     </script>
     <meta
@@ -74,8 +93,6 @@
       property="og:description"
       content="المتجر، المدفوعات، إدارة الأعمال والذكاء الاصطناعي في مساحة واحدة."
     />
-    <link rel="canonical" href="https://www.1shotcam.com/" />
-    <meta property="og:url" content="https://www.1shotcam.com/" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/hub-icon-192.png" />
     <link rel="icon" href="/brand/oneshot.svg" type="image/svg+xml" />
