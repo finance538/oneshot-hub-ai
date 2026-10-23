@@ -50,6 +50,7 @@ import {
 } from "./catalog";
 import { getLocalizedProductContent } from "./catalog-en";
 import { documents, type DocumentPage } from "./documents";
+import { guides } from "./guides";
 
 import "./storefront.css";
 
@@ -950,6 +951,17 @@ export default function Storefront({
               <a href={appearanceLink("/products")}>
                 {tr("حلول الأعمال الرقمية", "Digital Business Solutions")}
               </a>
+            </div>
+            <div>
+              <h3>{tr("دليل التجار الذكي", "Smart Merchant Guide")}</h3>
+              {guides.map((guide) => (
+                <a
+                  key={guide.slug}
+                  href={appearanceLink(`/guides/${guide.slug}`)}
+                >
+                  {tr(guide.titleAr, guide.titleEn)}
+                </a>
+              ))}
             </div>
             <div>
               <h3>{tr("المنشأة", "Business Information")}</h3>
