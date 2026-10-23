@@ -1,6 +1,7 @@
 import { ShieldCheck } from "lucide-react";
 import { appearanceLink, useAppearance } from "../../storefront/i18n";
 import { documents } from "../../storefront/documents";
+import { guides } from "../../storefront/guides";
 function Logo() {
   const { tr } = useAppearance();
   return (
@@ -62,6 +63,17 @@ export default function BusinessFooter() {
             <a href={appearanceLink("/products")}>
               {tr("حلول الأعمال الرقمية", "Digital Business Solutions")}
             </a>
+          </div>
+          <div>
+            <h3>{tr("دليل التجار الذكي", "Smart Merchant Guide")}</h3>
+            {guides.map((guide) => (
+              <a
+                key={guide.slug}
+                href={appearanceLink(`/guides/${guide.slug}`)}
+              >
+                {tr(guide.titleAr, guide.titleEn)}
+              </a>
+            ))}
           </div>
           <div>
             <h3>{tr("المنشأة", "Business Information")}</h3>
