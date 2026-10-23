@@ -1,6 +1,6 @@
 /* Only explicitly public resources are cached. Never cache navigation HTML,
    APIs, Identity, callbacks, tokens, conversations, tasks, orders or checkout. */
-const CACHE = "oneshot-hub-offline-v2";
+const CACHE = "oneshot-hub-offline-v3";
 const PUBLIC = [
   "/hub-offline.html",
   "/offline-guide.js",

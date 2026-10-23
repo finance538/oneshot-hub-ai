@@ -112,14 +112,14 @@ export async function createHostedCheckout(
   returnOrigin: string,
 ) {
   assertStripeCredentials(credentials, order.executionMode);
-  const returnUrl = `${returnOrigin}/?module=gateway&order=${order.id}`;
+  const returnUrl = `${returnOrigin}/?order=${order.id}`;
   const form = new URLSearchParams({
     mode: "payment",
     client_reference_id: order.id,
     "metadata[oneshot_order_id]": order.id,
     "payment_intent_data[metadata][oneshot_order_id]": order.id,
     "payment_method_options[card][request_three_d_secure]": "any",
-    "allowed_payment_method_types[0]": "card",
+    "payment_method_types[0]": "card",
     "line_items[0][price_data][currency]": order.currency.toLowerCase(),
     "line_items[0][price_data][unit_amount]": String(order.amountCents),
     "line_items[0][price_data][product_data][name]": order.description,

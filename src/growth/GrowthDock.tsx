@@ -13,6 +13,7 @@ import { Modal } from "../components/Modal";
 import { Notice } from "../components/common";
 import { useAppearance } from "../storefront/i18n";
 import { api, RequestError } from "../lib/api";
+import { normalizeAdDraft } from "../../shared/ad-draft";
 import "./growth.css";
 
 export type GrowthTab = "studio" | "roas" | "banners" | "saved";
@@ -59,47 +60,123 @@ interface AdsResult {
   note?: string;
 }
 
-const BANNER_TABLE: { platform: string; size: string; useAr: string }[] = [
-  { platform: "Google", size: "300 × 250", useAr: "مستطيل متوسط — الأعلى أداءً" },
-  { platform: "Google", size: "336 × 280", useAr: "مستطيل كبير للمقالات" },
-  { platform: "Google", size: "728 × 90", useAr: "لوحة علوية للمواقع" },
-  { platform: "Google", size: "300 × 600", useAr: "نصف صفحة جانبية" },
-  { platform: "Google", size: "320 × 100", useAr: "بانر جوال كبير" },
-  { platform: "Google", size: "320 × 50", useAr: "بانر جوال قياسي" },
-  { platform: "Google", size: "970 × 250", useAr: "بيلبورد رئيسي" },
-  { platform: "Snap", size: "1080 × 1920", useAr: "ملء الشاشة العمودي" },
-  { platform: "TikTok", size: "1080 × 1920", useAr: "فيديو عمودي بملء الشاشة" },
-  { platform: "TikTok", size: "1080 × 1080", useAr: "مربع للخلاصات" },
-  { platform: "TikTok", size: "1080 × 1350", useAr: "عمودي 4:5" },
+const BANNER_TABLE: {
+  platform: string;
+  size: string;
+  useAr: string;
+  useEn: string;
+}[] = [
+  {
+    platform: "Google",
+    size: "300 × 250",
+    useAr: "مستطيل متوسط — الأعلى أداءً",
+    useEn: "Medium rectangle",
+  },
+  {
+    platform: "Google",
+    size: "336 × 280",
+    useAr: "مستطيل كبير للمقالات",
+    useEn: "Large rectangle for articles",
+  },
+  {
+    platform: "Google",
+    size: "728 × 90",
+    useAr: "لوحة علوية للمواقع",
+    useEn: "Website leaderboard",
+  },
+  {
+    platform: "Google",
+    size: "300 × 600",
+    useAr: "نصف صفحة جانبية",
+    useEn: "Half-page sidebar",
+  },
+  {
+    platform: "Google",
+    size: "320 × 100",
+    useAr: "بانر جوال كبير",
+    useEn: "Large mobile banner",
+  },
+  {
+    platform: "Google",
+    size: "320 × 50",
+    useAr: "بانر جوال قياسي",
+    useEn: "Standard mobile banner",
+  },
+  {
+    platform: "Google",
+    size: "970 × 250",
+    useAr: "بيلبورد رئيسي",
+    useEn: "Billboard",
+  },
+  {
+    platform: "Snap",
+    size: "1080 × 1920",
+    useAr: "ملء الشاشة العمودي",
+    useEn: "Vertical full screen",
+  },
+  {
+    platform: "TikTok",
+    size: "1080 × 1920",
+    useAr: "فيديو عمودي بملء الشاشة",
+    useEn: "Vertical full-screen video",
+  },
+  {
+    platform: "TikTok",
+    size: "1080 × 1080",
+    useAr: "مربع للخلاصات",
+    useEn: "Square feed",
+  },
+  {
+    platform: "TikTok",
+    size: "1080 × 1350",
+    useAr: "عمودي 4:5",
+    useEn: "Portrait 4:5",
+  },
 ];
 
 function CopyButton({ text, label }: { text: string; label: string }) {
+  const { tr } = useAppearance();
   const [ok, setOk] = useState(false);
+  const [error, setError] = useState(false);
   return (
-    <button
-      type="button"
-      className="growth-copy"
-      aria-label={label}
-      title={label}
-      onClick={() => {
-        const clip = navigator.clipboard;
-        if (!clip) return;
-        void clip.writeText(text).then(
-          () => {
-            setOk(true);
-            setTimeout(() => setOk(false), 1500);
-          },
-          () => {},
-        );
-      }}
-    >
-      {ok ? <Check size={15} /> : <Copy size={15} />}
-    </button>
+    <>
+      <button
+        type="button"
+        className="growth-copy"
+        aria-label={label}
+        title={label}
+        onClick={() => {
+          const clip = navigator.clipboard;
+          setError(false);
+          if (!clip) {
+            setError(true);
+            return;
+          }
+          void clip.writeText(text).then(
+            () => {
+              setOk(true);
+              setTimeout(() => setOk(false), 1500);
+            },
+            () => setError(true),
+          );
+        }}
+      >
+        {ok ? <Check size={15} /> : <Copy size={15} />}
+      </button>
+      {error && (
+        <small role="status">
+          {tr(
+            "تعذّر النسخ. حدّد النص وانسخه يدوياً.",
+            "Copy unavailable. Select the text and copy it manually.",
+          )}
+        </small>
+      )}
+    </>
   );
 }
 
 function Studio({ onLogin }: { onLogin: () => void }) {
-  const { tr, number } = useAppearance();
+  const { tr, number, language } = useAppearance();
   const [business, setBusiness] = useState("");
   const [product, setProduct] = useState("");
   const [audience, setAudience] = useState("");
@@ -127,12 +204,26 @@ function Studio({ onLogin }: { onLogin: () => void }) {
         budgetSar: budget,
         avgOrderSar: avgOrder,
         goal,
+        language: language === "ar" ? "ar" : "en",
       });
-      setResult(r);
+      const draft = normalizeAdDraft(r.draft);
+      if (!draft)
+        throw new Error(
+          tr(
+            "تعذّر إعداد مسودة سليمة. حاول مجدداً.",
+            "The draft could not be read. Try again.",
+          ),
+        );
+      setResult({ ...r, draft });
     } catch (e) {
       if (e instanceof RequestError && e.status === 401) {
         onLogin();
-        setError(tr("سجّل الدخول أولاً لحفظ حملاتك", "Sign in first to save campaigns"));
+        setError(
+          tr(
+            "سجّل الدخول أولاً لحفظ حملاتك",
+            "Sign in first to save campaigns",
+          ),
+        );
       } else setError((e as Error).message);
     } finally {
       setLoading(false);
@@ -177,20 +268,41 @@ function Studio({ onLogin }: { onLogin: () => void }) {
       <div className="growth-form">
         <label>
           {tr("اسم النشاط", "Business name")}
-          <input value={business} onChange={(e) => setBusiness(e.target.value)} placeholder={tr("مثال: متجر لمسة", "e.g. Lamsa Store")} maxLength={120} />
+          <input
+            value={business}
+            onChange={(e) => setBusiness(e.target.value)}
+            placeholder={tr("مثال: متجر لمسة", "e.g. Lamsa Store")}
+            maxLength={120}
+          />
         </label>
         <label>
           {tr("المنتج أو الخدمة", "Product or service")}
-          <input value={product} onChange={(e) => setProduct(e.target.value)} placeholder={tr("مثال: عطور شرقية", "e.g. Oriental perfumes")} maxLength={200} />
+          <input
+            value={product}
+            onChange={(e) => setProduct(e.target.value)}
+            placeholder={tr("مثال: عطور شرقية", "e.g. Oriental perfumes")}
+            maxLength={200}
+          />
         </label>
         <label>
           {tr("الجمهور (اختياري)", "Audience (optional)")}
-          <input value={audience} onChange={(e) => setAudience(e.target.value)} placeholder={tr("مثال: نساء 25-40 في الرياض", "e.g. Women 25-40 in Riyadh")} maxLength={300} />
+          <input
+            value={audience}
+            onChange={(e) => setAudience(e.target.value)}
+            placeholder={tr(
+              "مثال: نساء 25-40 في الرياض",
+              "e.g. Women 25-40 in Riyadh",
+            )}
+            maxLength={300}
+          />
         </label>
         <div className="growth-form-row">
           <label>
             {tr("المنصة", "Platform")}
-            <select value={platform} onChange={(e) => setPlatform(e.target.value)}>
+            <select
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value)}
+            >
               <option value="google">Google Ads</option>
               <option value="snap">Snapchat</option>
               <option value="tiktok">TikTok</option>
@@ -199,19 +311,44 @@ function Studio({ onLogin }: { onLogin: () => void }) {
           </label>
           <label>
             {tr("الميزانية (ر.س)", "Budget (SAR)")}
-            <input type="number" min={100} max={1000000} value={budget} onChange={(e) => setBudget(Number(e.target.value) || 0)} />
+            <input
+              type="number"
+              min={100}
+              max={1000000}
+              value={budget}
+              onChange={(e) => setBudget(Number(e.target.value) || 0)}
+            />
           </label>
           <label>
             {tr("متوسط الطلب (ر.س)", "Avg. order (SAR)")}
-            <input type="number" min={10} max={1000000} value={avgOrder} onChange={(e) => setAvgOrder(Number(e.target.value) || 0)} />
+            <input
+              type="number"
+              min={10}
+              max={1000000}
+              value={avgOrder}
+              onChange={(e) => setAvgOrder(Number(e.target.value) || 0)}
+            />
           </label>
         </div>
         <label>
           {tr("هدف الحملة (اختياري)", "Campaign goal (optional)")}
-          <input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder={tr("مثال: إطلاق فرع جديد", "e.g. New branch launch")} maxLength={200} />
+          <input
+            value={goal}
+            onChange={(e) => setGoal(e.target.value)}
+            placeholder={tr("مثال: إطلاق فرع جديد", "e.g. New branch launch")}
+            maxLength={200}
+          />
         </label>
-        <button type="button" className="store-button" disabled={loading || !business.trim() || !product.trim()} onClick={generate}>
-          <Megaphone size={17} /> {loading ? tr("جارٍ التوليد…", "Generating…") : tr("ولّد الحملة", "Generate campaign")}
+        <button
+          type="button"
+          className="store-button"
+          disabled={loading || !business.trim() || !product.trim()}
+          onClick={generate}
+        >
+          <Megaphone size={17} />{" "}
+          {loading
+            ? tr("جارٍ التوليد…", "Generating…")
+            : tr("ولّد الحملة", "Generate campaign")}
         </button>
       </div>
       {error && <Notice>{error}</Notice>}
@@ -219,35 +356,78 @@ function Studio({ onLogin }: { onLogin: () => void }) {
         <div className="growth-result-blocks">
           {!result.ai && (
             <Notice>
-              {tr("تعذّر الاتصال بالذكاء الاصطناعي — هذه نسخة جاهزة من القوالب الذكية.", "AI unreachable — showing a smart template draft.")}
+              {tr(
+                "تعذّر الاتصال بالذكاء الاصطناعي — هذه نسخة جاهزة من القوالب الذكية.",
+                "AI unreachable — showing a smart template draft.",
+              )}
             </Notice>
           )}
           <section>
-            <h4>{tr("العناوين — انسخ والصق", "Headlines — copy & paste")} <CopyButton text={(draft.headlines || []).join("\n")} label={tr("نسخ العناوين", "Copy headlines")} /></h4>
-            <ul className="growth-lines">{(draft.headlines || []).map((h) => <li key={h}>{h}</li>)}</ul>
+            <h4>
+              {tr("العناوين — انسخ والصق", "Headlines — copy & paste")}{" "}
+              <CopyButton
+                text={(draft.headlines || []).join("\n")}
+                label={tr("نسخ العناوين", "Copy headlines")}
+              />
+            </h4>
+            <ul className="growth-lines">
+              {(draft.headlines || []).map((h) => (
+                <li key={h}>{h}</li>
+              ))}
+            </ul>
           </section>
           <section>
-            <h4>{tr("الوصف", "Descriptions")} <CopyButton text={(draft.descriptions || []).join("\n")} label={tr("نسخ الوصف", "Copy descriptions")} /></h4>
-            <ul className="growth-lines">{(draft.descriptions || []).map((d) => <li key={d}>{d}</li>)}</ul>
+            <h4>
+              {tr("الوصف", "Descriptions")}{" "}
+              <CopyButton
+                text={(draft.descriptions || []).join("\n")}
+                label={tr("نسخ الوصف", "Copy descriptions")}
+              />
+            </h4>
+            <ul className="growth-lines">
+              {(draft.descriptions || []).map((d) => (
+                <li key={d}>{d}</li>
+              ))}
+            </ul>
           </section>
           <section>
-            <h4>{tr("الكلمات المفتاحية", "Keywords")} <CopyButton text={(draft.keywords || []).join("\n")} label={tr("نسخ الكلمات", "Copy keywords")} /></h4>
+            <h4>
+              {tr("الكلمات المفتاحية", "Keywords")}{" "}
+              <CopyButton
+                text={(draft.keywords || []).join("\n")}
+                label={tr("نسخ الكلمات", "Copy keywords")}
+              />
+            </h4>
             <p className="growth-tags">{(draft.keywords || []).join("، ")}</p>
             {!!draft.negativeKeywords?.length && (
-              <p className="growth-fineprint">{tr("مستبعدة", "Excluded")}: {(draft.negativeKeywords || []).join("، ")}</p>
+              <p className="growth-fineprint">
+                {tr("مستبعدة", "Excluded")}:{" "}
+                {(draft.negativeKeywords || []).join("، ")}
+              </p>
             )}
           </section>
           {draft.audience && (
             <section>
               <h4>{tr("استهداف الجمهور", "Audience targeting")}</h4>
               <p>{draft.audience.description}</p>
-              <ul className="growth-lines">{(draft.audience.targeting || []).map((t) => <li key={t}>{t}</li>)}</ul>
+              <ul className="growth-lines">
+                {(draft.audience.targeting || []).map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
             </section>
           )}
           {result.budgetPlan && (
             <section>
-              <h4>{tr("الميزانية والعائد المتوقع", "Budget & expected return")}</h4>
-              <div className="growth-table-wrap" role="region" aria-label={tr("الميزانية والعائد", "Budget and return")} tabIndex={0}>
+              <h4>
+                {tr("الميزانية والعائد المتوقع", "Budget & expected return")}
+              </h4>
+              <div
+                className="growth-table-wrap"
+                role="region"
+                aria-label={tr("الميزانية والعائد", "Budget and return")}
+                tabIndex={0}
+              >
                 <table className="growth-table">
                   <thead>
                     <tr>
@@ -261,15 +441,26 @@ function Studio({ onLogin }: { onLogin: () => void }) {
                     {Object.entries(result.budgetPlan.plan).map(([p, v]) => (
                       <tr key={p}>
                         <td dir="ltr">{p}</td>
-                        <td dir="ltr">{number(v.clicksLow)}–{number(v.clicksHigh)}</td>
-                        <td dir="ltr">{number(v.ordersLow)}–{number(v.ordersHigh)}</td>
-                        <td dir="ltr">{v.roasLow}x–{v.roasHigh}x</td>
+                        <td dir="ltr">
+                          {number(v.clicksLow)}–{number(v.clicksHigh)}
+                        </td>
+                        <td dir="ltr">
+                          {number(v.ordersLow)}–{number(v.ordersHigh)}
+                        </td>
+                        <td dir="ltr">
+                          {v.roasLow}x–{v.roasHigh}x
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <p className="growth-fineprint">{tr("تقديرات استرشادية — ليست ضماناً للنتائج.", "Indicative estimates — not guarantees.")}</p>
+              <p className="growth-fineprint">
+                {tr(
+                  "تقديرات استرشادية — ليست ضماناً للنتائج.",
+                  "Indicative estimates — not guarantees.",
+                )}
+              </p>
             </section>
           )}
           {!!result.banners?.length && (
@@ -278,21 +469,46 @@ function Studio({ onLogin }: { onLogin: () => void }) {
               <ul className="growth-lines">
                 {result.banners.slice(0, 6).map((b) => (
                   <li key={`${b.platform}-${b.size}-${b.use}`}>
-                    <strong dir="ltr">{b.platform} · {b.size}</strong> — {b.use}
+                    <strong dir="ltr">
+                      {b.platform} · {b.size}
+                    </strong>{" "}
+                    — {b.use}
                   </li>
                 ))}
               </ul>
               <div className="growth-actions">
-                <button type="button" className="store-button secondary compact" disabled={bannerLoading} onClick={makeBanner}>
-                  <ImagePlus size={15} /> {bannerLoading ? tr("جارٍ التوليد…", "Generating…") : tr("ولّد صورة البانر", "Generate banner image")}
+                <button
+                  type="button"
+                  className="store-button secondary compact"
+                  disabled={bannerLoading}
+                  onClick={makeBanner}
+                >
+                  <ImagePlus size={15} />{" "}
+                  {bannerLoading
+                    ? tr("جارٍ التوليد…", "Generating…")
+                    : tr("ولّد صورة البانر", "Generate banner image")}
                 </button>
               </div>
-              {bannerImg && <img className="growth-banner-img" src={bannerImg} alt={tr("بانر الحملة المولّد", "Generated campaign banner")} />}
+              {bannerImg && (
+                <img
+                  className="growth-banner-img"
+                  src={bannerImg}
+                  alt={tr("بانر الحملة المولّد", "Generated campaign banner")}
+                />
+              )}
             </section>
           )}
           <div className="growth-actions">
-            <button type="button" className="store-button secondary" onClick={save} disabled={saved}>
-              <Save size={16} /> {saved ? tr("تم الحفظ", "Saved") : tr("احفظ الحملة", "Save campaign")}
+            <button
+              type="button"
+              className="store-button secondary"
+              onClick={save}
+              disabled={saved}
+            >
+              <Save size={16} />{" "}
+              {saved
+                ? tr("تم الحفظ", "Saved")
+                : tr("احفظ الحملة", "Save campaign")}
             </button>
           </div>
         </div>
@@ -311,14 +527,31 @@ function RoasTab() {
       <div className="growth-widget-grid">
         <label>
           {tr("الميزانية (ر.س)", "Budget (SAR)")}
-          <input type="number" min={100} max={1000000} value={budget} onChange={(e) => setBudget(Number(e.target.value) || 0)} />
+          <input
+            type="number"
+            min={100}
+            max={1000000}
+            value={budget}
+            onChange={(e) => setBudget(Number(e.target.value) || 0)}
+          />
         </label>
         <label>
           {tr("متوسط الطلب (ر.س)", "Avg. order (SAR)")}
-          <input type="number" min={10} max={1000000} value={order} onChange={(e) => setOrder(Number(e.target.value) || 0)} />
+          <input
+            type="number"
+            min={10}
+            max={1000000}
+            value={order}
+            onChange={(e) => setOrder(Number(e.target.value) || 0)}
+          />
         </label>
       </div>
-      <div className="growth-table-wrap" role="region" aria-label="ROAS" tabIndex={0}>
+      <div
+        className="growth-table-wrap"
+        role="region"
+        aria-label="ROAS"
+        tabIndex={0}
+      >
         <table className="growth-table">
           <thead>
             <tr>
@@ -332,15 +565,26 @@ function RoasTab() {
             {rows.map((r) => (
               <tr key={r.p}>
                 <td dir="ltr">{r.p}</td>
-                <td dir="ltr">{number(r.clicksLow)}–{number(r.clicksHigh)}</td>
-                <td dir="ltr">{number(r.revLow)}–{number(r.revHigh)}</td>
-                <td dir="ltr">{r.roasLow}x–{r.roasHigh}x</td>
+                <td dir="ltr">
+                  {number(r.clicksLow)}–{number(r.clicksHigh)}
+                </td>
+                <td dir="ltr">
+                  {number(r.revLow)}–{number(r.revHigh)}
+                </td>
+                <td dir="ltr">
+                  {r.roasLow}x–{r.roasHigh}x
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p className="growth-fineprint">{tr("تقديرات استرشادية بافتراضات سوقية معلنة — ليست ضماناً.", "Indicative market-based estimates — not guarantees.")}</p>
+      <p className="growth-fineprint">
+        {tr(
+          "تقديرات استرشادية بافتراضات سوقية معلنة — ليست ضماناً.",
+          "Indicative market-based estimates — not guarantees.",
+        )}
+      </p>
     </div>
   );
 }
@@ -381,7 +625,12 @@ function BannersTab() {
         {tr("مقاسات جميع المنصات", "All platform sizes")}
         <CopyButton text={all} label={tr("نسخ المقاسات", "Copy sizes")} />
       </h4>
-      <div className="growth-table-wrap" role="region" aria-label={tr("مقاسات البنرات", "Banner sizes")} tabIndex={0}>
+      <div
+        className="growth-table-wrap"
+        role="region"
+        aria-label={tr("مقاسات البنرات", "Banner sizes")}
+        tabIndex={0}
+      >
         <table className="growth-table">
           <thead>
             <tr>
@@ -395,22 +644,33 @@ function BannersTab() {
               <tr key={i}>
                 <td dir="ltr">{b.platform}</td>
                 <td dir="ltr">{b.size}</td>
-                <td>{b.useAr}</td>
+                <td>{tr(b.useAr, b.useEn)}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p className="growth-fineprint">
-        {tr("هوية مقترحة: خلفية فحمية #101211، لمسة برتقالية، نص أبيض — والنص داخل 80% من المساحة.", "Suggested identity: charcoal #101211, orange accent, white text — keep copy within 80% of the area.")}
+        {tr(
+          "هوية مقترحة: خلفية فحمية #101211، لمسة برتقالية، نص أبيض — والنص داخل 80% من المساحة.",
+          "Suggested identity: charcoal #101211, orange accent, white text — keep copy within 80% of the area.",
+        )}
       </p>
     </div>
   );
 }
 
 function SavedTab({ refreshKey }: { refreshKey: number }) {
-  const { tr } = useAppearance();
-  const [items, setItems] = useState<{ id: string; platform: string; businessName: string; product: string; createdAt: string }[]>([]);
+  const { tr, language } = useAppearance();
+  const [items, setItems] = useState<
+    {
+      id: string;
+      platform: string;
+      businessName: string;
+      product: string;
+      createdAt: string;
+    }[]
+  >([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const load = useCallback(async () => {
@@ -432,20 +692,32 @@ function SavedTab({ refreshKey }: { refreshKey: number }) {
     <div>
       {loading && <p role="status">{tr("جارٍ التحميل…", "Loading…")}</p>}
       {error && <Notice>{error}</Notice>}
-      {!loading && !items.length && !error && <p>{tr("لا حملات محفوظة بعد — ولّد حملتك الأولى من تبويب الاستوديو.", "No saved campaigns yet — generate your first from the studio tab.")}</p>}
+      {!loading && !items.length && !error && (
+        <p>
+          {tr(
+            "لا حملات محفوظة بعد — ولّد حملتك الأولى من تبويب الاستوديو.",
+            "No saved campaigns yet — generate your first from the studio tab.",
+          )}
+        </p>
+      )}
       <ul className="growth-saved">
         {items.map((c) => (
           <li key={c.id}>
             <div>
               <strong>{c.product || c.businessName}</strong>
-              <small dir="ltr">{c.platform} · {new Date(c.createdAt).toLocaleDateString("ar-SA")}</small>
+              <small dir="ltr">
+                {c.platform} ·{" "}
+                {new Date(c.createdAt).toLocaleDateString(language)}
+              </small>
             </div>
             <button
               type="button"
               className="growth-copy"
               aria-label={tr("حذف الحملة", "Delete campaign")}
               onClick={() => {
-                void api(`/api/growth/campaigns/${c.id}`, undefined, { method: "DELETE" })
+                void api(`/api/growth/campaigns/${c.id}`, undefined, {
+                  method: "DELETE",
+                })
                   .then(load)
                   .catch((e: Error) => setError(e.message));
               }}
@@ -471,18 +743,36 @@ export default function GrowthDock({ onLogin }: { onLogin: () => void }) {
   }, []);
   return (
     <>
-      <button type="button" className="growth-dock" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={tr("استوديو النمو والإعلانات", "Growth & ads studio")}>
+      <button
+        type="button"
+        className="growth-dock"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-label={tr("استوديو النمو والإعلانات", "Growth & ads studio")}
+      >
         <Megaphone size={20} />
         <span>{tr("استوديو النمو", "Growth Studio")}</span>
       </button>
       {open && (
-        <Modal title={tr("استوديو النمو والإعلانات", "Growth & ads studio")} onClose={() => setOpen(false)} wide>
-          <div className="growth-tabs" role="tablist" aria-label={tr("أدوات النمو", "Growth tools")}>
+        <Modal
+          title={tr("استوديو النمو والإعلانات", "Growth & ads studio")}
+          onClose={() => setOpen(false)}
+          wide
+        >
+          <div
+            className="growth-tabs"
+            role="tablist"
+            aria-label={tr("أدوات النمو", "Growth tools")}
+          >
             {(
               [
                 ["studio", tr("صناعة الحملات", "Campaign builder"), Megaphone],
                 ["roas", tr("حاسبة الميزانية", "Budget calculator"), Wallet],
-                ["banners", tr("مقاسات البنرات", "Banner sizes"), BadgeDollarSign],
+                [
+                  "banners",
+                  tr("مقاسات البنرات", "Banner sizes"),
+                  BadgeDollarSign,
+                ],
                 ["saved", tr("حملاتي", "My campaigns"), Save],
               ] as [GrowthTab, string, typeof Megaphone][]
             ).map(([id, label, Icon]) => (
@@ -501,7 +791,9 @@ export default function GrowthDock({ onLogin }: { onLogin: () => void }) {
               </button>
             ))}
           </div>
-          <Suspense fallback={<p role="status">{tr("جارٍ التحميل…", "Loading…")}</p>}>
+          <Suspense
+            fallback={<p role="status">{tr("جارٍ التحميل…", "Loading…")}</p>}
+          >
             {tab === "studio" && <Studio onLogin={onLogin} />}
             {tab === "roas" && <RoasTab />}
             {tab === "banners" && <BannersTab />}

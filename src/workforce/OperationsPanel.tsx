@@ -1,3 +1,4 @@
+import { uiText as t } from "../lib/legacy-copy";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   Check,
@@ -42,7 +43,7 @@ const labels: Record<string, string> = {
   failed: "تعذر التنفيذ",
   needs_attention: "يحتاج تدخلك",
 };
-export const operationLabel = (status: string) => labels[status] || status;
+export const operationLabel = (status: string) => t(labels[status] || status);
 export function OperationsPanel({
   initial = "mail",
   resourceId,
@@ -170,7 +171,7 @@ export function OperationsPanel({
       );
       form.reset();
       setAdding(null);
-      setNotice("حُفظ الحساب مشفراً. اختبر الاتصال قبل بدء العمل.");
+      setNotice(t("حُفظ الحساب مشفراً. اختبر الاتصال قبل بدء العمل."));
     });
   }
   function startCompose(source?: MailMessage) {
@@ -193,29 +194,29 @@ export function OperationsPanel({
   }
   return (
     <section className="wf-ops-panel" dir="rtl">
-      <div className="wf-ops-nav" role="group" aria-label="أدوات الموظفين">
+      <div className="wf-ops-nav" role="group" aria-label={t("أدوات الموظفين")}>
         <button aria-pressed={tab === "mail"} onClick={() => setTab("mail")}>
           <Mail size={17} />
-          البريد
+          {t("البريد")}
         </button>
         <button
           aria-pressed={tab === "research"}
           onClick={() => setTab("research")}
         >
           <Globe size={17} />
-          البحث والتصفح
+          {t("البحث والتصفح")}
         </button>
         <button
           aria-pressed={tab === "accounts"}
           onClick={() => setTab("accounts")}
         >
           <KeyRound size={17} />
-          خزنة الحسابات
+          {t("خزنة الحسابات")}
         </button>
         <button
           onClick={() => void refresh()}
           disabled={busy}
-          aria-label="تحديث"
+          aria-label={t("تحديث")}
         >
           <RefreshCw size={16} />
         </button>
@@ -232,33 +233,35 @@ export function OperationsPanel({
         </p>
       )}
       {loading ? (
-        <p role="status">جارٍ جلب بيانات المنشأة…</p>
+        <p role="status">{t("جارٍ جلب بيانات المنشأة…")}</p>
       ) : tab === "accounts" ? (
         <>
           <div className="wf-ops-intro">
             <ShieldCheck size={28} />
             <div>
-              <h3>حسابات منشأتك، في خزنة واحدة</h3>
+              <h3>{t("حسابات منشأتك، في خزنة واحدة")}</h3>
               <p>
-                تُشفّر كلمات المرور والجلسات في الخادم. لا تُرسل إلى نموذج
-                الذكاء الاصطناعي.
+                {t(
+                  "تُشفّر كلمات المرور والجلسات في الخادم. لا تُرسل إلى نموذج الذكاء الاصطناعي.",
+                )}
               </p>
             </div>
           </div>
           {!ready && (
             <p className="wf-error">
-              الخزنة تحتاج تفعيل مفتاح التشفير لدى مسؤول المنصة قبل حفظ
-              الحسابات.
+              {t(
+                "الخزنة تحتاج تفعيل مفتاح التشفير لدى مسؤول المنصة قبل حفظ الحسابات.",
+              )}
             </p>
           )}
           <div className="wf-ops-actions">
             <button disabled={!ready} onClick={() => setAdding("mail")}>
               <Plus size={16} />
-              ربط بريد
+              {t("ربط بريد")}
             </button>
             <button disabled={!ready} onClick={() => setAdding("portal")}>
               <Plus size={16} />
-              ربط منصة
+              {t("ربط منصة")}
             </button>
           </div>
           {adding && (
@@ -266,45 +269,47 @@ export function OperationsPanel({
               <div className="wf-ops-heading">
                 <h3>
                   {adding === "mail"
-                    ? "ربط البريد · SMTP / IMAP"
-                    : "خزنة المتصفح · تسجيل دخول آمن"}
+                    ? t("ربط البريد · SMTP / IMAP")
+                    : t("خزنة المتصفح · تسجيل دخول آمن")}
                 </h3>
                 <button
                   type="button"
-                  aria-label="إغلاق"
+                  aria-label={t("إغلاق")}
                   onClick={() => setAdding(null)}
                 >
                   <X size={17} />
                 </button>
               </div>
               <label>
-                اسم الحساب
+                {t("اسم الحساب")}
                 <input
                   name="label"
                   required
                   maxLength={80}
-                  placeholder="بريد المتجر / منصة المورد"
+                  placeholder={t("بريد المتجر / منصة المورد")}
                 />
               </label>
               {adding === "mail" ? (
                 <>
                   <label>
-                    المزود
+                    {t("المزود")}
                     <select
                       value={provider}
                       onChange={(e) => setProvider(e.target.value)}
                     >
-                      <option value="gmail">Gmail · كلمة مرور تطبيق</option>
-                      <option value="custom">SMTP / IMAP مخصص</option>
+                      <option value="gmail">
+                        {t("Gmail · كلمة مرور تطبيق")}
+                      </option>
+                      <option value="custom">{t("SMTP / IMAP مخصص")}</option>
                     </select>
                   </label>
                   <p className="wf-context">
-                    في Gmail فعّل IMAP واستخدم كلمة مرور تطبيق مع التحقق
-                    بخطوتين. الحسابات التي تفرض OAuth فقط تحتاج إعداداً يدعمه
-                    مزود البريد.
+                    {t(
+                      "في Gmail فعّل IMAP واستخدم كلمة مرور تطبيق مع التحقق بخطوتين. الحسابات التي تفرض OAuth فقط تحتاج إعداداً يدعمه مزود البريد.",
+                    )}
                   </p>
                   <label>
-                    عنوان المرسل
+                    {t("عنوان المرسل")}
                     <input
                       name="email"
                       type="email"
@@ -315,7 +320,7 @@ export function OperationsPanel({
                   </label>
                   <div className="wf-form-pair" key={provider}>
                     <label>
-                      خادم SMTP
+                      {t("خادم SMTP")}
                       <input
                         name="smtpHost"
                         defaultValue={
@@ -326,14 +331,14 @@ export function OperationsPanel({
                       />
                     </label>
                     <label>
-                      المنفذ
+                      {t("المنفذ")}
                       <select name="smtpPort" defaultValue="465">
                         <option value="465">465 · TLS</option>
                         <option value="587">587 · STARTTLS</option>
                       </select>
                     </label>
                     <label>
-                      مستخدم SMTP
+                      {t("مستخدم SMTP")}
                       <input
                         name="smtpUser"
                         dir="ltr"
@@ -342,7 +347,7 @@ export function OperationsPanel({
                       />
                     </label>
                     <label>
-                      كلمة مرور SMTP
+                      {t("كلمة مرور SMTP")}
                       <input
                         name="smtpPassword"
                         type="password"
@@ -352,7 +357,7 @@ export function OperationsPanel({
                       />
                     </label>
                     <label>
-                      خادم IMAP
+                      {t("خادم IMAP")}
                       <input
                         name="imapHost"
                         defaultValue={
@@ -363,7 +368,7 @@ export function OperationsPanel({
                       />
                     </label>
                     <label>
-                      مستخدم IMAP
+                      {t("مستخدم IMAP")}
                       <input
                         name="imapUser"
                         dir="ltr"
@@ -372,7 +377,7 @@ export function OperationsPanel({
                       />
                     </label>
                     <label>
-                      كلمة مرور IMAP
+                      {t("كلمة مرور IMAP")}
                       <input
                         name="imapPassword"
                         type="password"
@@ -384,17 +389,18 @@ export function OperationsPanel({
                   </div>
                   <label className="wf-checkbox">
                     <input name="syncEnabled" type="checkbox" defaultChecked />
-                    مزامنة دورية للوارد حتى عند إغلاق المكتب
+                    {t("مزامنة دورية للوارد حتى عند إغلاق المكتب")}
                   </label>
                   <small>
-                    تُجلب آخر 30 رسالة في كل مزامنة. تُفحص الحسابات بالتتابع،
-                    ولا يُرسل رد تلقائياً.
+                    {t(
+                      "تُجلب آخر 30 رسالة في كل مزامنة. تُفحص الحسابات بالتتابع، ولا يُرسل رد تلقائياً.",
+                    )}
                   </small>
                 </>
               ) : (
                 <>
                   <label>
-                    رابط صفحة الدخول
+                    {t("رابط صفحة الدخول")}
                     <input
                       name="url"
                       type="url"
@@ -405,7 +411,7 @@ export function OperationsPanel({
                     />
                   </label>
                   <label>
-                    الإيميل / اسم المستخدم
+                    {t("الإيميل / اسم المستخدم")}
                     <input
                       name="username"
                       required
@@ -415,7 +421,7 @@ export function OperationsPanel({
                     />
                   </label>
                   <label>
-                    كلمة المرور
+                    {t("كلمة المرور")}
                     <input
                       name="password"
                       type="password"
@@ -426,24 +432,24 @@ export function OperationsPanel({
                   </label>
                   <label className="wf-checkbox">
                     <input name="keepSession" type="checkbox" />
-                    حفظ الجلسة مشفرة لمدة أقصاها 12 ساعة
+                    {t("حفظ الجلسة مشفرة لمدة أقصاها 12 ساعة")}
                   </label>
                   <p className="wf-context">
-                    يدعم نماذج الدخول المعتادة داخل نفس الموقع، ثم قراءة الصفحات
-                    المرتبطة بالمهمة. قد تتطلب المنصة تحققاً إضافياً أو تمنع
-                    الأتمتة. لا ينفذ شراءً أو نشراً أو تعديلاً للحساب.
+                    {t(
+                      "يدعم نماذج الدخول المعتادة داخل نفس الموقع، ثم قراءة الصفحات المرتبطة بالمهمة. قد تتطلب المنصة تحققاً إضافياً أو تمنع الأتمتة. لا ينفذ شراءً أو نشراً أو تعديلاً للحساب.",
+                    )}
                   </p>
                 </>
               )}
               <button className="wf-primary" disabled={busy}>
                 <ShieldCheck size={17} />
-                {busy ? "جارٍ الحفظ…" : "حفظ مشفر"}
+                {busy ? t("جارٍ الحفظ…") : t("حفظ مشفر")}
               </button>
             </form>
           )}
           <div className="wf-connection-list">
             {!connections.length && (
-              <p className="wf-context">لم تربط أي حساب بعد.</p>
+              <p className="wf-context">{t("لم تربط أي حساب بعد.")}</p>
             )}
             {connections.map((row) => (
               <article key={row.id}>
@@ -467,12 +473,12 @@ export function OperationsPanel({
                             {},
                             { quiet: true },
                           );
-                          setNotice("تم اختبار SMTP وجلب الوارد بنجاح.");
+                          setNotice(t("تم اختبار SMTP وجلب الوارد بنجاح."));
                         })
                       }
                     >
                       <Link2 size={15} />
-                      اختبار الاتصال
+                      {t("اختبار الاتصال")}
                     </button>
                   ) : (
                     <button
@@ -484,23 +490,23 @@ export function OperationsPanel({
                             {},
                             { quiet: true },
                           );
-                          setNotice("حُذفت الجلسة المحفوظة من الخزنة.");
+                          setNotice(t("حُذفت الجلسة المحفوظة من الخزنة."));
                         })
                       }
                     >
-                      إنهاء الجلسة المحفوظة
+                      {t("إنهاء الجلسة المحفوظة")}
                     </button>
                   )}
                   <button
                     disabled={busy}
-                    aria-label="حذف الحساب وبياناته"
+                    aria-label={t("حذف الحساب وبياناته")}
                     onClick={() => setConfirmDelete(row.id)}
                   >
                     <Trash2 size={15} />
                   </button>
                   {confirmDelete === row.id && (
                     <>
-                      <span>حذف الحساب وبيانات بريده المحفوظة؟</span>
+                      <span>{t("حذف الحساب وبيانات بريده المحفوظة؟")}</span>
                       <button
                         disabled={busy}
                         onClick={() =>
@@ -514,10 +520,10 @@ export function OperationsPanel({
                           })
                         }
                       >
-                        تأكيد الحذف
+                        {t("تأكيد الحذف")}
                       </button>
                       <button onClick={() => setConfirmDelete(undefined)}>
-                        إلغاء
+                        {t("إلغاء")}
                       </button>
                     </>
                   )}
@@ -530,9 +536,9 @@ export function OperationsPanel({
         <>
           <div className="wf-ops-heading">
             <div>
-              <h3>صندوق بريد الموظف</h3>
+              <h3>{t("صندوق بريد الموظف")}</h3>
               <p className="wf-context">
-                وارد حقيقي، وإرسال بعد اعتماد المستلم والنص.
+                {t("وارد حقيقي، وإرسال بعد اعتماد المستلم والنص.")}
               </p>
             </div>
             <button
@@ -541,20 +547,20 @@ export function OperationsPanel({
               onClick={() => startCompose()}
             >
               <Plus size={16} />
-              رسالة
+              {t("رسالة")}
             </button>
           </div>
           {!mailAccounts.length && (
             <div className="wf-ops-empty">
               <Inbox size={34} />
-              <p>اربط بريد منشأتك لبدء الاستقبال والإرسال.</p>
+              <p>{t("اربط بريد منشأتك لبدء الاستقبال والإرسال.")}</p>
               <button
                 onClick={() => {
                   setTab("accounts");
                   setAdding("mail");
                 }}
               >
-                ربط البريد
+                {t("ربط البريد")}
               </button>
             </div>
           )}
@@ -570,7 +576,7 @@ export function OperationsPanel({
                       {},
                       { quiet: true },
                     );
-                    setNotice("اكتملت مزامنة الوارد.");
+                    setNotice(t("اكتملت مزامنة الوارد."));
                   })
                 }
               >
@@ -597,22 +603,22 @@ export function OperationsPanel({
                   setCompose(null);
                   setFilter("outbound");
                   setSelectedMail(result.message.id);
-                  setNotice("المسودة محفوظة للمراجعة. لم تُرسل بعد.");
+                  setNotice(t("المسودة محفوظة للمراجعة. لم تُرسل بعد."));
                 });
               }}
             >
               <div className="wf-ops-heading">
-                <h3>مسودة للمراجعة</h3>
+                <h3>{t("مسودة للمراجعة")}</h3>
                 <button
                   type="button"
-                  aria-label="إغلاق"
+                  aria-label={t("إغلاق")}
                   onClick={() => setCompose(null)}
                 >
                   <X size={16} />
                 </button>
               </div>
               <label>
-                من الحساب
+                {t("من الحساب")}
                 <select
                   disabled={!!compose.id}
                   value={compose.connectionId}
@@ -628,7 +634,7 @@ export function OperationsPanel({
                 </select>
               </label>
               <label>
-                إلى
+                {t("إلى")}
                 <input
                   type="email"
                   required
@@ -640,7 +646,7 @@ export function OperationsPanel({
                 />
               </label>
               <label>
-                العنوان
+                {t("العنوان")}
                 <input
                   required
                   maxLength={500}
@@ -651,7 +657,7 @@ export function OperationsPanel({
                 />
               </label>
               <label>
-                النص
+                {t("النص")}
                 <textarea
                   required
                   rows={6}
@@ -663,7 +669,7 @@ export function OperationsPanel({
                 />
               </label>
               <button disabled={busy} className="wf-primary">
-                حفظ ومراجعة
+                {t("حفظ ومراجعة")}
               </button>
             </form>
           )}
@@ -675,7 +681,7 @@ export function OperationsPanel({
                 setSelectedMail(undefined);
               }}
             >
-              الوارد
+              {t("الوارد")}
             </button>
             <button
               aria-pressed={filter === "outbound"}
@@ -684,7 +690,7 @@ export function OperationsPanel({
                 setSelectedMail(undefined);
               }}
             >
-              المسودات والإرسال
+              {t("المسودات والإرسال")}
             </button>
           </div>
           <div className="wf-mail-layout">
@@ -705,7 +711,7 @@ export function OperationsPanel({
                   </button>
                 ))}
               {!messages.some((row) => row.direction === filter) && (
-                <p className="wf-context">لا توجد رسائل في هذا القسم.</p>
+                <p className="wf-context">{t("لا توجد رسائل في هذا القسم.")}</p>
               )}
             </div>
             <article className="wf-mail-detail">
@@ -736,7 +742,7 @@ export function OperationsPanel({
                           })
                         }
                       >
-                        تعديل
+                        {t("تعديل")}
                       </button>
                       <button
                         disabled={busy}
@@ -758,20 +764,21 @@ export function OperationsPanel({
                         }
                       >
                         <Send size={16} />
-                        اعتماد وإرسال
+                        {t("اعتماد وإرسال")}
                       </button>
                     </div>
                   )}
                   {message.direction === "inbound" && (
                     <button onClick={() => startCompose(message)}>
-                      الرد على الرسالة
+                      {t("الرد على الرسالة")}
                     </button>
                   )}
                   {message.status === "unknown" && (
                     <>
                       <p className="wf-context">
-                        قد يكون الخادم استلم الرسالة؛ لا تُعد إرسالها قبل مراجعة
-                        مزود البريد.
+                        {t(
+                          "قد يكون الخادم استلم الرسالة؛ لا تُعد إرسالها قبل مراجعة مزود البريد.",
+                        )}
                       </p>
                       <button
                         disabled={busy}
@@ -782,24 +789,27 @@ export function OperationsPanel({
                               {},
                               { quiet: true },
                             );
-                            setNotice(result.note || "تم تحديث حالة الرسالة.");
+                            setNotice(
+                              result.note || t("تم تحديث حالة الرسالة."),
+                            );
                           })
                         }
                       >
-                        التحقق من مجلد المرسل
+                        {t("التحقق من مجلد المرسل")}
                       </button>
                     </>
                   )}
                   {message.status === "sent" && (
                     <small>
-                      قبول خادم SMTP لا يثبت وصول الرسالة لصندوق المستلم أو
-                      قراءتها.
+                      {t(
+                        "قبول خادم SMTP لا يثبت وصول الرسالة لصندوق المستلم أو قراءتها.",
+                      )}
                     </small>
                   )}
                 </>
               ) : (
                 <p className="wf-context">
-                  اختر رسالة لقراءة محتواها أو اعتماد مسودتها.
+                  {t("اختر رسالة لقراءة محتواها أو اعتماد مسودتها.")}
                 </p>
               )}
             </article>
@@ -810,8 +820,8 @@ export function OperationsPanel({
           <div className="wf-ops-intro">
             <Search size={28} />
             <div>
-              <h3>الباحث والمتصفح الذاتي</h3>
-              <p>نتائج موثقة بالمصادر، وصفحات الجلسة داخل شاشة العمل.</p>
+              <h3>{t("الباحث والمتصفح الذاتي")}</h3>
+              <p>{t("نتائج موثقة بالمصادر، وصفحات الجلسة داخل شاشة العمل.")}</p>
             </div>
           </div>
           <form
@@ -835,12 +845,12 @@ export function OperationsPanel({
             }}
           >
             <label>
-              مكان البحث
+              {t("مكان البحث")}
               <select
                 value={portal}
                 onChange={(event) => setPortal(event.target.value)}
               >
-                <option value="">الويب العام · بحث بالمصادر</option>
+                <option value="">{t("الويب العام · بحث بالمصادر")}</option>
                 {portals.map((row) => (
                   <option key={row.id} value={row.id}>
                     {row.label}
@@ -849,32 +859,35 @@ export function OperationsPanel({
               </select>
             </label>
             <label>
-              المهمة
+              {t("المهمة")}
               <textarea
                 required
                 maxLength={2000}
                 rows={2}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="ابحث عن المنافسين… / افتح صفحة تقارير الحساب ولخّصها…"
+                placeholder={t(
+                  "ابحث عن المنافسين… / افتح صفحة تقارير الحساب ولخّصها…",
+                )}
               />
             </label>
             <button className="wf-primary" disabled={busy || !query.trim()}>
               <Search size={16} />
               {busy
-                ? "جارٍ العمل…"
+                ? t("جارٍ العمل…")
                 : portal
-                  ? "دخول وقراءة الصفحات"
-                  : "بحث مباشر"}
+                  ? t("دخول وقراءة الصفحات")
+                  : t("بحث مباشر")}
             </button>
           </form>
           <p className="wf-context">
-            الجلسة الحالية تقرأ الصفحات وتلخصها. تنفيذ تغييرات داخل المواقع،
-            وتجاوز MFA أو CAPTCHA، غير مدعوم.
+            {t(
+              "الجلسة الحالية تقرأ الصفحات وتلخصها. تنفيذ تغييرات داخل المواقع، وتجاوز MFA أو CAPTCHA، غير مدعوم.",
+            )}
           </p>
           {runs.length > 0 && (
             <label>
-              سجل البحث
+              {t("سجل البحث")}
               <select
                 value={run?.id || ""}
                 onChange={(event) => setSelectedRun(event.target.value)}
@@ -894,7 +907,8 @@ export function OperationsPanel({
                 <span className="wf-pill">{operationLabel(run.status)}</span>
               </div>
               <p className="wf-text" dir="auto">
-                {run.summary || "جارٍ جمع الأدلة؛ تظهر الصفحات هنا عند فتحها."}
+                {run.summary ||
+                  t("جارٍ جمع الأدلة؛ تظهر الصفحات هنا عند فتحها.")}
               </p>
               <div className="wf-source-list">
                 {run.pages.map((page, index) => (
@@ -926,8 +940,9 @@ export function OperationsPanel({
             <div className="wf-ops-empty">
               <Globe size={36} />
               <p>
-                ابدأ بحثاً؛ تظهر هنا النتائج والصفحات الفعلية التي يقرأها
-                الموظف.
+                {t(
+                  "ابدأ بحثاً؛ تظهر هنا النتائج والصفحات الفعلية التي يقرأها الموظف.",
+                )}
               </p>
             </div>
           )}

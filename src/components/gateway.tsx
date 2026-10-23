@@ -1,3 +1,5 @@
+import { useAppearance } from "../storefront/i18n";
+import { uiText as t } from "../lib/legacy-copy";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   ShieldCheck,
@@ -23,6 +25,7 @@ import {
 import { api, callBackendApi, isUnconfirmedRequest } from "../lib/api";
 import { Busy, Notice, SectionHeading } from "./common";
 export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
+  useAppearance();
   const [mode, setMode] = useState("SANDBOX"),
     [topology, setTopology] = useState("HOSTED_PAGE"),
     [busy, setBusy] = useState(false),
@@ -48,7 +51,9 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
       if (result.order) onOrder(result.order);
       if (result.error) setError(result.error);
       else
-        setNotice(result.message || "أُرسل الطلب. تابع حالته في مراقب النظام.");
+        setNotice(
+          result.message || t("أُرسل الطلب. تابع حالته في مراقب النظام."),
+        );
       setLastAttempt(null);
     } catch (e) {
       setError((e as Error).message);
@@ -71,14 +76,16 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
     <>
       <SectionHeading
         eyebrow="PAYMENT WORKSPACE"
-        title="غرفة البوابات والمسارات"
-        description="إعداد واحد يجمع بواباتك. اختر المسار، اضبط البيئة، وتابع الاستجابة لحظياً."
+        title={t("غرفة البوابات والمسارات")}
+        description={t(
+          "إعداد واحد يجمع بواباتك. اختر المسار، اضبط البيئة، وتابع الاستجابة لحظياً.",
+        )}
       >
         <span
           className={`mode-badge ${mode === "PRODUCTION" ? "production" : ""}`}
         >
           <FlaskConical size={15} />
-          {mode === "SANDBOX" ? "بيئة اختبار" : "بيئة حية"}
+          {mode === "SANDBOX" ? t("بيئة اختبار") : t("بيئة حية")}
         </span>
       </SectionHeading>
       <form onSubmit={submit} className="form-stack">
@@ -86,35 +93,35 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
           <div className="panel-title">
             <span className="step-number">01</span>
             <div>
-              <h2>إعدادات الاتصال</h2>
-              <p>البوابة، بيئة التنفيذ ومسار العملية</p>
+              <h2>{t("إعدادات الاتصال")}</h2>
+              <p>{t("البوابة، بيئة التنفيذ ومسار العملية")}</p>
             </div>
             <Link size={19} />
           </div>
           <div className="form-grid">
             <label>
-              بوابة الدفع
+              {t("بوابة الدفع")}
               <select name="gatewayCode" defaultValue="" required>
                 <option value="" disabled>
-                  اختر بوابة متاحة
+                  {t("اختر بوابة متاحة")}
                 </option>
                 {gateways.map(([code, name]) => (
                   <option key={code} value={code} disabled={code !== "stripe"}>
-                    {name}
-                    {code !== "stripe" ? " — الربط المباشر قيد النقل" : ""}
+                    {t(name)}
+                    {code !== "stripe" ? t("— الربط المباشر قيد النقل") : ""}
                   </option>
                 ))}
               </select>
             </label>
             <label>
-              وضع التنفيذ
+              {t("وضع التنفيذ")}
               <select value={mode} onChange={(e) => setMode(e.target.value)}>
-                <option value="SANDBOX">SANDBOX — اختبار</option>
-                <option value="PRODUCTION">PRODUCTION — دفع حي</option>
+                <option value="SANDBOX">{t("SANDBOX — اختبار")}</option>
+                <option value="PRODUCTION">{t("PRODUCTION — دفع حي")}</option>
               </select>
             </label>
             <label className="span-2">
-              طريقة ربط البوابة
+              {t("طريقة ربط البوابة")}
               <select
                 value={topology}
                 onChange={(e) => setTopology(e.target.value)}
@@ -129,23 +136,23 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
                       )
                     }
                   >
-                    {i + 1}. {name} · {code}
+                    {i + 1}. {t(name)} · {code}
                   </option>
                 ))}
               </select>
             </label>
             <label>
-              الدولة والعملة
+              {t("الدولة والعملة")}
               <select name="region">
                 {regions.map(([code, name]) => (
                   <option key={code} value={code}>
-                    {name}
+                    {t(name)}
                   </option>
                 ))}
               </select>
             </label>
             <label>
-              مبلغ العملية
+              {t("مبلغ العملية")}
               <input
                 name="amount"
                 type="number"
@@ -163,23 +170,23 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
           <div className="panel-title">
             <span className="step-number">02</span>
             <div>
-              <h2>الطلب وبيئة الجهاز</h2>
-              <p>بيانات العملية المرسلة إلى الباك إند</p>
+              <h2>{t("الطلب وبيئة الجهاز")}</h2>
+              <p>{t("بيانات العملية المرسلة إلى الباك إند")}</p>
             </div>
             <CreditCard size={19} />
           </div>
           <div className="form-grid">
             <label>
-              اسم حامل البطاقة / وصف الطلب
+              {t("اسم حامل البطاقة / وصف الطلب")}
               <input
                 name="cardholder"
-                placeholder="مثال: تحقق من مسار الدفع"
+                placeholder={t("مثال: تحقق من مسار الدفع")}
                 required
                 maxLength={200}
               />
             </label>
             <label>
-              بيئة الجهاز
+              {t("بيئة الجهاز")}
               <select name="deviceEnvironment">
                 <option>Chrome Desktop (Windows 11)</option>
                 <option>iPhone 16 Pro (Safari Mobile)</option>
@@ -188,7 +195,7 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
             </label>
             {tokenNeeded && (
               <label className="span-2">
-                رمز الدفع الصادر من البوابة
+                {t("رمز الدفع الصادر من البوابة")}
                 <input
                   name="paymentToken"
                   type="password"
@@ -199,8 +206,9 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
                   dir="ltr"
                 />
                 <small>
-                  أصدر الرمز عبر SDK الرسمي للبوابة. لا تُدخل رقم البطاقة أو رمز
-                  CVV هنا.
+                  {t(
+                    "أصدر الرمز عبر SDK الرسمي للبوابة. لا تُدخل رقم البطاقة أو رمز CVV هنا.",
+                  )}
                 </small>
               </label>
             )}
@@ -208,8 +216,9 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
           <div className="inline-info">
             <LockKeyhole size={17} />
             <span>
-              رقم البطاقة، تاريخ الانتهاء وCVV تُدخل داخل صفحة البوابة الآمنة.
-              اختيار الجهاز وصف للاختبار، ولا يغيّر بصمة المتصفح.
+              {t(
+                "رقم البطاقة، تاريخ الانتهاء وCVV تُدخل داخل صفحة البوابة الآمنة. اختيار الجهاز وصف للاختبار، ولا يغيّر بصمة المتصفح.",
+              )}
             </span>
           </div>
         </section>
@@ -217,39 +226,41 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
           <div className="panel-title">
             <span className="step-number">03</span>
             <div>
-              <h2>حماية الدفع المستضاف</h2>
-              <p>بيانات البطاقة تبقى داخل صفحة Stripe</p>
+              <h2>{t("حماية الدفع المستضاف")}</h2>
+              <p>{t("بيانات البطاقة تبقى داخل صفحة Stripe")}</p>
             </div>
             <ShieldCheck size={19} />
           </div>
           <p className="fine-print">
-            يطلب الربط تحقق 3D Secure من Stripe، ويحدّ محاولات الطلب ويحفظ مفتاح
-            العملية لمنع التكرار. قرار التحقق والموافقة لدى مزود الدفع والبنك.
-            لا يُعلن الموقع إجراء فحوص VPN أو بصمة الجهاز أو AVS دون تكامل
-            موثّق.
+            {t(
+              "يطلب الربط تحقق 3D Secure من Stripe، ويحدّ محاولات الطلب ويحفظ مفتاح العملية لمنع التكرار. قرار التحقق والموافقة لدى مزود الدفع والبنك. لا يُعلن الموقع إجراء فحوص VPN أو بصمة الجهاز أو AVS دون تكامل موثّق.",
+            )}
           </p>
         </section>
         {topology === "ALL_6_MODES" && (
           <Notice>
-            هذا الخيار يفحص الاتصال ويعرض المسارات الستة دون إنشاء دفعات. تنفيذ
-            كل مسار يحتاج عملية مستقلة.
+            {t(
+              "هذا الخيار يفحص الاتصال ويعرض المسارات الستة دون إنشاء دفعات. تنفيذ كل مسار يحتاج عملية مستقلة.",
+            )}
           </Notice>
         )}
         {mode === "PRODUCTION" && (
-          <Notice>هذه عملية مالية حقيقية بالمبلغ والعملة المحددين.</Notice>
+          <Notice>
+            {t("هذه عملية مالية حقيقية بالمبلغ والعملة المحددين.")}
+          </Notice>
         )}
         {error && <Notice>{error}</Notice>}
         {notice && <Notice success>{notice}</Notice>}
         {lastAttempt && (
           <div className="inline-info">
-            <span>للتحقق من الطلب السابق استخدم نفس معرّف العملية.</span>
+            <span>{t("للتحقق من الطلب السابق استخدم نفس معرّف العملية.")}</span>
             <button
               type="button"
               className="button subtle small"
               disabled={busy}
               onClick={() => execute(lastAttempt.body, lastAttempt.key)}
             >
-              استعادة نتيجة الطلب
+              {t("استعادة نتيجة الطلب")}
             </button>
           </div>
         )}
@@ -259,8 +270,8 @@ export function Gateway({ onOrder }: { onOrder: (order: Order) => void }) {
         >
           {busy ? <Busy /> : <Zap size={18} />}{" "}
           {topology === "ALL_6_MODES"
-            ? "فحص الاتصال والمسارات"
-            : "تنفيذ العملية الآن"}{" "}
+            ? t("فحص الاتصال والمسارات")
+            : t("تنفيذ العملية الآن")}{" "}
           <ArrowLeft size={18} />
         </button>
       </form>
@@ -274,6 +285,7 @@ interface VaultEntry {
   updatedAt: string;
 }
 export function Vault() {
+  const { language } = useAppearance();
   const [keys, setKeys] = useState<VaultEntry[]>([]),
     [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false),
@@ -321,49 +333,51 @@ export function Vault() {
   }
   const readinessItems = readiness
     ? ([
-        ["قاعدة بيانات المنظومة", readiness.database?.connected],
+        [t("قاعدة بيانات المنظومة"), readiness.database?.connected],
         [
-          "خدمات Netlify وقاعدة البيانات",
+          t("خدمات Netlify وقاعدة البيانات"),
           readiness.core?.connected && readiness.core?.secure,
         ],
-        ["تشفير الخزنة", readiness.vaultEncryptionConfigured],
+        [t("تشفير الخزنة"), readiness.vaultEncryptionConfigured],
         [
-          "التحقق المباشر من الدفع",
+          t("التحقق المباشر من الدفع"),
           readiness.confirmation === "authenticated_provider_query",
         ],
-        ["صلاحية المسؤول", readiness.adminVerified],
-        ["دفع حي مثبت لدى المزود", readiness.livePaymentVerified],
+        [t("صلاحية المسؤول"), readiness.adminVerified],
+        [t("دفع حي مثبت لدى المزود"), readiness.livePaymentVerified],
       ] as const)
     : [];
   return (
     <>
       <SectionHeading
         eyebrow="ADMIN CONTROL CENTER"
-        title="خزنة مفاتيح API"
-        description="إدارة بيانات اتصال بوابات الدفع في مكان واحد، بتشفير وصلاحيات للمسؤول."
+        title={t("خزنة مفاتيح API")}
+        description={t(
+          "إدارة بيانات اتصال بوابات الدفع في مكان واحد، بتشفير وصلاحيات للمسؤول.",
+        )}
       >
         <span className="mode-badge">
-          <LockKeyhole size={15} /> مساحة محمية
+          <LockKeyhole size={15} /> {t("مساحة محمية")}
         </span>
       </SectionHeading>
       <section className="panel readiness-panel">
         <div className="panel-title">
           <ShieldCheck size={22} />
           <div>
-            <h2>جاهزية الإطلاق</h2>
-            <p>النطاقات تنتقل بعد نجاح النشر والتحقق</p>
+            <h2>{t("جاهزية الإطلاق")}</h2>
+            <p>{t("النطاقات تنتقل بعد نجاح النشر والتحقق")}</p>
           </div>
           <button
             className="icon-button"
             onClick={refresh}
             disabled={loading}
-            aria-label="تحديث الجاهزية"
+            aria-label={t("تحديث الجاهزية")}
           >
             <RefreshCw size={16} className={loading ? "spin" : ""} />
           </button>
         </div>
         {loading ? (
-          <div className="muted">جارٍ فحص المتطلبات...</div>
+          <div className="muted">{t("جارٍ فحص المتطلبات...")}</div>
         ) : (
           <div className="readiness-list">
             {readinessItems.map(([label, ok]) => (
@@ -371,45 +385,47 @@ export function Vault() {
                 <span>{label}</span>
                 <b className={ok ? "text-green" : "text-amber"}>
                   {ok ? <Check size={16} /> : <Circle size={13} />}{" "}
-                  {ok ? "جاهز" : "بانتظار الإعداد"}
+                  {ok ? t("جاهز") : t("بانتظار الإعداد")}
                 </b>
               </div>
             ))}
           </div>
         )}
         <p className="fine-print">
-          نجاح اتصال الخدمات لا يعني نجاح دفع حي. يجب التحقق من مسار الدفع
-          والتحقق لدى المزود قبل نقل النطاقات.
+          {t(
+            "نجاح اتصال الخدمات لا يعني نجاح دفع حي. يجب التحقق من مسار الدفع والتحقق لدى المزود قبل نقل النطاقات.",
+          )}
         </p>
       </section>
       <form onSubmit={submit} className="panel form-stack">
         <div className="panel-title">
           <KeyRound size={23} />
           <div>
-            <h2>إضافة أو تحديث مفاتيح بوابة</h2>
-            <p>حفظ القيم يستبدل مفاتيح البوابة في البيئة المحددة</p>
+            <h2>{t("إضافة أو تحديث مفاتيح بوابة")}</h2>
+            <p>{t("حفظ القيم يستبدل مفاتيح البوابة في البيئة المحددة")}</p>
           </div>
         </div>
         <div className="form-grid">
           <label>
-            بوابة الدفع
+            {t("بوابة الدفع")}
             <select name="gatewayCode">
               {gateways.map(([code, name]) => (
                 <option key={code} value={code}>
-                  {name}
+                  {t(name)}
                 </option>
               ))}
             </select>
           </label>
           <label>
-            البيئة
+            {t("البيئة")}
             <select name="environment">
-              <option value="sandbox">Sandbox — اختبار</option>
-              <option value="live">Live — حي</option>
+              <option value="sandbox">{t("Sandbox — اختبار")}</option>
+              <option value="live">{t("Live — حي")}</option>
             </select>
           </label>
           <label className="span-2">
-            معرّف التاجر <span dir="ltr">Merchant / Store / Profile ID</span>
+            {t("معرّف التاجر")}
+            <span dir="ltr">Merchant / Store / Profile ID</span>
             <input
               name="merchantId"
               required
@@ -419,7 +435,8 @@ export function Vault() {
             />
           </label>
           <label className="span-2">
-            المفتاح السري للسيرفر <span dir="ltr">Secret / Auth Key</span>
+            {t("المفتاح السري للسيرفر")}
+            <span dir="ltr">Secret / Auth Key</span>
             <input
               name="secretKey"
               type="password"
@@ -430,7 +447,8 @@ export function Vault() {
             />
           </label>
           <label className="span-2">
-            مفتاح العميل العام <span dir="ltr">Client Key</span>
+            {t("مفتاح العميل العام")}
+            <span dir="ltr">Client Key</span>
             <input
               name="clientKey"
               type="password"
@@ -443,16 +461,17 @@ export function Vault() {
         {error && <Notice>{error}</Notice>}
         {notice && <Notice success>{notice}</Notice>}
         <button className="button primary" disabled={busy}>
-          {busy ? <Busy /> : <Save size={18} />} حفظ المفاتيح في قاعدة البيانات
+          {busy ? <Busy /> : <Save size={18} />}{" "}
+          {t("حفظ المفاتيح في قاعدة البيانات")}
         </button>
         <div className="inline-info">
-          <LockKeyhole size={15} /> تُشفّر المفاتيح قبل الحفظ ولا تُعاد إلى
-          المتصفح.
+          <LockKeyhole size={15} />{" "}
+          {t("تُشفّر المفاتيح قبل الحفظ ولا تُعاد إلى المتصفح.")}
         </div>
       </form>
       <section className="panel">
         <div className="panel-title">
-          <h2>البوابات المحفوظة</h2>
+          <h2>{t("البوابات المحفوظة")}</h2>
           <span className="count-badge">{keys.length}</span>
         </div>
         {keys.length ? (
@@ -467,7 +486,8 @@ export function Vault() {
                   {k.environment}
                 </span>
                 <small>
-                  آخر تحديث {new Date(k.updatedAt).toLocaleDateString("ar")}
+                  {t("آخر تحديث")}
+                  {new Date(k.updatedAt).toLocaleDateString(language)}
                 </small>
                 <ShieldCheck className="text-green" size={17} />
               </div>
@@ -478,8 +498,8 @@ export function Vault() {
             <KeyRound size={28} />
             <p>
               {loading
-                ? "جارٍ تحميل الخزنة..."
-                : "لم تُضف مفاتيح بعد. أضف أول بوابة للبدء."}
+                ? t("جارٍ تحميل الخزنة...")
+                : t("لم تُضف مفاتيح بعد. أضف أول بوابة للبدء.")}
             </p>
           </div>
         )}

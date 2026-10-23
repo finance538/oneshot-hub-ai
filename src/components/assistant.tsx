@@ -1,3 +1,5 @@
+import { useAppearance } from "../storefront/i18n";
+import { uiText as t } from "../lib/legacy-copy";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   Sparkles,
@@ -38,6 +40,7 @@ interface SpeechRecognizer {
   abort: () => void;
 }
 export function Assistant({ staffId }: { staffId?: string }) {
+  const { language } = useAppearance();
   const [model, setModel] = useState("gemini-3-flash-preview"),
     [persona, setPersona] = useState("executive"),
     [search, setSearch] = useState(false),
@@ -127,6 +130,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
           searchGrounding: search,
           mapsGrounding: maps,
           staffId,
+          language,
         },
       );
       setConversation(r.conversationId);
@@ -180,11 +184,11 @@ export function Assistant({ staffId }: { staffId?: string }) {
       },
       Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!Ctor) {
-      setError("الإملاء الصوتي غير متاح في هذا المتصفح.");
+      setError(t("الإملاء الصوتي غير متاح في هذا المتصفح."));
       return;
     }
     const r = new Ctor();
-    r.lang = "ar-SA";
+    r.lang = language === "ar" ? "ar-SA" : "en-US";
     r.continuous = false;
     r.interimResults = false;
     r.onresult = (e) =>
@@ -194,7 +198,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
           .slice(0, 8000),
       );
     r.onerror = () => {
-      setError("تعذّر استخدام الميكروفون. تحقق من الإذن وحاول مجدداً.");
+      setError(t("تعذّر استخدام الميكروفون. تحقق من الإذن وحاول مجدداً."));
       setRecording(false);
     };
     r.onend = () => setRecording(false);
@@ -203,13 +207,13 @@ export function Assistant({ staffId }: { staffId?: string }) {
       r.start();
       setRecording(true);
     } catch {
-      setError("تعذّر بدء الإملاء الصوتي.");
+      setError(t("تعذّر بدء الإملاء الصوتي."));
     }
   }
   const prompts = [
-    "حلّل المبيعات حسب العملة وحالة الدفع",
-    "راجع حالات الطلبات واقترح الخطوات التالية",
-    "اقترح توزيع المهام على الفريق",
+    t("حلّل المبيعات حسب العملة وحالة الدفع"),
+    t("راجع حالات الطلبات واقترح الخطوات التالية"),
+    t("اقترح توزيع المهام على الفريق"),
   ];
   return (
     <>
@@ -220,7 +224,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
             <span dir="ltr">Gemini · Netlify</span>
           </div>
           <select
-            aria-label="نموذج Gemini"
+            aria-label={t("نموذج Gemini")}
             value={model}
             onChange={(e) => {
               setModel(e.target.value);
@@ -237,7 +241,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
             disabled={busy}
             onClick={newChat}
           >
-            <Plus size={15} /> محادثة جديدة
+            <Plus size={15} /> {t("محادثة جديدة")}
           </button>
         </div>
         <div className="ai-body">
@@ -246,7 +250,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
               {loading ? (
                 <div className="empty-state">
                   <Busy />
-                  <p>جارٍ فتح المحادثة...</p>
+                  <p>{t("جارٍ فتح المحادثة...")}</p>
                 </div>
               ) : messages.length ? (
                 messages.map((m) => (
@@ -255,12 +259,12 @@ export function Assistant({ staffId }: { staffId?: string }) {
                       {m.role === "assistant" ? (
                         <Sparkles size={16} />
                       ) : (
-                        <span>أنت</span>
+                        <span>{t("أنت")}</span>
                       )}
                     </div>
                     <div className="message-content">
                       <strong>
-                        {m.role === "assistant" ? "oneShot AI" : "أنت"}
+                        {m.role === "assistant" ? "oneShot AI" : t("أنت")}
                       </strong>
                       <div>{m.content}</div>
                       {m.role === "assistant" && (
@@ -272,7 +276,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
                               setCopied(m.id);
                               setTimeout(() => setCopied(""), 2000);
                             } catch {
-                              setError("تعذّر النسخ من المتصفح.");
+                              setError(t("تعذّر النسخ من المتصفح."));
                             }
                           }}
                         >
@@ -281,7 +285,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
                           ) : (
                             <Copy size={12} />
                           )}{" "}
-                          {copied === m.id ? "تم النسخ" : "نسخ"}
+                          {copied === m.id ? t("تم النسخ") : t("نسخ")}
                         </button>
                       )}
                     </div>
@@ -293,9 +297,11 @@ export function Assistant({ staffId }: { staffId?: string }) {
                     <Sparkles size={36} strokeWidth={1.5} />
                   </div>
                   <span className="eyebrow">YOUR EXECUTIVE ADVISOR</span>
-                  <h2>ما القرار التالي لأعمالك؟</h2>
+                  <h2>{t("ما القرار التالي لأعمالك؟")}</h2>
                   <p>
-                    تقارير تستند إلى الطلبات والفريق المسجلين في المنظومة.
+                    {t(
+                      "تقارير تستند إلى الطلبات والفريق المسجلين في المنظومة.",
+                    )}
                   </p>
                   <div className="prompt-suggestions">
                     {prompts.map((p) => (
@@ -311,7 +317,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
                 <div className="thinking">
                   <span />
                   <span />
-                  <span /> جارٍ إعداد الإجابة...
+                  <span /> {t("جارٍ إعداد الإجابة...")}
                 </div>
               )}
               <div ref={end} />
@@ -321,8 +327,8 @@ export function Assistant({ staffId }: { staffId?: string }) {
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="اكتب توجيهك التنفيذي..."
-                aria-label="رسالتك"
+                placeholder={t("اكتب توجيهك التنفيذي...")}
+                aria-label={t("رسالتك")}
                 maxLength={8000}
                 required
                 rows={3}
@@ -342,7 +348,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
                     onClick={() => setSearch(!search)}
                     disabled={busy}
                   >
-                    <Search size={14} /> بحث
+                    <Search size={14} /> {t("بحث")}
                   </button>
                   <button
                     type="button"
@@ -354,7 +360,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
                     }}
                     disabled={busy}
                   >
-                    <MapPin size={14} /> خرائط
+                    <MapPin size={14} /> {t("خرائط")}
                   </button>
                   {voiceAvailable && (
                     <button
@@ -362,7 +368,9 @@ export function Assistant({ staffId }: { staffId?: string }) {
                       className={recording ? "recording" : ""}
                       onClick={voice}
                       disabled={busy}
-                      aria-label={recording ? "إيقاف الإملاء" : "إملاء صوتي"}
+                      aria-label={
+                        recording ? t("إيقاف الإملاء") : t("إملاء صوتي")
+                      }
                     >
                       {recording ? <Square size={14} /> : <Mic size={16} />}
                     </button>
@@ -371,7 +379,7 @@ export function Assistant({ staffId }: { staffId?: string }) {
                 <button
                   className="send-button"
                   disabled={busy || loading || !input.trim()}
-                  aria-label="إرسال الرسالة"
+                  aria-label={t("إرسال الرسالة")}
                 >
                   {busy ? <Busy /> : <ArrowUp size={20} />}
                 </button>
@@ -379,26 +387,28 @@ export function Assistant({ staffId }: { staffId?: string }) {
             </form>
             <p className="ai-disclaimer">
               {recording
-                ? "جارٍ الاستماع..."
-                : "راجع المعلومات المهمة. تُحفظ المحادثات في حسابك بعد وصول الإجابة."}
+                ? t("جارٍ الاستماع...")
+                : t(
+                    "راجع المعلومات المهمة. تُحفظ المحادثات في حسابك بعد وصول الإجابة.",
+                  )}
             </p>
           </div>
           <aside className="chat-sidebar">
             <label>
-              تخصص المساعد
+              {t("تخصص المساعد")}
               <select
                 value={persona}
                 onChange={(e) => setPersona(e.target.value)}
                 disabled={busy}
               >
-                <option value="executive">المستشار التنفيذي</option>
-                <option value="developer">مساعد البرمجة</option>
-                <option value="marketing">خبير التسويق</option>
-                <option value="analyst">محلل البيانات</option>
+                <option value="executive">{t("المستشار التنفيذي")}</option>
+                <option value="developer">{t("مساعد البرمجة")}</option>
+                <option value="marketing">{t("خبير التسويق")}</option>
+                <option value="analyst">{t("محلل البيانات")}</option>
               </select>
             </label>
             <div className="history-heading">
-              <Clock3 size={14} /> محادثاتك السابقة
+              <Clock3 size={14} /> {t("محادثاتك السابقة")}
             </div>
             {history.length ? (
               history.map((c) => (
@@ -414,39 +424,45 @@ export function Assistant({ staffId }: { staffId?: string }) {
                     className="delete-chat"
                     disabled={busy}
                     onClick={() => setDeleting(c)}
-                    aria-label={`حذف ${c.title}`}
+                    aria-label={`${t("حذف المحادثة")} · ${c.title}`}
                   >
                     <Trash2 size={13} />
                   </button>
                 </div>
               ))
             ) : (
-              <p className="muted small-text">تظهر محادثاتك المحفوظة هنا.</p>
+              <p className="muted small-text">
+                {t("تظهر محادثاتك المحفوظة هنا.")}
+              </p>
             )}
             <button
               className="history-refresh"
               disabled={busy}
               onClick={refreshHistory}
             >
-              تحديث السجل <ChevronDown size={13} />
+              {t("تحديث السجل")}
+              <ChevronDown size={13} />
             </button>
           </aside>
         </div>
       </section>
       {deleting && (
-        <Modal title="حذف المحادثة" onClose={() => !busy && setDeleting(null)}>
-          <p>تُحذف هذه المحادثة ورسائلها نهائياً من حسابك.</p>
+        <Modal
+          title={t("حذف المحادثة")}
+          onClose={() => !busy && setDeleting(null)}
+        >
+          <p>{t("تُحذف هذه المحادثة ورسائلها نهائياً من حسابك.")}</p>
           <p className="muted">{deleting.title}</p>
           <div className="modal-actions">
             <button className="button danger" onClick={remove} disabled={busy}>
-              {busy ? <Busy /> : <Trash2 size={16} />} حذف المحادثة
+              {busy ? <Busy /> : <Trash2 size={16} />} {t("حذف المحادثة")}
             </button>
             <button
               className="button subtle"
               onClick={() => setDeleting(null)}
               disabled={busy}
             >
-              إلغاء
+              {t("إلغاء")}
             </button>
           </div>
         </Modal>
