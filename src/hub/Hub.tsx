@@ -33,6 +33,7 @@ import {
 } from "../storefront/i18n";
 import Experience from "./experience/Experience";
 import BusinessFooter from "./experience/BusinessFooter";
+import GrowthDock from "./growth/GrowthDock";
 import { ecosystemApps, type EcosystemStatus } from "../../shared/ecosystem";
 import { api } from "../lib/api";
 import { hubCopy } from "./copy";
@@ -440,6 +441,9 @@ function HubPage() {
       <div id="section-contact">
         <BusinessFooter />
       </div>
+      {/* Growth studio lives only here: one floating button opening an
+          on-demand modal. No sections are added to the home page. */}
+      <GrowthDock />
       {deep && (
         <Modal title={c.deepTitle} onClose={() => setDeep(false)}>
           <div className="hub-dialog">
