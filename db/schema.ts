@@ -103,10 +103,26 @@ export const quoteRequests = pgTable(
 );
 export const businessSettings = pgTable("business_settings", {
   id: text("id").primaryKey(),
-  email: text("email").notNull().default("support@1shotcam.com"),
+  businessNameAr: text("business_name_ar")
+    .notNull()
+    .default("مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي"),
+  tradeNameAr: text("trade_name_ar")
+    .notNull()
+    .default("مؤسسة يحيى للتصوير الفوتوغرافي (OneShot)"),
+  businessNameEn: text("business_name_en")
+    .notNull()
+    .default(
+      "Yahya Ahmed Yahya Al-Hawsawi Photography Establishment (1ShotCam)",
+    ),
+  crNumber: text("cr_number").notNull().default("7038244914"),
+  issueDate: text("issue_date").notNull().default("06/02/2024"),
+  entityType: text("entity_type").notNull().default("مؤسسة (Establishment)"),
+  status: text("status").notNull().default("نشط (Active)"),
+  email: text("email").notNull().default("finance@1shotcam.com"),
   phone: text("phone"),
   whatsapp: text("whatsapp"),
-  updatedBy: text("updated_by").notNull(),
+  ownershipAttested: boolean("ownership_attested").notNull().default(true),
+  updatedBy: text("updated_by").notNull().default("system"),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

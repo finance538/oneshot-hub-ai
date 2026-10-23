@@ -81,9 +81,17 @@ export interface RevenueSummary {
   checkedAt: string;
 }
 export interface OfficialContact {
+  businessNameAr?: string;
+  tradeNameAr?: string;
+  businessNameEn?: string;
+  crNumber?: string;
+  issueDate?: string;
+  entityType?: string;
+  status?: string;
   email: string;
   phone: string | null;
   whatsapp: string | null;
+  ownershipAttested?: boolean;
 }
 // Never send exception messages, stack traces, URLs, query strings or form values.
 export const diagnosticCodes = [

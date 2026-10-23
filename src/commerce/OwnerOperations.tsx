@@ -460,6 +460,39 @@ function Settings() {
         )}
       </p>
       {error && <p role="alert">{error}</p>}
+      {data && (
+        <div className="official-registration-badge" style={{ padding: "1rem", background: "rgba(255,255,255,0.03)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "1.5rem" }}>
+          <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem" }}>
+            {tr("بيانات السجل التجاري والتوثيق الرسمي", "Official Commercial Registration & Attestation")}
+          </h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "0.5rem", fontSize: "0.85rem" }}>
+            <div>
+              <span style={{ opacity: 0.7 }}>{tr("الاسم الرسمي:", "Official Name:")} </span>
+              <strong>{data.businessNameAr || "مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي"}</strong>
+            </div>
+            <div>
+              <span style={{ opacity: 0.7 }}>{tr("الاسم المتداول:", "Trade Name:")} </span>
+              <span>{data.tradeNameAr || "مؤسسة يحيى للتصوير الفوتوغرافي (OneShot)"}</span>
+            </div>
+            <div>
+              <span style={{ opacity: 0.7 }}>{tr("الرقم الموحد / السجل:", "CR / UNN:")} </span>
+              <strong dir="ltr">{data.crNumber || "7038244914"}</strong>
+            </div>
+            <div>
+              <span style={{ opacity: 0.7 }}>{tr("تاريخ الإصدار:", "Issue Date:")} </span>
+              <span dir="ltr">{data.issueDate || "06/02/2024"}</span>
+            </div>
+            <div>
+              <span style={{ opacity: 0.7 }}>{tr("الكيان والحالة:", "Entity & Status:")} </span>
+              <span>{data.entityType || "مؤسسة"} · {data.status || "نشط"}</span>
+            </div>
+            <div>
+              <span style={{ opacity: 0.7 }}>{tr("توثيق الملكية:", "Ownership Attested:")} </span>
+              <span style={{ color: "#34d399" }}>✓ {tr("موثق ومعتمد رسمياً", "Officially Attested")}</span>
+            </div>
+          </div>
+        </div>
+      )}
       {data ? (
         <form className="commerce-form" onSubmit={save}>
           <label>

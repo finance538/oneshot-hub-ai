@@ -851,8 +851,8 @@ export default function Storefront({
                       </small>
                       <span>
                         {tr(
-                          "مؤسسة يحيى أحمد يحيى الهوساوي للتصوير الفوتوغرافي",
-                          "Yahya Ahmed Yahya Alhawsawi Photography Establishment",
+                          "مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي (س.ت: 7038244914)",
+                          "Yahya Ahmed Yahya Al-Hawsawi Photography Establishment (CR: 7038244914)",
                         )}
                       </span>
                     </div>
@@ -948,12 +948,26 @@ export default function Storefront({
               </a>
             </div>
             <div>
-              <h3>{tr("المنشأة", "Business Information")}</h3>
-              <p>OneShot Photography</p>
+              <h3>{tr("المنشأة والبيانات الرسمية", "Official Business Information")}</h3>
+              <p style={{ fontWeight: 600 }}>
+                {tr(
+                  "مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي",
+                  "Yahya Ahmed Yahya Al-Hawsawi Photography Establishment",
+                )}
+              </p>
               <p>
                 {tr(
-                  "مؤسسة يحيى أحمد يحيى الهوساوي للتصوير الفوتوغرافي",
-                  "Yahya Ahmed Yahya Alhawsawi Photography Establishment",
+                  "مؤسسة يحيى للتصوير الفوتوغرافي (OneShot)",
+                  "OneShot Photography Establishment",
+                )}
+              </p>
+              <p dir="ltr">
+                <strong>CR / UNN: 7038244914</strong>
+              </p>
+              <p>
+                {tr(
+                  "تاريخ الإصدار: 06/02/2024 · مؤسسة (نشط)",
+                  "Issued: 06/02/2024 · Establishment (Active)",
                 )}
               </p>
               <p>1shotcam.com</p>

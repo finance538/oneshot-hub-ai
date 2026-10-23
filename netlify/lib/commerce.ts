@@ -145,16 +145,52 @@ async function submit(req: Request) {
     status: row.status,
   };
 }
+export const OFFICIAL_BUSINESS_REGISTRATION = {
+  businessNameAr: "مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي",
+  tradeNameAr: "مؤسسة يحيى للتصوير الفوتوغرافي (OneShot)",
+  businessNameEn:
+    "Yahya Ahmed Yahya Al-Hawsawi Photography Establishment (1ShotCam)",
+  crNumber: "7038244914",
+  issueDate: "06/02/2024",
+  entityType: "مؤسسة (Establishment)",
+  status: "نشط (Active)",
+  email: "finance@1shotcam.com",
+  ownershipAttested: true,
+} as const;
+
 async function contact() {
-  const [row] = await database()
-    .select({
-      email: businessSettings.email,
-      phone: businessSettings.phone,
-      whatsapp: businessSettings.whatsapp,
-    })
-    .from(businessSettings)
-    .where(eq(businessSettings.id, "official"));
-  return row || { email: "support@1shotcam.com", phone: null, whatsapp: null };
+  try {
+    const [row] = await database()
+      .select({
+        businessNameAr: businessSettings.businessNameAr,
+        tradeNameAr: businessSettings.tradeNameAr,
+        businessNameEn: businessSettings.businessNameEn,
+        crNumber: businessSettings.crNumber,
+        issueDate: businessSettings.issueDate,
+        entityType: businessSettings.entityType,
+        status: businessSettings.status,
+        email: businessSettings.email,
+        phone: businessSettings.phone,
+        whatsapp: businessSettings.whatsapp,
+        ownershipAttested: businessSettings.ownershipAttested,
+      })
+      .from(businessSettings)
+      .where(eq(businessSettings.id, "official"));
+    if (row) {
+      return {
+        ...OFFICIAL_BUSINESS_REGISTRATION,
+        ...row,
+        email: row.email || OFFICIAL_BUSINESS_REGISTRATION.email,
+      };
+    }
+  } catch {
+    /* Safe fallback if table columns migration is pending */
+  }
+  return {
+    ...OFFICIAL_BUSINESS_REGISTRATION,
+    phone: null,
+    whatsapp: null,
+  };
 }
 async function saveContact(req: Request, actor: string) {
   const body = await payload(req, 1500);
@@ -170,13 +206,21 @@ async function saveContact(req: Request, actor: string) {
   await database().transaction(async (tx) => {
     await tx
       .insert(businessSettings)
-      .values({ id: "official", email, phone, whatsapp, updatedBy: actor })
+      .values({
+        id: "official",
+        ...OFFICIAL_BUSINESS_REGISTRATION,
+        email,
+        phone,
+        whatsapp,
+        updatedBy: actor,
+      })
       .onConflictDoUpdate({
         target: businessSettings.id,
         set: {
           email,
           phone,
           whatsapp,
+          ownershipAttested: true,
           updatedBy: actor,
           updatedAt: new Date(),
         },
@@ -185,7 +229,12 @@ async function saveContact(req: Request, actor: string) {
       .insert(auditEvents)
       .values({ actor, action: "contact.updated", resource: "official" });
   });
-  return { email, phone, whatsapp };
+  return {
+    ...OFFICIAL_BUSINESS_REGISTRATION,
+    email,
+    phone,
+    whatsapp,
+  };
 }
 export async function commerceRoute(req: Request, path: string) {
   if (path === "/api/quotes" && req.method === "POST") return submit(req);
