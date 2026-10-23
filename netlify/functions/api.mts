@@ -41,6 +41,7 @@ import { workforceRoute } from "../lib/workforce.js";
 import { growthBudget, growthCampaign } from "../lib/growth.js";
 import { seoGuides } from "../../shared/growth.js";
 import { growthRoute } from "../lib/growth.js";
+import { toolsRoute } from "../lib/tools.js";
 import { executiveChat, overview } from "../lib/ai.js";
 import { gateways, endpoints } from "../../shared/contracts.js";
 
@@ -103,6 +104,8 @@ export default async (req: Request) => {
     if (isLegacyCorePath(path)) return json(await legacyCoreRoute(req, path));
     if (path.startsWith("/api/workforce/"))
       return json(await workforceRoute(req, path));
+    if (path.startsWith("/api/tools/"))
+      return json(await toolsRoute(req, path));
     if (path === "/api/growth/guides" && method === "GET")
       return json({ guides: seoGuides });
     if (path === "/api/growth/campaign" && method === "POST")

@@ -33,13 +33,13 @@ import {
 } from "../storefront/i18n";
 import Experience from "./experience/Experience";
 import BusinessFooter from "./experience/BusinessFooter";
-import GrowthDock from "./growth/GrowthDock";
 import { ecosystemApps, type EcosystemStatus } from "../../shared/ecosystem";
 import { api } from "../lib/api";
 import { hubCopy } from "./copy";
 import { spaceCopy } from "./spaceCopy";
 import "./hub.css";
 const GrowthDock = lazy(() => import("../growth/GrowthDock"));
+const VaultLauncher = lazy(() => import("../tools/VaultLauncher"));
 const LitePortal = lazy(() => import("./LitePortal"));
 const YourSpace = lazy(() => import("./YourSpace"));
 const SsoAuthorize = lazy(() => import("./SsoAuthorize"));
@@ -442,9 +442,6 @@ function HubPage() {
       <div id="section-contact">
         <BusinessFooter />
       </div>
-      {/* Growth studio lives only here: one floating button opening an
-          on-demand modal. No sections are added to the home page. */}
-      <GrowthDock />
       {deep && (
         <Modal title={c.deepTitle} onClose={() => setDeep(false)}>
           <div className="hub-dialog">
@@ -468,6 +465,7 @@ function HubPage() {
       )}
       <Suspense fallback={null}>
         <GrowthDock onLogin={() => auth.openLogin()} />
+        <VaultLauncher />
       </Suspense>
       {auth.dialog}
     </div>
