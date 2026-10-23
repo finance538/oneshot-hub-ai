@@ -2,6 +2,7 @@ import { ShieldCheck } from "lucide-react";
 import { appearanceLink, useAppearance } from "../../storefront/i18n";
 import { documents } from "../../storefront/documents";
 import { guides } from "../../storefront/guides";
+import { openToolVault } from "../../tools/vault-events";
 function Logo() {
   const { tr } = useAppearance();
   return (
@@ -42,6 +43,18 @@ export default function BusinessFooter() {
             <small className="store-kicker" dir="ltr">
               1shotcam.com → OneShot Hub
             </small>
+            <a
+              className="store-accent footer-tool-vault"
+              href="/tools"
+              onClick={(event) => {
+                if (openToolVault()) event.preventDefault();
+              }}
+            >
+              {tr(
+                "🔎 موسوعة وأدوات 1Shot الذكية (500+ أداة ودليل)",
+                "🔎 1Shot smart tools & guides (500+)",
+              )}
+            </a>
           </div>
           <div>
             <h3>{tr("خدماتنا", "Our Services")}</h3>
