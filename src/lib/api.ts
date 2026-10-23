@@ -1,5 +1,9 @@
 import { reportClientDiagnostic } from "./diagnostics";
-import { ecosystemSession, receiverApp } from "./ecosystem-session";
+import {
+  ecosystemSession,
+  receiverApp,
+  hasSharedCookieSession,
+} from "./ecosystem-session";
 import { hubOrigin } from "../../shared/ecosystem";
 import type { Order } from "../../shared/contracts";
 import { prepareIdentitySession } from "./auth-session";
@@ -190,15 +194,16 @@ export async function callBackendApi<T = Record<string, any>>(
     try {
       const crossApp = receiverApp();
       const sharedSession = ecosystemSession();
-      if (!crossApp && !publicRequest) await prepareIdentitySession();
+      if (!crossApp && !publicRequest && !hasSharedCookieSession())
+        await prepareIdentitySession();
       if (!publicRequest && session !== generation)
         throw new RequestError("تغيّرت جلسة المستخدم.", 401, "SESSION_CHANGED");
       response = await fetch(crossApp ? new URL(path, hubOrigin).href : path, {
         method,
-        credentials: crossApp ? "omit" : "same-origin",
+        credentials: "include",
         signal: AbortSignal.timeout(options.timeoutMs || 50000),
         headers: {
-          ...(crossApp && sharedSession
+          ...(crossApp && sharedSession && !hasSharedCookieSession()
             ? { Authorization: `Bearer ${sharedSession.sessionToken}` }
             : {}),
           ...(payload !== undefined

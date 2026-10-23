@@ -24,6 +24,7 @@ import type {
 import { api } from "../lib/api";
 import { useAppearance } from "../storefront/i18n";
 import "./operations.css";
+import GoogleWorkspace from "./GoogleWorkspace";
 const labels: Record<string, string> = {
   saved: "محفوظ · يحتاج اختبار",
   connected: "اتصال متحقق",
@@ -236,6 +237,7 @@ export function OperationsPanel({
         <p role="status">{t("جارٍ جلب بيانات المنشأة…")}</p>
       ) : tab === "accounts" ? (
         <>
+          <GoogleWorkspace />
           <div className="wf-ops-intro">
             <ShieldCheck size={28} />
             <div>

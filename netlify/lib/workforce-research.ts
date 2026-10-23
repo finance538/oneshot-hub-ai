@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { geminiClient } from "./gemini.js";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import {
@@ -70,7 +70,7 @@ export async function runResearch(org: string, body: Record<string, unknown>) {
     let summary = "",
       status = "ready";
     if (!connection) {
-      const result = await new GoogleGenAI({}).models.generateContent({
+      const result = await geminiClient().models.generateContent({
         model: "gemini-2.5-flash",
         contents: query,
         config: {
@@ -120,7 +120,7 @@ export async function runResearch(org: string, body: Record<string, unknown>) {
           summary =
             "المنصة تطلب استكمال تسجيل الدخول أو تحققاً إضافياً (MFA / CAPTCHA). لم يُؤكد الدخول. لا يتم تجاوز وسائل الحماية؛ افتح المنصة لإكمال المتطلبات.";
         else {
-          const result = await new GoogleGenAI({}).models.generateContent({
+          const result = await geminiClient().models.generateContent({
             model: "gemini-2.5-flash",
             contents: JSON.stringify({ task: query, pages }),
             config: {

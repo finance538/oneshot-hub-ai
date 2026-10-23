@@ -135,7 +135,15 @@ export default function QuoteFlow({
         <div className="quote-success" role="status">
           <CheckCircle2 size={40} />
           <h3>{tr("تم حفظ طلبك", "Your request is saved")}</h3>
-          <div className="quote-business-info" style={{ fontSize: "0.85rem", opacity: 0.9, margin: "0.5rem 0", lineHeight: 1.5 }}>
+          <div
+            className="quote-business-info"
+            style={{
+              fontSize: "0.85rem",
+              opacity: 0.9,
+              margin: "0.5rem 0",
+              lineHeight: 1.5,
+            }}
+          >
             <p style={{ fontWeight: 600, margin: 0 }}>
               {tr(
                 "مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي",
@@ -144,6 +152,11 @@ export default function QuoteFlow({
             </p>
             <p dir="ltr" style={{ margin: "0.2rem 0 0 0" }}>
               CR / UNN: 7038244914 · finance@1shotcam.com
+              <br />
+              {tr(
+                "تاريخ الإصدار: 06/02/2024 · نشط",
+                "Issued: 06/02/2024 · Active",
+              )}
             </p>
           </div>
           <p>{tr("رقم المتابعة", "Your quote reference")}</p>

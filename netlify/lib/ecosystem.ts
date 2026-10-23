@@ -1,6 +1,11 @@
+import { cookieValue, sharedSessionUser } from "./shared-session.js";
+import {
+  registeredSsoClients,
+  SESSION_COOKIE,
+} from "../../shared/auth-policy.js";
+import { geminiClient } from "./gemini.js";
 import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt, isNull, lt, or, sql } from "drizzle-orm";
-import { GoogleGenAI } from "@google/genai";
 import { database } from "../../db/index.js";
 import { ecosystemGrants } from "../../db/schema.js";
 import { ecosystemApps, hubOrigin } from "../../shared/ecosystem.js";
@@ -18,14 +23,7 @@ import {
 } from "./security.js";
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("base64url");
-const DEFAULT_SSO_CLIENTS = ["ai", "pay", "workflow", "brand", "loader"];
-const clients = () => {
-  const configured = env("ONESHOT_SSO_CLIENTS");
-  if (configured) {
-    return configured.split(",").map((value) => value.trim());
-  }
-  return DEFAULT_SSO_CLIENTS;
-};
+const clients = () => registeredSsoClients(env("ONESHOT_SSO_CLIENTS"));
 const validChallenge = (value: unknown): value is string =>
   typeof value === "string" && /^[A-Za-z0-9_-]{43}$/.test(value);
 function client(id: unknown) {
@@ -109,7 +107,7 @@ export async function ecosystemRoute(req: Request, path: string) {
         return {
           id: app.id,
           status: available ? "available" : "unverified",
-          sso: sso || (clients().includes(app.id) && vaultReady()),
+          sso,
           checkedAt: new Date().toISOString(),
         };
       }),
@@ -159,27 +157,31 @@ export async function ecosystemRoute(req: Request, path: string) {
     const app = client(body.appId);
     if (!validChallenge(body.challenge) || !validChallenge(body.state))
       throw new ApiError(400, "Invalid sign-in request.");
-    // Only the Hub's verified Identity cookie can mint a new handoff; an app
-    // session cannot mint further sessions or elevate its own roles.
-    const cookie = req.headers
-      .get("cookie")
-      ?.split(";")
-      .map((item) => item.trim())
-      .find((item) => item.startsWith("nf_jwt="))
-      ?.slice(7);
-    if (!cookie) throw new ApiError(401, "Sign in to OneShot Hub first.");
-    let token: string;
-    try {
-      token = decodeURIComponent(cookie);
-    } catch {
-      throw new ApiError(401, "Invalid session.");
+    // A browser's verified shared/Identity cookie can mint a legacy handoff.
+    // An app bearer grant cannot delegate itself or supply a different account.
+    let credential: { ownerId: string } | { token: string };
+    let user;
+    if (cookieValue(req, SESSION_COOKIE)) {
+      user = await sharedSessionUser(req);
+      if (!user) throw new ApiError(401, "Sign in to OneShot first.");
+      credential = { ownerId: user.id };
+    } else {
+      const cookie = cookieValue(req, "nf_jwt");
+      if (!cookie) throw new ApiError(401, "Sign in to OneShot first.");
+      let token: string;
+      try {
+        token = decodeURIComponent(cookie);
+      } catch {
+        throw new ApiError(401, "Invalid session.");
+      }
+      if (token.startsWith("osh_"))
+        throw new ApiError(401, "An Identity session is required.");
+      user = await resolveUserFromToken(
+        new Request(req.url, { headers: { Authorization: `Bearer ${token}` } }),
+      );
+      if (!user) throw new ApiError(401, "Sign in to OneShot first.");
+      credential = { token };
     }
-    if (token.startsWith("osh_"))
-      throw new ApiError(401, "An Identity session is required.");
-    const user = await resolveUserFromToken(
-      new Request(req.url, { headers: { Authorization: `Bearer ${token}` } }),
-    );
-    if (!user) throw new ApiError(401, "Sign in to OneShot Hub first.");
     await limit(user.id, "ecosystem_grant", 12);
     const code = randomBytes(32).toString("base64url");
     const codeHash = hash(code);
@@ -200,7 +202,10 @@ export async function ecosystemRoute(req: Request, path: string) {
       ownerId: user.id,
       audience: app.origin,
       challenge: body.challenge,
-      encryptedToken: encrypt({ token }, `ecosystem:${codeHash}:${app.origin}`),
+      encryptedToken: encrypt(
+        credential,
+        `ecosystem:${codeHash}:${app.origin}`,
+      ),
       expiresAt: new Date(Date.now() + 60_000),
     });
     const destination = new URL("/sso/callback", app.origin);
@@ -309,7 +314,7 @@ export async function ecosystemRoute(req: Request, path: string) {
     )
       throw new ApiError(413, "Maximum file size: 1 MB.");
     try {
-      const result = await new GoogleGenAI({}).models.generateContent({
+      const result = await geminiClient().models.generateContent({
         model: "gemini-2.5-flash",
         contents: [
           {

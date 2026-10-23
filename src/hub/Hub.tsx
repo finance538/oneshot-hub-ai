@@ -123,8 +123,7 @@ function HubPage() {
   }
   useEffect(() => {
     if (location.pathname !== "/sign-in" || !auth.ready) return;
-    if (auth.user) location.replace(appearanceLink("/hub") + "#command");
-    else auth.openLogin(openSpace);
+    if (!auth.user) auth.openLogin();
   }, [auth.ready, auth.user?.id]);
   function appHref(id: string) {
     const app = ecosystemApps.find((item) => item.id === id)!;

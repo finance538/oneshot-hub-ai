@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { geminiClient } from "./gemini.js";
 import { normalizeAdDraft } from "../../shared/ad-draft.js";
 import { and, desc, eq } from "drizzle-orm";
 import { database } from "../../db/index.js";
@@ -301,7 +301,7 @@ async function generateCopy(input: {
 أعد JSON فقط بهذا الشكل بالضبط، بدون أي نص آخر:
 {"headlines":["5 عناوين خاطفة، كل عنوان 30 حرفاً كحد أقصى"],"descriptions":["وصفان، كل وصف 90 حرفاً كحد أقصى"],"keywords":["8 كلمات مفتاحية عالية النية الشرائية بالسعودية"],"negativeKeywords":["4 كلمات مستبعدة"],"audience":{"description":"سطر واحد","targeting":["4 بنود استهداف"]},"callToActions":["4 عبارات دعوة"]}`;
   try {
-    const response = await new GoogleGenAI({}).models.generateContent({
+    const response = await geminiClient().models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: { maxOutputTokens: 2048, httpOptions: { timeout: 30000 } },
@@ -519,19 +519,8 @@ export async function growthRoute(req: Request, path: string) {
     await limit(user.id, "growth_banner", 3);
     const body = await payload(req, 4000);
     const brief = stringField(body.brief, "وصف البانر", 500);
-    const gatewayKey = Netlify.env.get("NETLIFY_AI_GATEWAY_KEY");
-    const gatewayUrl = Netlify.env.get("NETLIFY_AI_GATEWAY_URL");
-    if (!gatewayKey || !gatewayUrl)
-      throw new ApiError(
-        503,
-        "خدمة توليد الصور غير متاحة حالياً.",
-        "AI_UNAVAILABLE",
-      );
     try {
-      const ai = new GoogleGenAI({
-        apiKey: gatewayKey,
-        httpOptions: { baseUrl: gatewayUrl.replace(/\/$/, "") },
-      });
+      const ai = geminiClient();
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash-image",
         contents: `Clean Arabic commercial ad banner, no cluttered text: ${brief}. Charcoal background #101211, restrained orange accent, premium minimal studio style.`,
