@@ -1,5 +1,13 @@
 # 1SHOTCAM.COM — OneShot Ecosystem
 
+## Current readiness follow-up — 23 October 2026
+
+Quote payment recovery now returns the original owned order even after offer expiry or CRM closure, after checking the verified quote email and original account/gateway. It never starts a new provider operation for that recovery; expired or closed offers without an order remain blocked. The unavailable-offer screen points customers to their account orders. Administrators cannot reconvert an expired offer as though it were fresh, and the CRM disables sharing closed/expired links. Quote statuses distinguish approval from message delivery and closure from payment completion. Health checks clear previous successful results when the latest request fails.
+
+Read-only checks of the existing production site returned connected database health, 53 catalog products, Stripe as the implemented gateway, an official-domain contact response, and JSON 401 responses for anonymous quote-CRM and diagnostics requests. All five independent applications remained unverified for SSO. These checks concern the previously published deployment and do not validate this patch or merchant readiness.
+
+Two regression tests were added for post-expiry/closure order recovery, ownership rejection and blocking new checkout/conversion on expired offers. Edited sources were inspected and formatted; tests, typechecking, builds and dev servers were not run in this follow-up under the agent-run policy. Platform validation and authenticated acceptance remain required. No schema or migration files, runtime settings, DNS or domain assignments were changed. Real checkout, email delivery, complete cross-app sign-in, push/native device behavior and signed app distribution remain dependent on owner setup and acceptance. Pro remains inquiry-only.
+
 ## Owner recommendations implemented — 23 October 2026
 
 The six requested upgrades were implemented in code. The main sales path is service/package → scope and deliverables → quote request or secure checkout. Fixed, ready-to-sell, one-time services support hosted checkout after review; starting-price and monthly services open a single bilingual quote form. The form persists customer name, email, international phone/WhatsApp, selected database product, scope, language and timestamps and returns a unique `Q-1SHOT-…` receipt. Pro requests use the same form and retain the validated tool reference; they remain inquiries without a purchase or access-unlock promise. Monthly quotes confirm service duration and renewal terms; they do not activate recurring billing.
