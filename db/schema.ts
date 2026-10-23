@@ -1,6 +1,8 @@
+import { sql } from "drizzle-orm";
 import type { OriginalProduct } from "../shared/storefront";
 import {
   pgTable,
+  check,
   jsonb,
   text,
   integer,
@@ -57,11 +59,81 @@ export const vaultKeys = pgTable(
     uniqueIndex("vault_gateway_environment").on(t.gateway, t.environment),
   ],
 );
+export const quoteRequests = pgTable(
+  "quote_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    reference: text("reference").notNull().unique(),
+    submissionHash: text("submission_hash").notNull().unique(),
+    fingerprint: text("fingerprint").notNull(),
+    kind: text("kind").notNull().default("service"),
+    customerName: text("customer_name").notNull(),
+    email: text("email").notNull(),
+    phone: text("phone").notNull(),
+    productId: text("product_id").references(() => products.id),
+    serviceName: text("service_name").notNull(),
+    notes: text("notes").notNull(),
+    language: text("language").notNull(),
+    status: text("status").notNull().default("new"),
+    amountCents: integer("amount_cents"),
+    approvedScope: text("approved_scope"),
+    offerId: uuid("offer_id").unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    updatedBy: text("updated_by"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("quote_status_created").on(t.status, t.createdAt),
+    check(
+      "quote_status_valid",
+      sql`${t.status} in ('new', 'in_review', 'quoted', 'closed')`,
+    ),
+    check("quote_language_valid", sql`${t.language} in ('ar', 'en')`),
+    check("quote_kind_valid", sql`${t.kind} in ('service', 'pro')`),
+    check(
+      "quote_amount_valid",
+      sql`${t.amountCents} is null or ${t.amountCents} between 100 and 100000000`,
+    ),
+  ],
+);
+export const businessSettings = pgTable("business_settings", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().default("support@1shotcam.com"),
+  phone: text("phone"),
+  whatsapp: text("whatsapp"),
+  updatedBy: text("updated_by").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+export const diagnosticEvents = pgTable(
+  "diagnostic_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    source: text("source").notNull(),
+    code: text("code").notNull(),
+    area: text("area").notNull(),
+    status: integer("status"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("diagnostic_created").on(t.createdAt)],
+);
+
 export const orders = pgTable(
   "orders",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     ownerId: text("owner_id").notNull(),
+    quoteId: uuid("quote_id")
+      .unique()
+      .references(() => quoteRequests.id),
     productId: text("product_id").references(() => products.id),
     description: text("description").notNull(),
     amountCents: integer("amount_cents").notNull(),

@@ -9,14 +9,20 @@ export async function overview() {
     .select({
       currency: orders.currency,
       count: sql<number>`count(*)::int`,
-      paid: sql<number>`count(*) filter (where ${orders.status} = 'paid')::int`,
-      revenueCents: sql<number>`coalesce(sum(${orders.amountCents}) filter (where ${orders.status} = 'paid'),0)::int`,
+      paid: sql<number>`count(*) filter (where lower(${orders.status}) in ('paid', 'captured'))::int`,
+      revenueCents: sql<string>`coalesce(sum(${orders.amountCents}) filter (where lower(${orders.status}) in ('paid', 'captured')),0)::text`,
     })
     .from(orders)
     .where(eq(orders.executionMode, "PRODUCTION"))
     .groupBy(orders.currency);
   const team = await db.select().from(staff).orderBy(desc(staff.createdAt));
-  return { totals, staff: team };
+  return {
+    totals: totals.map((row) => ({
+      ...row,
+      revenueCents: Number(row.revenueCents),
+    })),
+    staff: team,
+  };
 }
 export async function executiveChat(
   body: Record<string, unknown>,

@@ -1,3 +1,9 @@
+import { commerceRoute } from "../lib/commerce.js";
+import {
+  diagnosticsRoute,
+  captureServerFailure,
+  recordDiagnostic,
+} from "../lib/diagnostics.js";
 import { getUser } from "@netlify/identity";
 import { ecosystemRoute } from "../lib/ecosystem.js";
 import { experienceRoute } from "../lib/experience.js";
@@ -94,10 +100,31 @@ export default async (req: Request) => {
     if (!["GET", "POST", "DELETE", "PATCH"].includes(method))
       throw new ApiError(405, "طريقة الطلب غير مدعومة.");
     if (method !== "GET") assertOrigin(req);
+    if (path === "/api/diagnostics/client" || path === "/api/admin/diagnostics")
+      return json(await diagnosticsRoute(req, path));
+    if (
+      path === "/api/quotes" ||
+      path.startsWith("/api/quotes/") ||
+      path.startsWith("/api/commerce/") ||
+      /^\/api\/admin\/(quotes|contact|revenue)(\/|$)/.test(path)
+    )
+      return json(await commerceRoute(req, path));
     if (path.startsWith("/api/experience/"))
       return json(await experienceRoute(req, path));
-    if (path.startsWith("/api/ecosystem/"))
-      return json(await ecosystemRoute(req, path));
+    if (path.startsWith("/api/ecosystem/")) {
+      const result = await ecosystemRoute(req, path);
+      const code =
+        path === "/api/ecosystem/sso/grant"
+          ? "SSO_GRANT"
+          : path === "/api/ecosystem/sso/redeem"
+            ? "SSO_REDEEM"
+            : null;
+      if (code)
+        Netlify.context?.waitUntil(
+          recordDiagnostic("server", code, "sso", 200),
+        );
+      return json(result);
+    }
     if (isLegacyCorePath(path)) return json(await legacyCoreRoute(req, path));
     if (path.startsWith("/api/workforce/"))
       return json(await workforceRoute(req, path));
@@ -379,6 +406,7 @@ export default async (req: Request) => {
     }
     throw new ApiError(404, "المسار غير موجود.", "ROUTE_NOT_FOUND");
   } catch (error) {
+    captureServerFailure(req, error instanceof ApiError ? error.status : 500);
     return json(
       { ...safeError(error), requestId },
       error instanceof ApiError ? error.status : 500,

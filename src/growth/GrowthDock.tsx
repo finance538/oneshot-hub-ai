@@ -1,3 +1,4 @@
+import { RevenueCard, EstimateNotice } from "../commerce/Revenue";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
   BadgeDollarSign,
@@ -16,7 +17,7 @@ import { api, RequestError } from "../lib/api";
 import { normalizeAdDraft } from "../../shared/ad-draft";
 import "./growth.css";
 
-export type GrowthTab = "studio" | "roas" | "banners" | "saved";
+export type GrowthTab = "studio" | "roas" | "banners" | "saved" | "revenue";
 
 interface AdsDraft {
   headlines?: string[];
@@ -731,7 +732,13 @@ function SavedTab({ refreshKey }: { refreshKey: number }) {
   );
 }
 
-export default function GrowthDock({ onLogin }: { onLogin: () => void }) {
+export default function GrowthDock({
+  onLogin,
+  admin = false,
+}: {
+  onLogin: () => void;
+  admin?: boolean;
+}) {
   const { tr } = useAppearance();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<GrowthTab>("studio");
@@ -774,6 +781,15 @@ export default function GrowthDock({ onLogin }: { onLogin: () => void }) {
                   BadgeDollarSign,
                 ],
                 ["saved", tr("حملاتي", "My campaigns"), Save],
+                ...(admin
+                  ? [
+                      [
+                        "revenue",
+                        tr("الإيرادات المؤكدة", "Verified paid revenue"),
+                        BadgeDollarSign,
+                      ],
+                    ]
+                  : []),
               ] as [GrowthTab, string, typeof Megaphone][]
             ).map(([id, label, Icon]) => (
               <button
@@ -794,6 +810,7 @@ export default function GrowthDock({ onLogin }: { onLogin: () => void }) {
           <Suspense
             fallback={<p role="status">{tr("جارٍ التحميل…", "Loading…")}</p>}
           >
+            {tab === "revenue" && admin ? <RevenueCard /> : <EstimateNotice />}
             {tab === "studio" && <Studio onLogin={onLogin} />}
             {tab === "roas" && <RoasTab />}
             {tab === "banners" && <BannersTab />}
