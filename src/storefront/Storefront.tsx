@@ -962,6 +962,12 @@ export default function Storefront({
                   {tr(guide.titleAr, guide.titleEn)}
                 </a>
               ))}
+              <a className="store-accent" href="/tools">
+                {tr(
+                  "🔎 موسوعة وأدوات 1Shot الذكية (500+ أداة ودليل)",
+                  "🔎 1Shot smart tools & guides (500+)",
+                )}
+              </a>
             </div>
             <div>
               <h3>{tr("المنشأة", "Business Information")}</h3>

@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import Hub from "./hub/Hub";
 const LegacyWorkspace = lazy(() => import("./App"));
 const SsoReceiver = lazy(() => import("./hub/SsoReceiver"));
+const ToolsApp = lazy(() => import("./tools/ToolsApp"));
 export default function Root() {
   const path = location.pathname.replace(/\/+$/, "") || "/";
   const params = new URLSearchParams(location.search);
@@ -10,6 +11,13 @@ export default function Root() {
     return (
       <Suspense fallback={<p role="status">OneShot…</p>}>
         <SsoReceiver />
+      </Suspense>
+    );
+  // Programmatic SEO tools, their /solutions aliases and the owner radar.
+  if (/^\/(tools|solutions)(\/|$)/.test(path) || path === "/admin/radar")
+    return (
+      <Suspense fallback={<p role="status">OneShot…</p>}>
+        <ToolsApp />
       </Suspense>
     );
   const standalonePay = location.hostname === "pay.1shotcam.com";

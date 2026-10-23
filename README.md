@@ -26,6 +26,16 @@ On 2026-10-19, read-only HTTPS checks found no verified standalone SSO handshake
 
 The following older sections document existing retained services and previous interface iterations. This section supersedes their descriptions of the primary homepage.
 
+## Programmatic SEO tools (500 pages)
+
+`/tools/:cluster/:slug` serves 500 bilingual (Arabic RTL first, English) interactive tools in five clusters of 100: `ecommerce` → Pay, `google-ai` → AI, `gaming` → Loader, `brand` → Brand Studio and the store, `workforce` → Workflow. The matrix is generated deterministically in `shared/tools/catalog.ts` from entity data in `shared/tools/entities.ts`. All calculations run in the visitor's browser through the 23 pure engines in `shared/tools/engines.ts`; inputs are never sent to a server. Default numbers (gateway fees, RPM, salaries, CPC, AI subscription value) are editable starting assumptions, labelled as such, not provider quotes or OneShot prices.
+
+At build time `scripts/tools-prerender.ts` (a Vite plugin) writes static HTML for every tool, the `/tools` directory and the five cluster hubs. Each page gets its own title, description, canonical URL, `SoftwareApplication`/`Product`/`FAQPage`/`BreadcrumbList` JSON-LD and crawlable content, including the results at default values. The plugin also merges all tool URLs into `dist/sitemap.xml` (`public/sitemap.xml` remains the base list) and prepends `/solutions/:slug` 301 aliases to `dist/_redirects`.
+
+The home page has no new sections. Discovery is through a floating vault button (Ctrl/⌘K) and a footer link that open a spotlight search with five category tabs; without the modal the link goes to `/tools`. `/admin/radar` is the Identity-administrator-only owner radar. It shows anonymous daily counters (views, tool use, subdomain funnel clicks) from the `tool_metrics` table, flags winning tools, and toggles Pro status in `tool_offers`. Pro hides the chart and advanced outputs behind a OneShot Pay link; the core calculator and content stay public. A purchase cannot yet unlock Pro because OneShot Pay has no entitlement integration.
+
+Language preference is restored before the app renders from `?lang`, then `localStorage`, then the `oneshot_lang` cookie, defaulting to Arabic RTL. `npm test` runs `tests/tools.test.ts` (route count, unique slugs and metadata, every engine on every page, reference math, sitemap, pre-rendered head, legal footer, language script); `npm run typecheck` runs `tsc --noEmit`.
+
 ## Technology and local development
 
 - React 19, TypeScript and Vite for the responsive client.

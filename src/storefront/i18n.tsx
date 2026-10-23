@@ -19,11 +19,31 @@ const Context = createContext<{
   tr: (ar: string, en: string) => string;
   number: (value: number) => string;
 } | null>(null);
+const LANGUAGE_KEY = "oneshot.lang";
+/** URL first, then the saved choice (localStorage, then cookie), else Arabic. */
+export function storedLanguage(): Language {
+  const fromUrl = new URLSearchParams(location.search).get("lang");
+  if (isLanguage(fromUrl)) return fromUrl;
+  try {
+    const saved = localStorage.getItem(LANGUAGE_KEY);
+    if (isLanguage(saved)) return saved;
+  } catch {
+    // Storage can be unavailable in private modes; the cookie still applies.
+  }
+  const cookie = document.cookie.match(/(?:^|; )oneshot_lang=([a-z]{2})/)?.[1];
+  return isLanguage(cookie) ? cookie : "ar";
+}
+export function persistLanguage(value: Language) {
+  try {
+    localStorage.setItem(LANGUAGE_KEY, value);
+  } catch {
+    // Ignore storage failures; the cookie below keeps the preference.
+  }
+  document.cookie = `oneshot_lang=${value}; path=/; max-age=31536000; samesite=lax${location.protocol === "https:" ? "; secure" : ""}`;
+}
 export function AppearanceProvider({ children }: { children: ReactNode }) {
   const params = new URLSearchParams(location.search);
-  const [language, setLanguageState] = useState<Language>(
-    isLanguage(params.get("lang")) ? (params.get("lang") as Language) : "ar",
-  );
+  const [language, setLanguageState] = useState<Language>(storedLanguage);
   const [outputLanguage, setOutputLanguage] = useState<Language>("ar");
   const [theme, setThemeState] = useState<Theme>(
     params.get("theme") === "light" ? "light" : "dark",
@@ -40,8 +60,9 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       : "ltr";
     document.documentElement.dataset.theme = theme;
     return () => {
-      document.documentElement.lang = "ar";
-      document.documentElement.dir = "rtl";
+      const saved = storedLanguage();
+      document.documentElement.lang = saved;
+      document.documentElement.dir = ["ar", "ur"].includes(saved) ? "rtl" : "ltr";
       delete document.documentElement.dataset.theme;
     };
   }, [language, theme]);
@@ -54,6 +75,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
         setOutputLanguage,
         setLanguage: (v) => {
           update("lang", v);
+          persistLanguage(v);
           setLanguageState(v);
         },
         setTheme: (v) => {

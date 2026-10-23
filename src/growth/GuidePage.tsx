@@ -248,7 +248,7 @@ function PhotoChecklist() {
 export default function GuidePage({ slug }: { slug?: string }) {
   const { tr, language } = useAppearance();
   const ar = language === "ar";
-  const guide = slug ? guideBySlug(slug) : null;
+  const guide = (slug ? guideBySlug(slug) : null) ?? null;
   useGuideSeo(guide, !slug);
 
   if (slug && !guide)
