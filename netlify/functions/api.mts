@@ -1,3 +1,10 @@
+import { googleRoute } from "../lib/google-workspace.js";
+import {
+  createSharedSession,
+  revokeSharedSession,
+  cookieValue,
+} from "../lib/shared-session.js";
+import { SESSION_COOKIE } from "../../shared/auth-policy.js";
 import { commerceRoute } from "../lib/commerce.js";
 import {
   diagnosticsRoute,
@@ -23,6 +30,7 @@ import {
   assertOrigin,
   authenticate,
   resolveUser,
+  resolveUserFromToken,
   corsHeaders,
   payload,
   limit,
@@ -100,6 +108,53 @@ export default async (req: Request) => {
     if (!["GET", "POST", "DELETE", "PATCH"].includes(method))
       throw new ApiError(405, "طريقة الطلب غير مدعومة.");
     if (method !== "GET") assertOrigin(req);
+    if (
+      path.startsWith("/api/auth/google/") ||
+      path.startsWith("/api/google/workspace")
+    ) {
+      const response = await googleRoute(req, path);
+      Object.entries(cors).forEach(([key, value]) =>
+        response.headers.set(key, value),
+      );
+      response.headers.set("Cache-Control", "no-store");
+      response.headers.set("Referrer-Policy", "no-referrer");
+      return response;
+    }
+    if (path === "/api/auth/session" && method === "POST") {
+      const token = cookieValue(req, "nf_jwt");
+      const user = token
+        ? await resolveUserFromToken(
+            new Request(req.url, {
+              headers: { Authorization: `Bearer ${decodeURIComponent(token)}` },
+            }),
+          )
+        : null;
+      if (!user) throw new ApiError(401, "سجّل الدخول للمتابعة.");
+      if (!user.confirmedAt) throw new ApiError(403, "أكد بريد الحساب أولاً.");
+      const response = json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          roles: user.roles || [],
+        },
+      });
+      response.headers.append(
+        "Set-Cookie",
+        await createSharedSession(req, user.id),
+      );
+      return response;
+    }
+    if (path === "/api/auth/logout" && method === "POST") {
+      const response = json({ signedOut: true });
+      response.headers.append("Set-Cookie", await revokeSharedSession(req));
+      for (const name of ["nf_jwt", "nf_refresh"])
+        response.headers.append(
+          "Set-Cookie",
+          `${name}=; Path=/; Secure; SameSite=Lax; Max-Age=0`,
+        );
+      return response;
+    }
     if (path === "/api/diagnostics/client" || path === "/api/admin/diagnostics")
       return json(await diagnosticsRoute(req, path));
     if (
@@ -171,6 +226,7 @@ export default async (req: Request) => {
     if (path === "/api/session" && method === "GET") {
       const user = await resolveUser(req);
       return json({
+        shared: !!cookieValue(req, SESSION_COOKIE),
         user: user
           ? {
               id: user.id,

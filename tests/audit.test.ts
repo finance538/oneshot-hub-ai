@@ -193,6 +193,7 @@ function apiModule(fetch: typeof globalThis.fetch, prepare = async () => {}) {
       "./ecosystem-session": {
         receiverApp: () => null,
         ecosystemSession: () => null,
+        hasSharedCookieSession: () => false,
       },
       "../../shared/ecosystem": { hubOrigin: "https://www.1shotcam.com" },
       "./auth-session": { prepareIdentitySession: prepare },
@@ -420,6 +421,9 @@ test("credentialed CORS accepts exact ecosystem origins and rejects wildcard con
   const security = isolated(
     "netlify/lib/security.ts",
     {
+      "./identity-owner.js": {},
+      "./shared-session.js": {},
+      "../../shared/auth-policy.js": {},
       "@netlify/identity": {},
       "drizzle-orm": {},
       "../../db/index.js": {},

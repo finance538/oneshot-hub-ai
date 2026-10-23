@@ -1,5 +1,6 @@
+import { geminiClient } from "./gemini.js";
 import { createHash } from "node:crypto";
-import { GoogleGenAI, Type, type GenerateContentResponse } from "@google/genai";
+import { Type, type GenerateContentResponse } from "@google/genai";
 import webPush from "web-push";
 import { and, asc, eq, gt, inArray, lte, sql } from "drizzle-orm";
 import { database } from "../../db/index.js";
@@ -141,7 +142,7 @@ export async function experienceRoute(req: Request, path: string) {
     }));
     let result: GenerateContentResponse;
     try {
-      result = await new GoogleGenAI({}).models.generateContent({
+      result = await geminiClient().models.generateContent({
         model: "gemini-3-flash-preview",
         contents: JSON.stringify({ customerNeed: goal, catalog: candidates }),
         config: {

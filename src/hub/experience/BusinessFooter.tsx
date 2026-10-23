@@ -90,10 +90,12 @@ export default function BusinessFooter() {
             ))}
           </div>
           <div>
-            <h3>{tr("المنشأة والبيانات الرسمية", "Official Business Information")}</h3>
+            <h3>
+              {tr("المنشأة والبيانات الرسمية", "Official Business Information")}
+            </h3>
             <p style={{ fontWeight: 600 }}>
               {tr(
-                "مؤسسة يحيى أحمد يحيى الهوساوي للتصوير الفوتوغرافي",
+                "مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي",
                 "Yahya Ahmed Yahya Al-Hawsawi Photography Establishment",
               )}
             </p>

@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { geminiClient } from "./gemini.js";
 import { and, desc, eq } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import {
@@ -104,7 +104,7 @@ export async function conversationAction(
           .orderBy(desc(research.createdAt))
           .limit(1)
       : [];
-  const result = await new GoogleGenAI({}).models.generateContent({
+  const result = await geminiClient().models.generateContent({
     model: "gemini-2.5-flash",
     contents: JSON.stringify({
       request: input,

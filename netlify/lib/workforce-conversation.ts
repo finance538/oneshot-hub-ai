@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { geminiClient } from "./gemini.js";
 import { conversationAction } from "./workforce-actions.js";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { database } from "../../db/index.js";
@@ -33,7 +33,7 @@ export async function workforceConversation(
     if (!/^[A-Za-z0-9+/]+={0,2}$/.test(data))
       throw new ApiError(400, "مقطع صوتي غير صالح.");
     try {
-      const result = await new GoogleGenAI({}).models.generateContent({
+      const result = await geminiClient().models.generateContent({
         model: "gemini-2.5-flash",
         contents: [
           {
@@ -262,7 +262,7 @@ export async function workforceConversation(
         employeeId: task.employeeId,
         output: task.output.slice(0, 2000),
       }));
-    const result = await new GoogleGenAI({}).models.generateContent({
+    const result = await geminiClient().models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
         ...history.reverse().flatMap((row) => [

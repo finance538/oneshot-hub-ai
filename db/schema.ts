@@ -13,6 +13,52 @@ import {
   index,
   primaryKey,
 } from "drizzle-orm/pg-core";
+
+export const sharedSessions = pgTable(
+  "shared_sessions",
+  {
+    tokenHash: text("token_hash").primaryKey(),
+    ownerId: text("owner_id").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("shared_sessions_owner").on(t.ownerId),
+    index("shared_sessions_expiry").on(t.expiresAt),
+  ],
+);
+
+export const googleOAuthStates = pgTable(
+  "google_oauth_states",
+  {
+    stateHash: text("state_hash").primaryKey(),
+    browserHash: text("browser_hash").notNull(),
+    ownerId: text("owner_id"),
+    purpose: text("purpose").notNull(),
+    returnTo: text("return_to").notNull(),
+    encryptedVerifier: text("encrypted_verifier").notNull(),
+    nonceHash: text("nonce_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [index("google_oauth_states_expiry").on(t.expiresAt)],
+);
+
+export const googleWorkspaceConnections = pgTable(
+  "google_workspace_connections",
+  {
+    ownerId: text("owner_id").primaryKey(),
+    googleSubject: text("google_subject").notNull(),
+    email: text("email").notNull(),
+    scopes: text("scopes").notNull(),
+    encryptedTokens: text("encrypted_tokens").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+);
+
 export const products = pgTable("products", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),

@@ -212,7 +212,17 @@ function Checkout({
           </>
         )
       )}
-      <div className="commerce-merchant-entity" style={{ padding: "0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "6px", margin: "1rem 0", fontSize: "0.85rem", border: "1px solid rgba(255,255,255,0.08)" }}>
+      <div
+        className="commerce-merchant-entity"
+        style={{
+          padding: "0.75rem",
+          background: "rgba(255,255,255,0.03)",
+          borderRadius: "6px",
+          margin: "1rem 0",
+          fontSize: "0.85rem",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
         <p style={{ margin: 0, fontWeight: 600 }}>
           {tr(
             "الجهة المصدرة: مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي",
@@ -221,6 +231,8 @@ function Checkout({
         </p>
         <p style={{ margin: "0.25rem 0 0 0", opacity: 0.8 }} dir="ltr">
           CR / UNN: 7038244914 · finance@1shotcam.com
+          <br />
+          {tr("تاريخ الإصدار: 06/02/2024 · نشط", "Issued: 06/02/2024 · Active")}
         </p>
       </div>
       {error && <p role="alert">{error}</p>}

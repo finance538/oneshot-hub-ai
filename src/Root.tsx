@@ -1,4 +1,5 @@
 import CommerceHost from "./commerce/CommerceHost";
+import EcosystemSwitcher from "./components/EcosystemSwitcher";
 import GlobalControls from "./components/GlobalControls";
 import "./commerce/commerce.css";
 import { lazy, Suspense } from "react";
@@ -13,6 +14,7 @@ const CheckoutPage = lazy(() => import("./commerce/CheckoutPage"));
 export default function Root() {
   return (
     <>
+      <EcosystemSwitcher />
       <RootRoutes />
       <CommerceHost />
       <GlobalControls />

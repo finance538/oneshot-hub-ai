@@ -10,7 +10,6 @@ import {
   acceptInvite,
   updateUser,
   requestPasswordRecovery,
-  oauthLogin,
   AuthError,
   MissingIdentityError,
   type Settings,
@@ -18,42 +17,28 @@ import {
 import { LogIn, LogOut, UserRound, ArrowLeft } from "lucide-react";
 import { Modal, Notice, Busy } from "./common";
 import { api, clearApiSession } from "../lib/api";
-import {
-  useAppearance,
-  appearanceLink,
-  storedLanguage,
-} from "../storefront/i18n";
+import { useAppearance, appearanceLink } from "../storefront/i18n";
 import {
   waitForAuth,
   prepareIdentitySession,
   AuthTimeoutError,
-  saveAuthReturn,
   takeAuthReturn,
 } from "../lib/auth-session";
 import {
   clearEcosystemSession,
-  ecosystemSession,
   ecosystemUser,
   receiverApp,
+  authOrigin,
+  hasSharedCookieSession,
+  googleLoginUrl,
+  syncIdentitySession,
+  logoutSharedSession,
 } from "../lib/ecosystem-session";
 export interface SessionUser {
   id: string;
   name?: string;
   email?: string;
   roles?: string[];
-}
-function ensureAdminRole(
-  u: SessionUser | null | undefined,
-): SessionUser | null {
-  if (!u) return null;
-  const roles = Array.isArray(u.roles) ? [...u.roles] : [];
-  if (
-    u.email?.toLowerCase() === "finance@1shotcam.com" &&
-    !roles.includes("admin")
-  ) {
-    roles.push("admin");
-  }
-  return { ...u, roles };
 }
 export function useAuth() {
   const { tr } = useAppearance();
@@ -70,23 +55,46 @@ export function useAuth() {
     [error, setError] = useState("");
   useEffect(() => {
     let alive = true;
-    const unsubscribe = onAuthChange((event, rawUser) => {
-      if (alive && !receiverApp()) {
-        const u = ensureAdminRole(rawUser);
-        const signature = `${u?.id || ""}:${u?.roles?.join(",") || ""}`;
-        if (
-          event !== "token_refresh" ||
-          signature !== identitySignature.current
-        )
-          clearApiSession();
-        identitySignature.current = signature;
-        setUser(u);
+    const applyUser = (u: SessionUser | null) => {
+      if (!alive) return;
+      const signature = `${u?.id || ""}:${u?.roles?.join(",") || ""}`;
+      if (signature !== identitySignature.current) clearApiSession();
+      identitySignature.current = signature;
+      setUser(u);
+    };
+    const unsubscribe = onAuthChange((event) => {
+      if (!alive || receiverApp()) return;
+      if (event === "login" || event === "user_updated") {
+        clearApiSession();
+        void syncIdentitySession()
+          .then(applyUser)
+          .catch(() => {
+            if (alive)
+              setError(
+                tr(
+                  "تعذّر مزامنة الحساب. أعد تحميل الصفحة.",
+                  "Could not synchronize your account. Reload the page.",
+                ),
+              );
+          });
       }
     });
+    const returned = new URL(location.href);
+    if (returned.searchParams.has("google_error")) {
+      returned.searchParams.delete("google_error");
+      history.replaceState(history.state, "", returned.href);
+      setError(
+        tr(
+          "لم يكتمل اتصال Google. تحقق من الموافقة وحاول مجدداً.",
+          "Google connection did not complete. Check consent and try again.",
+        ),
+      );
+      setOpen(true);
+    }
     (async () => {
       try {
         if (receiverApp()) {
-          const current = ensureAdminRole(await ecosystemUser());
+          const current = await ecosystemUser();
           if (alive) setUser(current);
           return;
         }
@@ -109,8 +117,14 @@ export function useAuth() {
           setCallback({ type: "recovery" });
           setOpen(true);
         }
-        await prepareIdentitySession();
-        const current = ensureAdminRole(await waitForAuth(getUser()));
+        let current = await ecosystemUser();
+        if (current && !hasSharedCookieSession())
+          current = await syncIdentitySession();
+        if (!current && !hasSharedCookieSession()) {
+          await prepareIdentitySession();
+          if (await waitForAuth(getUser()))
+            current = await syncIdentitySession();
+        }
         if (alive) {
           identitySignature.current = `${current?.id || ""}:${current?.roles?.join(",") || ""}`;
           setUser(current);
@@ -163,15 +177,16 @@ export function useAuth() {
       sharedRevokeFailed = true;
     }
     try {
-      if (receiverApp()) clearEcosystemSession();
-      else await waitForAuth(logout());
+      await logoutSharedSession();
+      clearEcosystemSession();
+      if (!receiverApp()) await waitForAuth(logout());
       clearApiSession();
       setUser(null);
       if (sharedRevokeFailed) {
         setError(
           tr(
-            "تم الخروج من هذا الجهاز. تعذّر تأكيد إغلاق الجلسات المشتركة؛ تنتهي خلال عشر دقائق كحد أقصى.",
-            "Signed out on this device. Shared session revocation could not be confirmed; those sessions expire within ten minutes.",
+            "تم إغلاق الجلسة المشتركة. تعذّر تأكيد إلغاء روابط الدخول القديمة؛ تنتهي خلال عشر دقائق.",
+            "The shared session is closed. Legacy sign-in grants could not be revoked; they expire within ten minutes.",
           ),
         );
         setOpen(true);
@@ -189,28 +204,6 @@ export function useAuth() {
     }
   }
   useEffect(() => {
-    if (!user || !receiverApp()) return;
-    const session = ecosystemSession();
-    if (!session) {
-      clearApiSession();
-      setUser(null);
-      return;
-    }
-    const timer = setTimeout(
-      () => {
-        clearEcosystemSession();
-        clearApiSession();
-        setUser(null);
-        setError(
-          tr(
-            "انتهت جلسة التطبيق المشتركة. سجّل الدخول مجدداً للمتابعة.",
-            "Your shared app session expired. Sign in again to continue.",
-          ),
-        );
-        setOpen(true);
-      },
-      Math.max(0, Date.parse(session.expiresAt) - Date.now()),
-    );
     let alive = true;
     const verify = async () => {
       if (document.hidden) return;
@@ -218,8 +211,8 @@ export function useAuth() {
         const current = await ecosystemUser();
         if (!alive) return;
         if (
-          current?.id !== user.id ||
-          current?.roles?.join(",") !== user.roles?.join(",")
+          current?.id !== user?.id ||
+          current?.roles?.join(",") !== user?.roles?.join(",")
         ) {
           clearApiSession();
           setUser(current);
@@ -232,22 +225,11 @@ export function useAuth() {
     document.addEventListener("visibilitychange", verify);
     return () => {
       alive = false;
-      clearTimeout(timer);
       clearInterval(interval);
       document.removeEventListener("visibilitychange", verify);
     };
   }, [user?.id, user?.roles?.join(",")]);
   function openLogin(onSuccess?: () => void) {
-    if (receiverApp()) {
-      const start = new URL("/sso/start", location.origin);
-      start.searchParams.set("lang", storedLanguage());
-      start.searchParams.set(
-        "returnTo",
-        location.pathname + location.search + location.hash,
-      );
-      location.assign(start.href);
-      return;
-    }
     afterLogin.current = onSuccess;
     setOpen(true);
   }
@@ -293,8 +275,11 @@ export function useAuth() {
         }}
       >
         {error && <Notice>{error}</Notice>}
-        <button className="button primary" onClick={() => openLogin()}>
-          {tr("OneShot Hub · تسجيل الدخول الموحد", "OneShot Hub · Sign in")}
+        <button
+          className="button primary"
+          onClick={() => location.assign(googleLoginUrl())}
+        >
+          {tr("المتابعة باستخدام Google", "Continue with Google")}
         </button>
       </Modal>
     ) : open ? (
@@ -334,6 +319,7 @@ function AuthDialog({
     [error, setError] = useState(initialError),
     [notice, setNotice] = useState(""),
     [busy, setBusy] = useState(false),
+    [googleEnabled, setGoogleEnabled] = useState(false),
     [settings, setSettings] = useState<Settings | null>(null),
     [settingsState, setSettingsState] = useState<"loading" | "ready" | "error">(
       "loading",
@@ -341,9 +327,18 @@ function AuthDialog({
   async function loadSettings() {
     setSettingsState("loading");
     try {
-      const value = await waitForAuth(getSettings(), 10000);
+      const [value, googleSettings] = await Promise.all([
+        waitForAuth(getSettings(), 10000).catch(() => null),
+        fetch(`${authOrigin()}/api/auth/google/settings`, {
+          signal: AbortSignal.timeout(10000),
+        })
+          .then((response) => (response.ok ? response.json() : null))
+          .catch(() => null),
+      ]);
+      if (!value && !googleSettings) throw new Error("settings unavailable");
       if (alive.current) {
         setSettings(value);
+        setGoogleEnabled(googleSettings?.enabled === true);
         setSettingsState("ready");
       }
     } catch {
@@ -437,25 +432,8 @@ function AuthDialog({
     }
   }
   function google() {
-    if (busy || !settings?.providers.google) return;
-    setError("");
-    const current = location.pathname + location.search;
-    saveAuthReturn(
-      ["/", "/sign-in"].includes(location.pathname)
-        ? appearanceLink("/hub") + "#command"
-        : current + location.hash,
-    );
-    try {
-      oauthLogin("google");
-    } catch (cause) {
-      // Version 2 signals successful browser navigation by throwing this sentinel.
-      if (
-        cause instanceof AuthError &&
-        cause.message === "Redirecting to OAuth provider"
-      )
-        return;
-      setError(authError(cause));
-    }
+    if (busy || !googleEnabled) return;
+    location.assign(googleLoginUrl(window.location.href));
   }
   function changeMode(value: typeof mode) {
     setMode(value);
@@ -477,7 +455,7 @@ function AuthDialog({
           "One account for the store, your workspace and AI employees.",
         )}
       </p>
-      {!callback && mode !== "forgot" && settings?.providers.google && (
+      {!callback && mode !== "forgot" && googleEnabled && (
         <button
           type="button"
           className="button subtle auth-google"
