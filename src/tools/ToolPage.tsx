@@ -40,11 +40,7 @@ export default function ToolPage({
   }, [page, ar, path]);
   const funnel = funnelHref(cluster, page.slug);
   const proHref = (() => {
-    const url = new URL("https://pay.1shotcam.com");
-    url.searchParams.set("pro_tool", page.slug);
-    url.searchParams.set("utm_source", "1shotcam");
-    url.searchParams.set("utm_medium", "tool-pro");
-    return url.href;
+    return `mailto:support@1shotcam.com?subject=${encodeURIComponent(`OneShot Pro · ${page.slug}`)}`;
   })();
   const Arrow = ar ? ArrowUpLeft : ArrowUpRight;
   const cta = (
@@ -101,8 +97,8 @@ export default function ToolPage({
             <Lock size={18} aria-hidden="true" />
             <p>
               {ar
-                ? "الرسم البياني والمخرجات المتقدمة القابلة للنسخ متاحة في نسخة Pro."
-                : "The chart and advanced copy-ready outputs are part of the Pro edition."}
+                ? "هذه المخرجات مخصّصة لنسخة Pro. التفعيل بعد الشراء غير متاح بعد؛ تواصل معنا للتحقق من التوفر قبل أي دفع."
+                : "These outputs are reserved for Pro. Purchase activation is not available yet; contact us to confirm availability before paying."}
             </p>
             <a
               className="tools-cta"
@@ -111,9 +107,7 @@ export default function ToolPage({
               rel="noopener"
             >
               <Sparkles size={16} aria-hidden="true" />
-              {ar
-                ? "افتح نسخة Pro عبر OneShot Pay"
-                : "Unlock Pro via OneShot Pay"}
+              {ar ? "استفسر عن توفر Pro" : "Ask about Pro availability"}
             </a>
           </div>
         }

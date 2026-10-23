@@ -1,6 +1,61 @@
 import { ecosystemSession, receiverApp } from "./ecosystem-session";
 import { hubOrigin } from "../../shared/ecosystem";
 import type { Order } from "../../shared/contracts";
+import { prepareIdentitySession } from "./auth-session";
+import { storedLanguage } from "./preferences";
+const englishErrors: Record<string, string> = {
+  AUTH_REQUIRED: "Sign in to continue.",
+  ADMIN_REQUIRED: "This area requires an administrator account.",
+  SESSION_CHANGED: "Your account session changed. Reload to continue.",
+  RATE_LIMIT: "Too many requests. Wait a minute and try again.",
+  CONNECTION_UNCONFIRMED:
+    "The connection ended before the outcome was confirmed. Check the operation status before trying again.",
+  INVALID_API_RESPONSE:
+    "The server returned an invalid response. The operation was not repeated. Check its status before trying again.",
+  ROUTE_NOT_FOUND: "This service endpoint is unavailable.",
+  VAULT_NOT_CONFIGURED: "Vault encryption is awaiting administrator setup.",
+  GATEWAY_NOT_CONFIGURED:
+    "This gateway has no saved credentials for the selected environment.",
+  GATEWAY_ENVIRONMENT_MISMATCH:
+    "Gateway credentials do not match the selected environment.",
+  GATEWAY_MIGRATION_PENDING:
+    "This gateway integration is not ready. No payment was created.",
+  SERVICE_QUOTE_REQUIRED:
+    "Confirm the service scope and quote with our team before paying.",
+  ORGANIZATION_REQUIRED: "Create your organization workspace first.",
+  RECONCILIATION_REQUIRED:
+    "Check this order in the provider dashboard before attempting another payment.",
+  PAYMENT_VERIFICATION_MISMATCH:
+    "Provider details do not match this order. Payment remains unconfirmed.",
+  UPSTREAM_UNCONFIRMED:
+    "The provider outcome could not be confirmed. Review the order before creating another payment.",
+  SSO_NOT_ENABLED: "This application has not enabled shared sign-in.",
+  SSO_PRODUCTION_ONLY:
+    "Shared sign-in is available on the production Hub only.",
+  AI_UNAVAILABLE:
+    "The AI service is currently unavailable. Your existing work remains available.",
+  WORKFORCE_AI_UNAVAILABLE:
+    "Could not generate the draft. Check the task status before trying again.",
+};
+function requestMessage(message: string, code?: string, status?: number) {
+  if (storedLanguage() === "ar") return message;
+  return (
+    englishErrors[code || ""] ||
+    (!/[\u0600-\u06ff]/.test(message)
+      ? message
+      : status === 401
+        ? englishErrors.AUTH_REQUIRED
+        : status === 403
+          ? "You do not have permission for this operation."
+          : status === 400 || status === 422
+            ? "Check the supplied information and try again."
+            : status === 409
+              ? "The operation conflicts with the current state. Refresh its status before trying again."
+              : status === 503
+                ? "This service is awaiting configuration or is temporarily unavailable. Contact support."
+                : "The request could not be completed. Check the operation status or contact support.")
+  );
+}
 export interface ApiEntry {
   id: string;
   path: string;
@@ -50,7 +105,7 @@ export class RequestError extends Error {
     public status: number,
     public code?: string,
   ) {
-    super(message);
+    super(requestMessage(message, code, status));
   }
 }
 export function isUnconfirmedRequest(error: unknown) {
@@ -69,12 +124,22 @@ export function isUnconfirmedRequest(error: unknown) {
 export async function callBackendApi<T = Record<string, any>>(
   endpoints: string[],
   payload?: unknown,
-  options: { method?: string; idempotencyKey?: string; quiet?: boolean } = {},
+  options: {
+    method?: string;
+    idempotencyKey?: string;
+    quiet?: boolean;
+    timeoutMs?: number;
+  } = {},
 ): Promise<T> {
   const method = options.method || (payload === undefined ? "GET" : "POST"),
     start = performance.now(),
     session = generation;
   for (const path of endpoints) {
+    const publicRequest =
+      method === "GET" &&
+      /^\/api\/(products|health|payments\/capabilities|ecosystem\/(status|handshake)|experience\/config|workforce\/catalog|tools\/pro|growth\/(guides|seo))(?:\?|$)/.test(
+        path,
+      );
     const id = crypto.randomUUID();
     const record = (status: number, response: unknown) => {
       if (
@@ -106,10 +171,13 @@ export async function callBackendApi<T = Record<string, any>>(
     try {
       const crossApp = receiverApp();
       const sharedSession = ecosystemSession();
+      if (!crossApp && !publicRequest) await prepareIdentitySession();
+      if (!publicRequest && session !== generation)
+        throw new RequestError("تغيّرت جلسة المستخدم.", 401, "SESSION_CHANGED");
       response = await fetch(crossApp ? new URL(path, hubOrigin).href : path, {
         method,
         credentials: crossApp ? "omit" : "same-origin",
-        signal: AbortSignal.timeout(50000),
+        signal: AbortSignal.timeout(options.timeoutMs || 50000),
         headers: {
           ...(crossApp && sharedSession
             ? { Authorization: `Bearer ${sharedSession.sessionToken}` }
@@ -123,7 +191,8 @@ export async function callBackendApi<T = Record<string, any>>(
         },
         body: payload === undefined ? undefined : JSON.stringify(payload),
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof RequestError) throw error;
       return failure(
         method === "GET"
           ? "تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة."
@@ -160,8 +229,10 @@ export async function callBackendApi<T = Record<string, any>>(
         "INVALID_API_RESPONSE",
       );
     }
-    if (session !== generation)
+    if (!publicRequest && session !== generation)
       throw new RequestError("تغيّرت جلسة المستخدم.", 401, "SESSION_CHANGED");
+    if (typeof data.error === "string")
+      data.error = requestMessage(data.error, data.code, response.status);
     record(response.status, data);
     if (response.status === 404 && data.code === "ROUTE_NOT_FOUND") continue;
     if (!response.ok)
@@ -191,6 +262,16 @@ const orderLabels: Record<string, string> = {
   unconfirmed: "النتيجة غير مؤكدة",
 };
 export const orderLabel = (status: Order["status"]) =>
-  orderLabels[status] || status;
+  storedLanguage() === "ar"
+    ? orderLabels[status] || status
+    : (
+        {
+          pending: "Pending",
+          awaiting_payment: "Awaiting payment",
+          paid: "Paid",
+          failed: "Failed",
+          unconfirmed: "Unconfirmed",
+        } as Record<string, string>
+      )[status] || status;
 export const imageUrl = (name: string, width = 640) =>
   `/.netlify/images?url=${encodeURIComponent(`/img/${name}.png`)}&w=${width}&fm=webp`;

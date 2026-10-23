@@ -4117,3 +4117,39 @@ tr:last-child td {
   margin-top: 12px;
   font-weight: 600;
 }
+
+/* Account controls must remain readable at phone widths in both directions. */
+.auth-google {
+  width: 100%;
+  margin-block: 0 18px;
+  justify-content: center;
+}
+.account-controls,
+.auth-links,
+.modal-actions {
+  flex-wrap: wrap;
+}
+.account-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.modal {
+  overflow-wrap: anywhere;
+}
+.modal :is(input, textarea, select) {
+  max-width: 100%;
+  min-width: 0;
+}
+[dir="ltr"] .module-name {
+  text-align: start;
+}
+@media (max-width: 420px) {
+  .auth-links {
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .auth-links button {
+    white-space: normal;
+    text-align: start;
+  }
+}

@@ -1,3 +1,4 @@
+import { uiText as t } from "./lib/legacy-copy";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ShoppingBag,
@@ -26,7 +27,7 @@ import { useAuth, type SessionUser } from "./components/auth";
 import { Store } from "./components/store";
 import { Inspector } from "./components/inspector";
 import { Gateway, Vault } from "./components/gateway";
-import { appearanceLink } from "./storefront/i18n";
+import { appearanceLink, useAppearance } from "./storefront/i18n";
 import { Executive } from "./components/executive";
 import { AccessGate, Modal, Notice } from "./components/common";
 const navigation = [
@@ -124,6 +125,7 @@ function Workspace({
   onWorkforce: () => void;
   accountControl: React.ReactNode;
 }) {
+  const { tr, language, setLanguage } = useAppearance();
   const [active, setActive] = useState<Module>(initialModule),
     [health, setHealth] = useState<Health | null>(null),
     [checking, setChecking] = useState(false),
@@ -162,7 +164,7 @@ function Workspace({
         if (alive) setOrder(result.order);
       })
       .catch(() => {
-        if (alive) setPaymentError("تعذّر استرجاع الطلب. راجع طلبات حسابك.");
+        if (alive) setPaymentError(t("تعذّر استرجاع الطلب. راجع طلبات حسابك."));
       });
     return () => {
       alive = false;
@@ -216,11 +218,16 @@ function Workspace({
     };
   }, []);
   function navigate(id: Module) {
+    if (id === "store") {
+      location.assign(appearanceLink("/"));
+      return;
+    }
     setActive(id);
     setMenu(false);
     const u = new URL(window.location.href);
     u.pathname = "/";
     u.hash = "";
+    u.searchParams.delete("order");
     u.searchParams.set("module", id);
     history.pushState({}, "", u);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -237,7 +244,7 @@ function Workspace({
         endpoints.payment,
         {
           productId: product.id,
-          gatewayCode: "telr",
+          gatewayCode: "stripe",
           executionMode: "PRODUCTION",
           topologyMode: "HOSTED_PAGE",
         },
@@ -295,14 +302,14 @@ function Workspace({
             <span>
               <span className="orange-dot" /> ONESHOT ECOSYSTEM
             </span>
-            <span>من أول فكرة، إلى أبعد احتمال.</span>
+            <span>{t("من أول فكرة، إلى أبعد احتمال.")}</span>
             <span dir="ltr">CREATE. CONNECT. GROW.</span>
           </div>
           <header className="main-header">
             <button
               className="brand"
               onClick={() => navigate("store")}
-              aria-label="oneShot — الصفحة الرئيسية"
+              aria-label={t("oneShot — الصفحة الرئيسية")}
             >
               <img src="/brand/oneshot.svg" alt="" width="44" height="44" />
               <div>
@@ -310,35 +317,41 @@ function Workspace({
                   one<span>Shot</span>
                   <em>®</em>
                 </strong>
-                <small>المنظومة الموحدة الشاملة</small>
+                <small>{t("المنظومة الموحدة الشاملة")}</small>
               </div>
             </button>
             <div
               className={`backend-pill ${health?.database.connected ? "connected" : ""}`}
               title={
                 healthError ||
-                "حالة اتصال قاعدة بيانات Netlify؛ استجابة الذكاء الاصطناعي تُتحقق عند إرسال رسالة."
+                t(
+                  "حالة اتصال قاعدة بيانات Netlify؛ استجابة الذكاء الاصطناعي تُتحقق عند إرسال رسالة.",
+                )
               }
             >
               <span className="status-dot" />
               <span>
                 {checking
-                  ? "جارٍ فحص قاعدة البيانات"
+                  ? t("جارٍ فحص قاعدة البيانات")
                   : health?.database.connected
-                    ? "قاعدة بيانات Netlify متصلة"
-                    : "اتصال قاعدة البيانات غير متحقق"}
+                    ? t("قاعدة بيانات Netlify متصلة")
+                    : t("اتصال قاعدة البيانات غير متحقق")}
                 <small dir="ltr">NETLIFY · ONESHOT</small>
               </span>
             </div>
             <div className="header-actions">
-              <span className="language">
-                <Globe2 size={15} /> العربية
-              </span>
+              <button
+                type="button"
+                className="button subtle small"
+                onClick={() => setLanguage(language === "ar" ? "en" : "ar")}
+              >
+                <Globe2 size={15} /> {language === "ar" ? "English" : "العربية"}
+              </button>
               <button
                 className="icon-button"
                 onClick={loadOrders}
-                title="طلباتي"
-                aria-label="طلباتي"
+                title={t("طلباتي")}
+                aria-label={t("طلباتي")}
               >
                 <ReceiptText size={19} />
               </button>
@@ -346,7 +359,9 @@ function Workspace({
               <button
                 ref={menuButtonRef}
                 className="icon-button mobile-menu"
-                aria-label={menu ? "طي قائمة الوحدات" : "توسيع قائمة الوحدات"}
+                aria-label={
+                  menu ? t("طي قائمة الوحدات") : t("توسيع قائمة الوحدات")
+                }
                 aria-expanded={menu}
                 aria-controls="workspace-navigation"
                 onClick={() => setMenu(!menu)}
@@ -359,7 +374,7 @@ function Workspace({
             <nav
               id="workspace-navigation"
               className={`module-nav ${menu ? "open" : ""}`}
-              aria-label="وحدات المنظومة"
+              aria-label={t("وحدات المنظومة")}
             >
               {navigation.map((n, i) => (
                 <button
@@ -372,7 +387,7 @@ function Workspace({
                     <n.icon size={21} />
                   </span>
                   <span className="module-name">
-                    {n.title}
+                    {t(n.title)}
                     <small>{n.subtitle}</small>
                   </span>
                   <span className="module-number">0{i + 1}</span>
@@ -381,9 +396,9 @@ function Workspace({
             </nav>
             <div className="workspace-breadcrumb">
               <div>
-                <span>منظومة oneShot</span>
+                <span>{t("منظومة oneShot")}</span>
                 <ChevronLeft size={13} />
-                <strong>{selected.title}</strong>
+                <strong>{t(selected.title)}</strong>
               </div>
               <span className="workspace-label">
                 YOUR ALL-IN-ONE WORKSPACE <span className="tiny-cross">+</span>
@@ -402,12 +417,12 @@ function Workspace({
                           buy(pendingPurchase.product, pendingPurchase.key)
                         }
                       >
-                        استعادة نتيجة الطلب السابق
+                        {t("استعادة نتيجة الطلب السابق")}
                       </button>
                     )}
                     <button
                       className="icon-button"
-                      aria-label="إغلاق الرسالة"
+                      aria-label={t("إغلاق الرسالة")}
                       onClick={() => setPaymentError("")}
                     >
                       <X size={16} />
@@ -446,18 +461,22 @@ function Workspace({
                 <span dir="ltr">
                   one<span className="text-orange">Shot</span>
                 </span>
-                <small>كل أدواتك. في لقطة واحدة.</small>
+                <small>{t("كل أدواتك. في لقطة واحدة.")}</small>
               </div>
               <p>© {new Date().getFullYear()} 1SHOTCAM.COM</p>
               <button onClick={onWorkforce} disabled={!authReady}>
-                ادخل مقر شركتك الرقمي <ArrowUpRight size={16} />
+                {t("ادخل مقر شركتك الرقمي")}
+                <ArrowUpRight size={16} />
               </button>
             </footer>
           </div>
         </div>
       )}
       {active === "store" && order && (
-        <Modal title="متابعة الطلب والدفع" onClose={() => setOrder(null)}>
+        <Modal
+          title={tr("متابعة الطلب والدفع", "Order & payment status")}
+          onClose={() => setOrder(null)}
+        >
           <Inspector
             health={health}
             refresh={refresh}
@@ -468,7 +487,10 @@ function Workspace({
         </Modal>
       )}
       {showOrders && (
-        <Modal title="طلباتي" onClose={() => setShowOrders(false)}>
+        <Modal
+          title={tr("طلباتي", "My orders")}
+          onClose={() => setShowOrders(false)}
+        >
           {ordersError && <Notice>{ordersError}</Notice>}
           <button
             className="button subtle small"
@@ -476,7 +498,7 @@ function Workspace({
             disabled={ordersLoading}
           >
             <RefreshCw size={14} className={ordersLoading ? "spin" : ""} />{" "}
-            تحديث الطلبات
+            {tr("تحديث الطلبات", "Refresh orders")}
           </button>
           {ownOrders.length ? (
             <div className="my-orders">
@@ -499,16 +521,16 @@ function Workspace({
                 </button>
               ))}
             </div>
-          ) : (
+          ) : !ordersError ? (
             <div className="empty-state">
               <ReceiptText size={30} />
               <p>
                 {ordersLoading
-                  ? "جارٍ تحميل الطلبات..."
-                  : "لم تُسجل طلبات بعد."}
+                  ? tr("جارٍ تحميل الطلبات...", "Loading orders…")
+                  : tr("لم تُسجل طلبات بعد.", "No orders yet.")}
               </p>
             </div>
-          )}
+          ) : null}
         </Modal>
       )}
     </>

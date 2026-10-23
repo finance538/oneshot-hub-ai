@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useAppearance } from "../storefront/i18n";
+import { uiText as t } from "../lib/legacy-copy";
+import { useState, useEffect, useRef } from "react";
 import {
   Activity,
   Terminal,
@@ -55,10 +57,43 @@ export function Inspector({
   order: Order | null;
   onOrder: (o: Order) => void;
 }) {
+  useAppearance();
   const [entries, setEntries] = useState<ApiEntry[]>([]),
     [active, setActive] = useState<string | null>(null),
     [copied, setCopied] = useState(false),
     [pollError, setPollError] = useState("");
+  const updating = useRef(false),
+    currentOrder = useRef(order?.id);
+  currentOrder.current = order?.id;
+  const [updatingOrder, setUpdatingOrder] = useState(false);
+  async function refreshOrder() {
+    if (!order || updating.current) return;
+    const id = order.id;
+    updating.current = true;
+    setUpdatingOrder(true);
+    try {
+      const result = await api<{ order: Order }>(
+        `/api/orders/${id}${order.processor === "netlify" ? "/reconcile" : ""}`,
+        order.processor === "netlify" ? {} : undefined,
+        { quiet: true },
+      );
+      if (currentOrder.current === id) {
+        onOrder(result.order);
+        setPollError("");
+      }
+    } catch {
+      if (currentOrder.current === id) setPollError(t("تعذّر تحديث الحالة."));
+    } finally {
+      updating.current = false;
+      setUpdatingOrder(false);
+    }
+  }
+  useEffect(
+    () => () => {
+      currentOrder.current = undefined;
+    },
+    [],
+  );
   useEffect(
     () =>
       subscribeApi((entry) => {
@@ -75,29 +110,16 @@ export function Inspector({
       !["pending", "awaiting_payment", "unconfirmed"].includes(order.status)
     )
       return;
-    let alive = true,
-      count = 0;
+    let count = 0;
     const timer = setInterval(async () => {
+      if (document.hidden || updating.current) return;
       if (++count > 30) {
         clearInterval(timer);
         return;
       }
-      try {
-        const result = await api<{ order: Order }>(
-          `/api/orders/${order.id}${order.processor === "netlify" ? "/reconcile" : ""}`,
-          order.processor === "netlify" ? {} : undefined,
-          { quiet: true },
-        );
-        if (alive) {
-          onOrder(result.order);
-          setPollError("");
-        }
-      } catch {
-        if (alive) setPollError("تعذّر تحديث حالة الطلب تلقائياً.");
-      }
+      await refreshOrder();
     }, 10000);
     return () => {
-      alive = false;
       clearInterval(timer);
     };
   }, [order?.id, order?.status]);
@@ -112,6 +134,7 @@ export function Inspector({
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setCopied(false);
+      setPollError(t("تعذّر النسخ من المتصفح."));
     }
   }
   return (
@@ -121,7 +144,7 @@ export function Inspector({
           <Activity size={18} />
         </span>
         <div>
-          <h2>مراقب النظام الحي</h2>
+          <h2>{t("مراقب النظام الحي")}</h2>
           <span>LIVE API INSPECTOR</span>
         </div>
         <span
@@ -130,32 +153,32 @@ export function Inspector({
       </div>
       <div className="inspector-status">
         <div>
-          <span>قاعدة بيانات المنظومة</span>
+          <span>{t("قاعدة بيانات المنظومة")}</span>
           <b className={health?.database.connected ? "text-green" : ""}>
             {health
               ? health.database.connected
-                ? "متصلة"
-                : "غير متاحة"
+                ? t("متصلة")
+                : t("غير متاحة")
               : checking
-                ? "جارٍ الفحص"
-                : "غير متاحة"}
+                ? t("جارٍ الفحص")
+                : t("غير متاحة")}
           </b>
         </div>
         <div>
-          <span>خدمات التطبيق على Netlify</span>
+          <span>{t("خدمات التطبيق على Netlify")}</span>
           <b className={health?.core.connected ? "text-green" : "text-amber"}>
             {health
               ? health.core.connected
-                ? "متصل"
-                : "غير متاحة"
+                ? t("متصل")
+                : t("غير متاحة")
               : checking
-                ? "جارٍ الفحص"
-                : "غير متاح"}
+                ? t("جارٍ الفحص")
+                : t("غير متاح")}
           </b>
         </div>
         <div>
-          <span>اتصالات الدفع عبر HTTPS</span>
-          <b>{health?.core.secure ? "إلزامي" : "غير متحقق"}</b>
+          <span>{t("اتصالات الدفع عبر HTTPS")}</span>
+          <b>{health?.core.secure ? t("إلزامي") : t("غير متحقق")}</b>
         </div>
         <div className="server-address">
           <Radio size={12} />
@@ -164,7 +187,7 @@ export function Inspector({
             className="icon-button"
             onClick={refresh}
             disabled={checking}
-            aria-label="تحديث حالة الاتصال"
+            aria-label={t("تحديث حالة الاتصال")}
           >
             <RefreshCw size={13} className={checking ? "spin" : ""} />
           </button>
@@ -172,13 +195,13 @@ export function Inspector({
       </div>
       <div className="console-toolbar">
         <span>
-          <Terminal size={13} /> الاستجابة الفعلية
+          <Terminal size={13} /> {t("الاستجابة الفعلية")}
         </span>
         <button
           className="icon-button"
           onClick={copy}
           disabled={!selected}
-          aria-label="نسخ الاستجابة"
+          aria-label={t("نسخ الاستجابة")}
         >
           {copied ? <Check size={14} /> : <Copy size={14} />}
         </button>
@@ -212,15 +235,16 @@ export function Inspector({
       ) : (
         <div className="console-empty">
           <Terminal size={27} />
-          <p>في انتظار أول طلب</p>
-          <small>تظهر هنا استجابات الخادم فور تنفيذ العمليات.</small>
+          <p>{t("في انتظار أول طلب")}</p>
+          <small>{t("تظهر هنا استجابات الخادم فور تنفيذ العمليات.")}</small>
           <span className="terminal-cursor" />
         </div>
       )}
       {entries.length > 1 && (
         <details className="request-history">
           <summary>
-            سجل الطلبات <span>{entries.length}</span>
+            {t("سجل الطلبات")}
+            <span>{entries.length}</span>
             <ChevronDown size={14} />
           </summary>
           {entries.map((e) => (
@@ -240,7 +264,7 @@ export function Inspector({
       <div className="checkout-section">
         <div className="checkout-title">
           <LockKeyhole size={16} />
-          <h3>إتمام الدفع الآمن</h3>
+          <h3>{t("إتمام الدفع الآمن")}</h3>
           <span>3DS</span>
         </div>
         {order ? (
@@ -256,49 +280,44 @@ export function Inspector({
               </strong>
               <small dir="ltr">#{order.id.slice(0, 8)}</small>
             </div>
-            {order.checkoutUrl && order.status !== "paid" && (
-              <>
-                {order.processor !== "netlify" && (
-                  <iframe
-                    className="three-ds-frame"
-                    title="إتمام الدفع والتحقق البنكي"
-                    src={order.checkoutUrl}
-                    sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-top-navigation-by-user-activation"
-                    allow="payment"
-                    referrerPolicy="no-referrer"
-                  />
-                )}
+            {order.checkoutUrl &&
+              ["pending", "awaiting_payment", "unconfirmed"].includes(
+                order.status,
+              ) && (
+                <>
+                  {order.processor !== "netlify" && (
+                    <iframe
+                      className="three-ds-frame"
+                      title={t("إتمام الدفع والتحقق البنكي")}
+                      src={order.checkoutUrl}
+                      sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-top-navigation-by-user-activation"
+                      allow="payment"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
 
-                <a
-                  className="button subtle small"
-                  href={order.checkoutUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  فتح صفحة الدفع <ExternalLink size={14} />
-                </a>
-                <small className="muted">
-                  إذا منعت البوابة العرض المدمج، استخدم صفحة الدفع.
-                </small>
-              </>
-            )}
+                  <a
+                    className="button subtle small"
+                    href={order.checkoutUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t("فتح صفحة الدفع")}
+                    <ExternalLink size={14} />
+                  </a>
+                  <small className="muted">
+                    {t("إذا منعت البوابة العرض المدمج، استخدم صفحة الدفع.")}
+                  </small>
+                </>
+              )}
             {pollError && <Notice>{pollError}</Notice>}
             <button
               className="button subtle small"
-              onClick={async () => {
-                try {
-                  const r = await api<{ order: Order }>(
-                    `/api/orders/${order.id}${order.processor === "netlify" ? "/reconcile" : ""}`,
-                    order.processor === "netlify" ? {} : undefined,
-                  );
-                  onOrder(r.order);
-                  setPollError("");
-                } catch {
-                  setPollError("تعذّر تحديث الحالة.");
-                }
-              }}
+              disabled={updatingOrder}
+              onClick={() => void refreshOrder()}
             >
-              تحديث حالة الطلب <RefreshCw size={13} />
+              {t("تحديث حالة الطلب")}
+              <RefreshCw size={13} />
             </button>
           </>
         ) : (
@@ -306,13 +325,15 @@ export function Inspector({
             <div className="lock-orbit">
               <LockKeyhole size={24} />
             </div>
-            <p>جاهز عندما تكون جاهزاً</p>
-            <small>تظهر نافذة التحقق البنكي هنا عند إنشاء عملية دفع.</small>
+            <p>{t("جاهز عندما تكون جاهزاً")}</p>
+            <small>
+              {t("تظهر نافذة التحقق البنكي هنا عند إنشاء عملية دفع.")}
+            </small>
           </div>
         )}
       </div>
       <div className="inspector-footer">
-        <ShieldCheckIcon /> بيانات حساسة محجوبة من السجل
+        <ShieldCheckIcon /> {t("بيانات حساسة محجوبة من السجل")}
       </div>
     </aside>
   );

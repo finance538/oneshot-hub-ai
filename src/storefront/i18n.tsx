@@ -6,6 +6,12 @@ import {
   type ReactNode,
 } from "react";
 import { isLanguage, type WorkforceLanguage } from "../../shared/workforce";
+import {
+  storedLanguage,
+  persistLanguage,
+  LANGUAGE_KEY,
+} from "../lib/preferences";
+export { storedLanguage, persistLanguage } from "../lib/preferences";
 export { languageNames, workforceLanguages } from "../../shared/workforce";
 export type Language = WorkforceLanguage;
 type Theme = "dark" | "light";
@@ -19,28 +25,6 @@ const Context = createContext<{
   tr: (ar: string, en: string) => string;
   number: (value: number) => string;
 } | null>(null);
-const LANGUAGE_KEY = "oneshot.lang";
-/** URL first, then the saved choice (localStorage, then cookie), else Arabic. */
-export function storedLanguage(): Language {
-  const fromUrl = new URLSearchParams(location.search).get("lang");
-  if (isLanguage(fromUrl)) return fromUrl;
-  try {
-    const saved = localStorage.getItem(LANGUAGE_KEY);
-    if (isLanguage(saved)) return saved;
-  } catch {
-    // Storage can be unavailable in private modes; the cookie still applies.
-  }
-  const cookie = document.cookie.match(/(?:^|; )oneshot_lang=([a-z]{2})/)?.[1];
-  return isLanguage(cookie) ? cookie : "ar";
-}
-export function persistLanguage(value: Language) {
-  try {
-    localStorage.setItem(LANGUAGE_KEY, value);
-  } catch {
-    // Ignore storage failures; the cookie below keeps the preference.
-  }
-  document.cookie = `oneshot_lang=${value}; path=/; max-age=31536000; samesite=lax${location.protocol === "https:" ? "; secure" : ""}`;
-}
 export function AppearanceProvider({ children }: { children: ReactNode }) {
   const params = new URLSearchParams(location.search);
   const [language, setLanguageState] = useState<Language>(storedLanguage);
@@ -51,21 +35,27 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   const update = (key: string, value: string) => {
     const url = new URL(location.href);
     url.searchParams.set(key, value);
-    history.replaceState({}, "", url);
+    history.replaceState(history.state, "", url);
   };
   useEffect(() => {
-    document.documentElement.lang = language;
-    document.documentElement.dir = ["ar", "ur"].includes(language)
-      ? "rtl"
-      : "ltr";
+    persistLanguage(language);
     document.documentElement.dataset.theme = theme;
-    return () => {
-      const saved = storedLanguage();
-      document.documentElement.lang = saved;
-      document.documentElement.dir = ["ar", "ur"].includes(saved) ? "rtl" : "ltr";
-      delete document.documentElement.dataset.theme;
-    };
   }, [language, theme]);
+  useEffect(() => {
+    const restore = () => setLanguageState(storedLanguage());
+    const sync = (event: StorageEvent) => {
+      if (event.key === LANGUAGE_KEY && isLanguage(event.newValue)) {
+        update("lang", event.newValue);
+        setLanguageState(event.newValue);
+      }
+    };
+    window.addEventListener("popstate", restore);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("popstate", restore);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
   return (
     <Context.Provider
       value={{
@@ -101,16 +91,18 @@ export function useAppearance() {
 export function appearanceLink(path: string) {
   const mapping: Record<string, string> = {
     "/dashboard": "/?module=gateway",
-    "/sign-in": "/?module=ceo",
+    "/#section-media": "/#comparison",
+    "/#section-google-ads": "/#comparison",
+    "/#section-ai-staff": "/#power",
   };
   const url = new URL(mapping[path] || path, location.origin);
   if (url.origin !== location.origin) return path;
-  if (url.pathname === "/" && !url.searchParams.has("module"))
-    url.searchParams.set("module", "store");
   const current = new URLSearchParams(location.search);
   for (const key of ["lang", "theme"]) {
     const value = current.get(key);
     if (value) url.searchParams.set(key, value);
   }
+  if (!url.searchParams.has("lang"))
+    url.searchParams.set("lang", storedLanguage());
   return url.pathname + url.search + url.hash;
 }

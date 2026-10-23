@@ -1,3 +1,5 @@
+import { useAppearance } from "../storefront/i18n";
+import { uiText as t } from "../lib/legacy-copy";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   UsersRound,
@@ -29,6 +31,7 @@ interface Overview {
   staff: Employee[];
 }
 export function Executive() {
+  useAppearance();
   const [data, setData] = useState<Overview | null>(null),
     [orders, setOrders] = useState<Order[]>([]),
     [currency, setCurrency] = useState("USD"),
@@ -95,24 +98,26 @@ export function Executive() {
     <>
       <SectionHeading
         eyebrow="AI EXECUTIVE OFFICE"
-        title="رؤية أوضح. قرارات أذكى."
-        description="مبيعاتك، فريقك وتقاريرك التنفيذية في مساحة قيادة واحدة."
+        title={t("رؤية أوضح. قرارات أذكى.")}
+        description={t(
+          "مبيعاتك، فريقك وتقاريرك التنفيذية في مساحة قيادة واحدة.",
+        )}
       >
         <button
           className="button subtle small"
           onClick={refresh}
           disabled={loading}
         >
-          <RefreshCw size={15} className={loading ? "spin" : ""} /> تحديث
+          <RefreshCw size={15} className={loading ? "spin" : ""} /> {t("تحديث")}
         </button>
       </SectionHeading>
       {error && <Notice>{error}</Notice>}
       <div className="metric-grid">
         <div className="metric-card">
           <span>
-            <TrendingUp size={18} /> إيرادات مؤكدة
+            <TrendingUp size={18} /> {t("إيرادات مؤكدة")}
             <select
-              aria-label="عملة الإيرادات"
+              aria-label={t("عملة الإيرادات")}
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             >
@@ -124,37 +129,37 @@ export function Executive() {
           <strong dir="ltr">
             {data ? money(totals?.revenueCents || 0, currency) : "—"}
           </strong>
-          <small>طلبات حية مثبتة بإشعار دفع</small>
+          <small>{t("طلبات حية مثبتة بإشعار دفع")}</small>
         </div>
         <div className="metric-card">
           <span>
-            <ReceiptText size={18} /> إجمالي الطلبات الحية
+            <ReceiptText size={18} /> {t("إجمالي الطلبات الحية")}
           </span>
           <strong>{data ? count : "—"}</strong>
-          <small>جميع العملات، دون جمع مبالغها</small>
+          <small>{t("جميع العملات، دون جمع مبالغها")}</small>
         </div>
         <div className="metric-card">
           <span>
-            <UsersRound size={18} /> أعضاء الفريق النشطون
+            <UsersRound size={18} /> {t("أعضاء الفريق النشطون")}
           </span>
           <strong>
             {data ? data.staff.filter((s) => s.active).length : "—"}
           </strong>
-          <small>مساعدون بتخصصات مخصصة</small>
+          <small>{t("مساعدون بتخصصات مخصصة")}</small>
         </div>
       </div>
       <section className="panel team-panel">
         <div className="panel-title">
           <BriefcaseBusiness size={20} />
           <div>
-            <h2>فريقك الذكي</h2>
-            <p>أضف تخصصاً وحدد تعليمات المساعد</p>
+            <h2>{t("فريقك الذكي")}</h2>
+            <p>{t("أضف تخصصاً وحدد تعليمات المساعد")}</p>
           </div>
           <button
             className="button subtle small"
             onClick={() => setAdding(true)}
           >
-            <Plus size={15} /> إضافة موظف
+            <Plus size={15} /> {t("إضافة موظف")}
           </button>
         </div>
         {data?.staff.length ? (
@@ -169,16 +174,14 @@ export function Executive() {
                   <h3>{item.name}</h3>
                   <p>{item.role}</p>
                   <span className={item.active ? "text-green" : "muted"}>
-                    {item.active ? "نشط" : "متوقف"}
+                    {item.active ? t("نشط") : t("متوقف")}
                   </span>
                 </div>
                 <button
                   disabled={busy}
                   className="icon-button"
                   onClick={() => toggle(item)}
-                  aria-label={
-                    item.active ? `إيقاف ${item.name}` : `تفعيل ${item.name}`
-                  }
+                  aria-label={`${item.active ? t("متوقف") : t("نشط")} · ${item.name}`}
                 >
                   <Power size={16} />
                 </button>
@@ -190,20 +193,20 @@ export function Executive() {
             <UsersRound size={28} />
             <p>
               {loading
-                ? "جارٍ تحميل الفريق..."
-                : "ابدأ بإضافة أول مساعد إلى فريقك."}
+                ? t("جارٍ تحميل الفريق...")
+                : t("ابدأ بإضافة أول مساعد إلى فريقك.")}
             </p>
           </div>
         )}
       </section>
       <div className="ceo-heading">
-        <h2>مكتب التوجيه التنفيذي</h2>
+        <h2>{t("مكتب التوجيه التنفيذي")}</h2>
         <select
-          aria-label="الموظف المستهدف"
+          aria-label={t("الموظف المستهدف")}
           value={employee}
           onChange={(e) => setEmployee(e.target.value)}
         >
-          <option value="">AI CEO — المدير التنفيذي</option>
+          <option value="">{t("AI CEO — المدير التنفيذي")}</option>
           {data?.staff
             .filter((s) => s.active)
             .map((s) => (
@@ -217,19 +220,19 @@ export function Executive() {
       <section className="panel orders-panel">
         <div className="panel-title">
           <ReceiptText size={20} />
-          <h2>أحدث الطلبات</h2>
-          <span className="tag">آخر ٥٠ طلباً</span>
+          <h2>{t("أحدث الطلبات")}</h2>
+          <span className="tag">{t("آخر ٥٠ طلباً")}</span>
         </div>
         {orders.length ? (
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
-                  <th>الطلب</th>
-                  <th>البوابة</th>
-                  <th>القيمة</th>
-                  <th>البيئة</th>
-                  <th>الحالة</th>
+                  <th>{t("الطلب")}</th>
+                  <th>{t("البوابة")}</th>
+                  <th>{t("القيمة")}</th>
+                  <th>{t("البيئة")}</th>
+                  <th>{t("الحالة")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -242,7 +245,7 @@ export function Executive() {
                     <td>{o.gateway}</td>
                     <td dir="ltr">{money(o.amountCents, o.currency)}</td>
                     <td>
-                      {o.executionMode === "PRODUCTION" ? "حي" : "اختبار"}
+                      {o.executionMode === "PRODUCTION" ? t("حي") : t("اختبار")}
                     </td>
                     <td>
                       <span
@@ -260,45 +263,50 @@ export function Executive() {
           <div className="empty-state compact">
             <ReceiptText size={26} />
             <p>
-              {loading ? "جارٍ تحميل الطلبات..." : "لا توجد طلبات مسجلة بعد."}
+              {loading
+                ? t("جارٍ تحميل الطلبات...")
+                : t("لا توجد طلبات مسجلة بعد.")}
             </p>
           </div>
         )}
       </section>
       {adding && (
-        <Modal title="إضافة موظف ذكي" onClose={() => !busy && setAdding(false)}>
+        <Modal
+          title={t("إضافة موظف ذكي")}
+          onClose={() => !busy && setAdding(false)}
+        >
           <form className="form-stack" onSubmit={save}>
             <label>
-              الاسم
+              {t("الاسم")}
               <input
                 name="name"
                 required
                 maxLength={100}
-                placeholder="اسم المساعد"
+                placeholder={t("اسم المساعد")}
               />
             </label>
             <label>
-              التخصص
+              {t("التخصص")}
               <input
                 name="role"
                 required
                 maxLength={150}
-                placeholder="مثل: محلل المبيعات"
+                placeholder={t("مثل: محلل المبيعات")}
               />
             </label>
             <label>
-              تعليمات المساعد
+              {t("تعليمات المساعد")}
               <textarea
                 name="instructions"
                 required
                 maxLength={2000}
                 rows={4}
-                placeholder="حدّد المهام والأسلوب المطلوبين..."
+                placeholder={t("حدّد المهام والأسلوب المطلوبين...")}
               />
             </label>
             {error && <Notice>{error}</Notice>}
             <button className="button primary" disabled={busy}>
-              {busy ? <Busy /> : <Plus size={16} />} إضافة إلى الفريق
+              {busy ? <Busy /> : <Plus size={16} />} {t("إضافة إلى الفريق")}
             </button>
           </form>
         </Modal>

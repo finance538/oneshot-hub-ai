@@ -839,20 +839,6 @@ export default function Storefront({
                 </p>
                 <div className="store-contact-details">
                   <div>
-                    <MessageCircle size={20} />
-                    <div>
-                      <small>{tr("واتساب الدعم", "WhatsApp Support")}</small>
-                      <a
-                        href="https://wa.me/966501234567"
-                        target="_blank"
-                        rel="noreferrer"
-                        dir="ltr"
-                      >
-                        +966 50 123 4567
-                      </a>
-                    </div>
-                  </div>
-                  <div>
                     <Mail size={20} />
                     <div>
                       <small>{tr("البريد الإلكتروني", "Email")}</small>
@@ -890,18 +876,18 @@ export default function Storefront({
                 </h3>
                 <p>
                   {tr(
-                    "تواصل عبر الواتساب مع فريقنا، أو سجّل دخولك لإدارة حسابك.",
-                    "Contact our team on WhatsApp, or sign in to manage your account.",
+                    "تواصل مع فريقنا عبر البريد، أو سجّل دخولك لإدارة حسابك.",
+                    "Email our team, or sign in to manage your account.",
                   )}
                 </p>
                 <a
                   className="store-button whatsapp"
-                  href="https://wa.me/966501234567"
+                  href="mailto:support@1shotcam.com"
                   target="_blank"
                   rel="noreferrer"
                 >
                   <MessageCircle size={17} />
-                  {tr("مراسلة عبر واتساب", "Message on WhatsApp")}
+                  {tr("راسل فريق الدعم", "Email support")}
                 </a>
                 <button className="store-button secondary" onClick={onLogin}>
                   <KeyRound size={17} />
@@ -1685,15 +1671,6 @@ function InquiryDialog({
             "Contact our team to confirm the scope and delivery, and receive a payment link for your order. Your message includes the service, SKU and published price.",
           )}
         </p>
-        <a
-          className="store-button whatsapp"
-          href={`https://wa.me/966501234567?text=${encodeURIComponent(message)}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <MessageCircle size={17} />
-          {tr("طلب عبر واتساب", "Request on WhatsApp")}
-        </a>
         <a
           className="store-button secondary"
           href={`mailto:support@1shotcam.com?subject=${encodeURIComponent(`OneShot · ${inquiry.sku} · ${inquiry.title}`)}&body=${encodeURIComponent(message)}`}

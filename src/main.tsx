@@ -1,6 +1,7 @@
 import React, { Component, type ReactNode } from "react";
 import ReactDOM from "react-dom/client";
 import Root from "./Root";
+import { AppearanceProvider } from "./storefront/i18n";
 import "./design-tokens.css";
 import "./styles.css";
 // Platform plugins and their bridge are absent from the browser path.
@@ -25,13 +26,21 @@ class ErrorBoundary extends Component<
     return this.state.failed ? (
       <div className="fatal-error">
         <img src="/brand/oneshot.svg" width="60" alt="oneShot" />
-        <h1>تعذّر عرض مساحة العمل</h1>
-        <p>أعد تحميل الصفحة للمتابعة.</p>
+        <h1>
+          {document.documentElement.lang === "ar"
+            ? "تعذّر عرض مساحة العمل"
+            : "Unable to display the workspace"}
+        </h1>
+        <p>
+          {document.documentElement.lang === "ar"
+            ? "أعد تحميل الصفحة للمتابعة."
+            : "Reload the page to continue."}
+        </p>
         <button
           className="button primary"
           onClick={() => window.location.reload()}
         >
-          إعادة التحميل
+          {document.documentElement.lang === "ar" ? "إعادة التحميل" : "Reload"}
         </button>
       </div>
     ) : (
@@ -41,6 +50,8 @@ class ErrorBoundary extends Component<
 }
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
-    <Root />
+    <AppearanceProvider>
+      <Root />
+    </AppearanceProvider>
   </ErrorBoundary>,
 );

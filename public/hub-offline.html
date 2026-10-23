@@ -2,6 +2,43 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
+    <script id="oneshot-lang">
+      // Runs before the app: restore the saved language so a refresh never
+      // flips direction or language. Arabic RTL is the default.
+      (function () {
+        var supported = ["ar", "en", "fr", "es", "tr", "zh", "hi", "ur"];
+        var q = new URLSearchParams(location.search).get("lang");
+        var saved, c;
+        try {
+          saved = localStorage.getItem("oneshot.lang");
+        } catch (e) {}
+        try {
+          c = document.cookie.match(/(?:^|;\s*)oneshot_lang=([a-z]{2})(?:;|$)/);
+        } catch (e) {}
+        var lang =
+          [q, saved, c && c[1]].filter(function (v) {
+            return supported.indexOf(v) >= 0;
+          })[0] || "ar";
+        document.documentElement.lang = lang;
+        document.documentElement.dir =
+          lang === "ar" || lang === "ur" ? "rtl" : "ltr";
+        try {
+          localStorage.setItem("oneshot.lang", lang);
+        } catch (e) {}
+        try {
+          var shared = /(^|\.)1shotcam\.com$/.test(location.hostname);
+          var secure = location.protocol === "https:" ? "; secure" : "";
+          if (shared)
+            document.cookie = "oneshot_lang=; path=/; max-age=0" + secure;
+          document.cookie =
+            "oneshot_lang=" +
+            lang +
+            "; path=/; max-age=31536000; samesite=lax" +
+            secure +
+            (shared ? "; domain=1shotcam.com" : "");
+        } catch (e) {}
+      })();
+    </script>
     <meta
       name="viewport"
       content="width=device-width,initial-scale=1,viewport-fit=cover"
@@ -140,94 +177,114 @@
         <img src="/oneshot.svg" width="42" height="42" alt="" />
         <div>
           <h1>OneShot</h1>
-          <span class="badge">دليل المنظومة · متاح دون اتصال</span>
+          <span class="badge"
+            ><span data-en="Ecosystem guide · available offline"
+              >دليل المنظومة · متاح دون اتصال</span
+            ></span
+          >
         </div>
       </header>
-      <h2>مساحتك الهادئة، حتى عند انقطاع الاتصال.</h2>
-      <p>
+      <h2>
+        <span data-en="Your workspace guide, even when offline."
+          >مساحتك الهادئة، حتى عند انقطاع الاتصال.</span
+        >
+      </h2>
+      <p
+        data-en="Explore our destinations and use the calculator. Sign-in, conversations, current prices, orders and payments require an internet connection. Private account data is not cached here."
+      >
         يمكنك استكشاف وجهاتنا واستخدام الحاسبة هنا. تسجيل الدخول والمحادثات
         والأسعار الحالية والطلبات والمدفوعات تحتاج اتصالاً بالإنترنت؛ لا تُحفظ
         بيانات حسابك في هذا الدليل.
       </p>
-      <p lang="en" dir="ltr">
-        Your offline guide and calculator are available. Sign-in, chat, current
-        prices and payments require a connection. Private account data is not
-        cached.
-      </p>
       <div id="connection" role="status">تحقق من اتصالك للوصول إلى خدماتك.</div>
       <nav aria-label="وجهات OneShot">
         <a href="https://www.1shotcam.com/hub"
-          >OneShot Hub<small>مركز أعمالك وفريقك</small></a
+          >OneShot Hub<small
+            ><span data-en="Your business &amp; team hub"
+              >مركز أعمالك وفريقك</span
+            ></small
+          ></a
         >
         <a href="https://workflow.1shotcam.com"
-          >OneShot Workflow<small>الفريق ومسارات العمل</small></a
+          >OneShot Workflow<small
+            ><span data-en="Team &amp; workflows"
+              >الفريق ومسارات العمل</span
+            ></small
+          ></a
         >
         <a href="https://ai.1shotcam.com"
-          >OneShot AI<small>مساحة الذكاء الاصطناعي</small></a
+          >OneShot AI<small
+            ><span data-en="AI workspace">مساحة الذكاء الاصطناعي</span></small
+          ></a
         >
         <a href="https://pay.1shotcam.com"
-          >OneShot Pay<small>مساحة المدفوعات</small></a
+          >OneShot Pay<small
+            ><span data-en="Payments workspace">مساحة المدفوعات</span></small
+          ></a
         >
         <a href="https://brand.1shotcam.com"
-          >OneShot Brand<small>الهوية والمحتوى</small></a
+          >OneShot Brand<small
+            ><span data-en="Brand &amp; content">الهوية والمحتوى</span></small
+          ></a
         >
         <a href="https://loader.1shotcam.com"
-          >OneShot Loader<small>مختبر الاختبار</small></a
+          >OneShot Loader<small
+            ><span data-en="Testing lab">مختبر الاختبار</span></small
+          ></a
         >
       </nav>
       <section class="calculator" aria-labelledby="calculator-title">
-        <h2 id="calculator-title">احسب قيمة وقتك</h2>
+        <h2 id="calculator-title">
+          <span data-en="Estimate the value of your time">احسب قيمة وقتك</span>
+        </h2>
         <p>
-          هذه أرقام افتراضية قابلة للتعديل، وليست أسعار باقات أو وفراً مضموناً.
+          <span
+            data-en="Editable assumptions, not package prices or guaranteed savings."
+            >هذه أرقام افتراضية قابلة للتعديل، وليست أسعار باقات أو وفراً
+            مضموناً.</span
+          >
         </p>
         <div class="fields">
           <label
-            >ساعات العمل المتكرر شهرياً<input
-              id="hours"
-              type="number"
-              min="0"
-              max="744"
-              value="32"
+            ><span data-en="Repetitive work hours per month"
+              >ساعات العمل المتكرر شهرياً</span
+            ><input id="hours" type="number" min="0" max="744" value="32"
           /></label>
           <label
-            >نسبة الأتمتة المتوقعة %<input
-              id="share"
-              type="number"
-              min="0"
-              max="100"
-              value="60"
+            ><span data-en="Expected automation share %"
+              >نسبة الأتمتة المتوقعة %</span
+            ><input id="share" type="number" min="0" max="100" value="60"
           /></label>
           <label
-            >قيمة الساعة · ر.س<input
-              id="rate"
-              type="number"
-              min="0"
-              max="1000000"
-              value="125"
+            ><span data-en="Hourly value · SAR">قيمة الساعة · ر.س</span
+            ><input id="rate" type="number" min="0" max="1000000" value="125"
           /></label>
           <label
-            >تكلفة الحل شهرياً · ر.س<input
-              id="cost"
-              type="number"
-              min="0"
-              max="1000000"
-              value="490"
+            ><span data-en="Monthly solution cost · SAR"
+              >تكلفة الحل شهرياً · ر.س</span
+            ><input id="cost" type="number" min="0" max="1000000" value="490"
           /></label>
         </div>
         <output id="result" aria-live="polite"></output
         ><small
+          data-en="Net value = hours × automation share × hourly value − solution cost. Setup is excluded."
           >صافي القيمة = الساعات × نسبة الأتمتة × قيمة الساعة − تكلفة الحل. لا
           يشمل التأسيس.</small
         >
       </section>
       <a class="reconnect" href="/">إعادة الاتصال · Reconnect</a>
       <footer>
-        مؤسسة يحيى أحمد يحيى الهوساوي للتصوير الفوتوغرافي · المملكة العربية
-        السعودية<br /><a href="mailto:support@1shotcam.com"
-          >support@1shotcam.com</a
-        >
-        · <a href="mailto:finance@1shotcam.com">finance@1shotcam.com</a>
-        <p>السياسات والأسعار المعتمدة متاحة على الموقع عند الاتصال.</p>
+        <span
+          data-en="Yahya Ahmed Yahya Alhawsawi Photography Establishment · Kingdom of Saudi Arabia"
+          >مؤسسة يحيى أحمد يحيى الهوساوي للتصوير الفوتوغرافي · المملكة العربية
+          السعودية</span
+        ><br /><a href="mailto:support@1shotcam.com">support@1shotcam.com</a> ·
+        <a href="mailto:finance@1shotcam.com">finance@1shotcam.com</a>
+        <p>
+          <span data-en="Current policies and prices are available online."
+            >السياسات والأسعار المعتمدة متاحة على الموقع عند الاتصال.</span
+          >
+        </p>
       </footer>
     </main>
     <script src="/offline-guide.js" defer></script>
