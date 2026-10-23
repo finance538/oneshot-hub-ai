@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { geminiClient } from "./gemini.js";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import {
@@ -27,7 +27,7 @@ import { synthesizeSpeech } from "./workforce-speech.js";
 
 async function generate(instructions: string, input: string, language: string) {
   try {
-    const response = await new GoogleGenAI({}).models.generateContent({
+    const response = await geminiClient().models.generateContent({
       model: "gemini-2.5-flash",
       contents: input,
       config: {

@@ -1,3 +1,11 @@
+# Current shared-session integration
+
+Google login now starts at `/api/auth/google/start?return_to=<encoded complete application URL>` on `https://www.1shotcam.com`. The server validates the origin against the fixed ecosystem list and `ONESHOT_SSO_CLIENTS`, runs Google consent, and returns to that URL. Do not rewrite the original page to the Hub. Browser-bound state, PKCE, ID-token validation and an atomic database consume protect the callback. The shared cookie is HttpOnly and must never be copied into JavaScript storage or a URL.
+
+Receivers use `fetch("https://www.1shotcam.com/api/session", { credentials: "include" })` to read the server-verified account; private API calls also include credentials. Logout posts to `/api/auth/logout` with credentials. A custom request must originate from an approved app origin. Render roles from the server response and remount private state when the account changes. The current repository includes the updated receiver/client and app switcher; independent projects need that integration deployed separately. Their domain assignments are unchanged.
+
+The legacy PKCE bearer-grant endpoints remain for previously integrated clients. The notes below describe that older protocol; the new shared-cookie login does not require a Hub-page handoff.
+
 # OneShot Hub integration and release
 
 ## Scope

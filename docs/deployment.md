@@ -1,3 +1,15 @@
+# Google/shared-session release verification
+
+The current release adds the callback `https://www.1shotcam.com/api/auth/google/callback`, an HttpOnly shared `.1shotcam.com` cookie and the additive `add_google_oauth_shared_sessions` migration. Let the platform build, apply the migration and publish before verifying the new endpoints. Existing custom domains and DNS remain in place.
+
+Verify Google Cloud allows the callback, Google Drive API/consent includes `drive.metadata.readonly`, and the production Functions runtime can access the configured team variables and Netlify Identity administration. Verify both encryption keys have the documented 64-character hexadecimal format. Re-enter credentials encrypted under a different prior Vault key; no built-in key fallback remains. The direct Gemini key alias takes precedence over Gateway; verify actual inference while signed in without printing provider errors or secrets.
+
+On each app using the updated client, start Google sign-in on a page with a query and fragment, then confirm the exact URL returns, the shared cookie has Secure/HttpOnly/SameSite=Lax and `.1shotcam.com`, another app recognizes the account, and logout clears it across tabs. Check denied consent, invalid state, preview isolation, owner-role persistence, ordinary-user denial and an unavailable Identity service. Confirm Workspace file-list consent is separate from login, another account cannot read its connection, and disconnect revokes Google access. Separate app projects need this client/header integration deployed there; the Hub deployment alone does not update them.
+
+The existing commercial registration seed remains immutable. Verify `/api/commerce/contact`, legal pages and quote/checkout issuer details show the official name, CR/UNN 7038244914, issue date 06/02/2024, active status and finance@1shotcam.com. These changes do not create a new fiscal-invoice engine. Tests and typecheck passed locally; production build/publication and authenticated external acceptance remain unverified.
+
+The following notes are historical release guidance. The current shared-cookie flow supersedes their earlier session-isolation and Hub-landing descriptions.
+
 # Deployment and domain transition
 
 ## Current acceptance scope — 23 October 2026
@@ -33,7 +45,7 @@ Move only these approved application hostnames to this project: `1shotcam.com`, 
 
 Keep the existing `api.1shotcam.com` VPS assignment during this incomplete transition. Do not edit unrelated DNS records. Provision and verify trusted HTTPS for every moved hostname. Confirm subdomains remain available as aliases without redirects that discard hostname-specific routing.
 
-Set the checkout return origin to production after verification. Preserve the legacy callback endpoint for outstanding legacy orders; new Stripe confirmations use authenticated queries. Check `portal`/`pay` open the payment module, `admin` opens the vault, and the `ai`/`app` root entries resolve to `/workforce`. Verify browser auth/callback URLs for each hostname; sessions are intentionally not forced to share credentials across subdomains.
+Set the checkout return origin to production after verification. Preserve the legacy callback endpoint for outstanding legacy orders; new Stripe confirmations use authenticated queries. Check `portal`/`pay` open the payment module, `admin` opens the vault, and the `ai`/`app` root entries resolve to `/workforce`. Verify browser auth/callback URLs for each hostname; the current release shares an opaque HttpOnly session across the approved production subdomains.
 
 Recheck the complete payment/AI/auth flows on the final domains, avoiding duplicate financial operations. Observe error rates and signed callback delivery after cutover.
 
