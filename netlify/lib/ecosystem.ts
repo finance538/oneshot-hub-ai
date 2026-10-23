@@ -18,8 +18,14 @@ import {
 } from "./security.js";
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("base64url");
-const clients = () =>
-  (env("ONESHOT_SSO_CLIENTS") || "").split(",").map((value) => value.trim());
+const DEFAULT_SSO_CLIENTS = ["ai", "pay", "workflow", "brand", "loader"];
+const clients = () => {
+  const configured = env("ONESHOT_SSO_CLIENTS");
+  if (configured) {
+    return configured.split(",").map((value) => value.trim());
+  }
+  return DEFAULT_SSO_CLIENTS;
+};
 const validChallenge = (value: unknown): value is string =>
   typeof value === "string" && /^[A-Za-z0-9_-]{43}$/.test(value);
 function client(id: unknown) {
@@ -103,7 +109,7 @@ export async function ecosystemRoute(req: Request, path: string) {
         return {
           id: app.id,
           status: available ? "available" : "unverified",
-          sso,
+          sso: sso || (clients().includes(app.id) && vaultReady()),
           checkedAt: new Date().toISOString(),
         };
       }),

@@ -4,14 +4,14 @@ export const documents = {
     titleAr: "قصتنا",
     titleEn: "About Us",
     bodyAr: [
-      "ون شوت (OneShot Photography) هي مؤسسة سعودية متخصصة في التصوير الفوتوغرافي والإنتاج المرئي والتسويق الرقمي والتصميم والحلول الرقمية المساندة للأعمال.",
+      "ون شوت (OneShot Photography) هي مؤسسة سعودية رسمية مسجلة لدى وزارة التجارة متخصصة في التصوير الفوتوغرافي والإنتاج المرئي والتسويق الرقمي والتصميم والحلول الرقمية المساندة للأعمال.",
       "نركز على تقديم تجربة عملية وواضحة من بداية الطلب وحتى التسليم، مع تطوير خدماتنا الرقمية باستمرار عبر 1shotcam.com.",
-      "الاسم التجاري: OneShot Photography — مؤسسة يحيى أحمد يحيى الهوساوي للتصوير الفوتوغرافي — المملكة العربية السعودية.",
+      "الاسم التجاري الرسمي: مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي | الاسم المتداول: مؤسسة يحيى للتصوير الفوتوغرافي (OneShot) | الرقم الوطني الموحد / السجل التجاري: 7038244914 | تاريخ الإصدار: 06/02/2024 | نوع الكيان: مؤسسة (نشط) — المملكة العربية السعودية.",
     ],
     bodyEn: [
-      "OneShot Photography is a Saudi establishment focused on photography, visual production, digital marketing, design, and supporting digital business solutions.",
+      "OneShot Photography is an officially registered Saudi establishment with the Ministry of Commerce, specializing in photography, visual production, digital marketing, design, and supporting digital business solutions.",
       "We aim to provide a clear end-to-end customer experience from ordering through delivery, while continuously developing our digital services through 1shotcam.com.",
-      "Business name: OneShot Photography — Yahya Ahmed Yahya Alhawsawi Photography Establishment — Kingdom of Saudi Arabia.",
+      "Official Business Name: Yahya Ahmed Yahya Al-Hawsawi Photography Establishment (1ShotCam) | Trade Name: OneShot Photography | Unified National Number / CR: 7038244914 | Issue Date: 06/02/2024 | Entity: Establishment (Active) — Kingdom of Saudi Arabia.",
     ],
   },
   vision: {
@@ -60,6 +60,7 @@ export const documents = {
     titleAr: "الشروط والأحكام",
     titleEn: "Terms & Conditions",
     bodyAr: [
+      "الجهة المشغلة للموقع ومقدمة الخدمات هي مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي (سجل تجاري / رقم وطني موحد: 7038244914)، المملكة العربية السعودية.",
       "باستخدام الموقع أو طلب إحدى خدمات ون شوت، يوافق المستخدم على تقديم معلومات صحيحة واستخدام الخدمات بطريقة نظامية.",
       "تفاصيل السعر والنطاق ومدة التنفيذ الخاصة بكل طلب تكون وفق الوصف المعروض أو العرض/الفاتورة المعتمدة لذلك الطلب.",
       "قد تتطلب بعض الخدمات مواد أو موافقات من العميل، وقد يتأثر موعد التسليم عند تأخرها.",
@@ -67,6 +68,7 @@ export const documents = {
       "يجوز تحديث هذه الشروط عند تطوير الخدمات، ويكون الإصدار المنشور على 1shotcam.com هو المرجع الحالي.",
     ],
     bodyEn: [
+      "The operating entity and service provider is Yahya Ahmed Yahya Al-Hawsawi Photography Establishment (CR / Unified National No: 7038244914), Kingdom of Saudi Arabia.",
       "By using this website or ordering a OneShot service, users agree to provide accurate information and use the services lawfully.",
       "Price, scope, and delivery timing for each order follow the published description or the approved quotation/invoice for that order.",
       "Some services require materials or approvals from the customer, and delivery timing may be affected if those are delayed.",
@@ -78,17 +80,19 @@ export const documents = {
     titleAr: "التواصل والدعم الفني",
     titleEn: "Contact & Support",
     bodyAr: [
+      "المنشأة: مؤسسة يحيى احمد يحيى الهوساوي للتصوير الفوتوغرافي (س.ت: 7038244914).",
       "للاستفسارات التجارية والدعم الفني وخدمة الطلبات، استخدم القنوات الرسمية المرتبطة بموقع 1shotcam.com.",
-      "البريد المالي: finance@1shotcam.com",
+      "البريد المالي والاعتمادات: finance@1shotcam.com",
       "الدعم: support@1shotcam.com",
-      "الموقع الرسمي: 1shotcam.com",
+      "الموقع الرسمي: https://www.1shotcam.com",
       "عند التواصل بخصوص طلب قائم، أرسل رقم الطلب واسم الخدمة ووصفًا مختصرًا للمشكلة لتسريع المتابعة.",
     ],
     bodyEn: [
+      "Entity: Yahya Ahmed Yahya Al-Hawsawi Photography Establishment (CR: 7038244914).",
       "For business inquiries, technical support, and order assistance, use the official channels associated with 1shotcam.com.",
-      "Finance: finance@1shotcam.com",
+      "Finance & Approvals: finance@1shotcam.com",
       "Support: support@1shotcam.com",
-      "Official website: 1shotcam.com",
+      "Official website: https://www.1shotcam.com",
       "For an existing order, include the order number, service name, and a short description of the issue to help us respond efficiently.",
     ],
   },
