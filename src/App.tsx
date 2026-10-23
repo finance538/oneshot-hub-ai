@@ -71,7 +71,7 @@ function initialModule(): Module {
   }
   if (navigation.some((n) => n.id === query)) return query as Module;
   if (
-    /^\/(workforce(?:\/.*)?|products(?:\/.*)?|about|vision|privacy|refund|terms|support|accounts|api-integration)\/?$/.test(
+    /^\/(workforce(?:\/.*)?|products(?:\/.*)?|guides(?:\/.*)?|about|vision|privacy|refund|terms|support|accounts|api-integration)\/?$/.test(
       window.location.pathname,
     )
   )

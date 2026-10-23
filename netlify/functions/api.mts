@@ -38,6 +38,7 @@ import {
 import { isLegacyCorePath, legacyCoreRoute } from "../lib/legacy-core.js";
 import { nativeGateways, nativeTopologies } from "../lib/payment-providers.js";
 import { workforceRoute } from "../lib/workforce.js";
+import { growthRoute } from "../lib/growth.js";
 import { executiveChat, overview } from "../lib/ai.js";
 import { gateways, endpoints } from "../../shared/contracts.js";
 
@@ -100,6 +101,8 @@ export default async (req: Request) => {
     if (isLegacyCorePath(path)) return json(await legacyCoreRoute(req, path));
     if (path.startsWith("/api/workforce/"))
       return json(await workforceRoute(req, path));
+    if (path.startsWith("/api/growth/"))
+      return json(await growthRoute(req, path));
     if (path === "/api/health" && method === "GET") {
       const [dbConnected, core] = await Promise.all([
         database()
