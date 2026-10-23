@@ -38,6 +38,7 @@ import { api } from "../lib/api";
 import { hubCopy } from "./copy";
 import { spaceCopy } from "./spaceCopy";
 import "./hub.css";
+const GrowthDock = lazy(() => import("../growth/GrowthDock"));
 const LitePortal = lazy(() => import("./LitePortal"));
 const YourSpace = lazy(() => import("./YourSpace"));
 const SsoAuthorize = lazy(() => import("./SsoAuthorize"));
@@ -461,6 +462,9 @@ function HubPage() {
           </div>
         </Modal>
       )}
+      <Suspense fallback={null}>
+        <GrowthDock onLogin={() => auth.openLogin()} />
+      </Suspense>
       {auth.dialog}
     </div>
   );
