@@ -939,3 +939,73 @@ test("diagnostics authorization, source attribution and field allowlists prevent
     (e: any) => e.status === 400,
   );
 });
+
+test("expired or closed quotes recover the owned order without invoking the provider again", async () => {
+  for (const status of ["quoted", "closed"]) {
+    const f = fixture();
+    const { row, result } = await published(f);
+    f.state.providerFailure = true;
+    const user = {
+      id: "customer",
+      email: "customer@example.com",
+      confirmedAt: "confirmed",
+    };
+    const body = { quoteOffer: result.offerId };
+    const first = await f.payments.executePayment(
+      body,
+      user,
+      crypto.randomUUID(),
+    );
+    row.status = status;
+    row.expiresAt = new Date(0);
+    const recovered = await f.payments.executePayment(
+      body,
+      user,
+      crypto.randomUUID(),
+    );
+    assert.equal(recovered.order.id, first.order.id);
+    assert.equal(recovered.order.status, "unconfirmed");
+    assert.equal(recovered.replayed, true);
+    assert.equal(f.rows.orders.length, 1);
+    assert.equal(f.state.providerCalls, 1);
+    await assert.rejects(
+      f.payments.executePayment(
+        body,
+        { ...user, id: "another-account" },
+        crypto.randomUUID(),
+      ),
+      (e: any) => e.status === 409,
+    );
+    await assert.rejects(
+      f.payments.executePayment(
+        body,
+        { ...user, email: "other@example.com" },
+        crypto.randomUUID(),
+      ),
+      (e: any) => e.code === "QUOTE_EMAIL_REQUIRED",
+    );
+  }
+});
+
+test("expired quotes without an order cannot create a checkout or be returned as fresh offers", async () => {
+  const f = fixture();
+  const { row, result, path } = await published(f);
+  row.expiresAt = new Date(0);
+  await assert.rejects(
+    f.payments.executePayment(
+      { quoteOffer: result.offerId },
+      f.state.user,
+      crypto.randomUUID(),
+    ),
+    (e: any) => e.code === "QUOTE_UNAVAILABLE",
+  );
+  await assert.rejects(
+    f.commerce.commerceRoute(
+      request(path, { amount: "250.25", scope: "Approved" }),
+      path,
+    ),
+    (e: any) => e.code === "QUOTE_UNAVAILABLE",
+  );
+  assert.equal(f.state.providerCalls, 0);
+  assert.equal(f.rows.orders.length, 0);
+});

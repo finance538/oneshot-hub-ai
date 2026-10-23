@@ -283,8 +283,15 @@ export async function commerceRoute(req: Request, path: string) {
           );
         if (row.status === "closed") throw new ApiError(409, "الطلب مغلق.");
         // One immutable offer per request. Double clicks and retries return the same link.
-        if (row.offerId)
+        if (row.offerId) {
+          if (!row.expiresAt || row.expiresAt <= new Date())
+            throw new ApiError(
+              409,
+              "انتهت صلاحية العرض. راجع الطلب المرتبط قبل إصدار عرض جديد.",
+              "QUOTE_UNAVAILABLE",
+            );
           return { offerId: row.offerId, reference: row.reference };
+        }
         const amountCents = sarCents(body.amount);
         if (amountCents === null)
           throw new ApiError(

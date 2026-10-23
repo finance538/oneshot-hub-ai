@@ -190,6 +190,8 @@ function QuoteCard({
     [copied, setCopied] = useState(false);
   const [offerId, setOfferId] = useState(row.offerId);
   const currentOffer = offerId || row.offerId;
+  const expired = !!row.expiresAt && new Date(row.expiresAt) <= new Date();
+  const shareable = row.status === "quoted" && !expired;
   // Share the deployed origin, so preview links cannot accidentally point to production records.
   const href = currentOffer
     ? new URL(appearanceLink(`/quote/${currentOffer}`), location.origin).href
@@ -300,10 +302,15 @@ function QuoteCard({
       {currentOffer ? (
         <div className="quote-scope">
           <p>
-            {tr(
-              "رابط العرض جاهز للمشاركة مع العميل. لم يُرسل تلقائياً.",
-              "The quote link is ready to share with the customer. It was not sent automatically.",
-            )}
+            {shareable
+              ? tr(
+                  "رابط العرض جاهز للمشاركة مع العميل. لم يُرسل تلقائياً.",
+                  "The quote link is ready to share with the customer. It was not sent automatically.",
+                )
+              : tr(
+                  "العرض مغلق أو منتهي الصلاحية. راجع حالة الطلب المرتبط قبل إصدار عرض جديد.",
+                  "This offer is closed or expired. Review its linked order before issuing a new quote.",
+                )}
           </p>
           {row.amountCents && <strong>{money(row.amountCents, "SAR")}</strong>}
           <p className="quote-notes">{row.approvedScope}</p>
@@ -316,7 +323,11 @@ function QuoteCard({
               onFocus={(e) => e.target.select()}
             />
           </label>
-          <button className="button subtle" onClick={() => void copy()}>
+          <button
+            className="button subtle"
+            disabled={!shareable}
+            onClick={() => void copy()}
+          >
             <Copy size={15} />
             {copied ? tr("تم النسخ", "Copied") : tr("نسخ الرابط", "Copy link")}
           </button>
@@ -554,7 +565,10 @@ function Health() {
         setError("");
       }
     } catch (e) {
-      if (id === generation.current) setError((e as Error).message);
+      if (id === generation.current) {
+        setData(null);
+        setError((e as Error).message);
+      }
     } finally {
       if (id === generation.current) setBusy(false);
     }

@@ -213,6 +213,17 @@ function Checkout({
         )
       )}
       {error && <p role="alert">{error}</p>}
+      {error && !offer && !product && (
+        <p>
+          {tr(
+            "إذا بدأت الدفع سابقاً، راجع طلبات حسابك لاستعادة الحالة حتى لو انتهت صلاحية العرض.",
+            "If you previously started checkout, open your account orders to recover its status even if the offer has expired.",
+          )}{" "}
+          <a href={appearanceLink("/?module=gateway")}>
+            {tr("متابعة طلباتي", "View my orders")}
+          </a>
+        </p>
+      )}
       {order ? (
         <div className="quote-scope" role="status">
           <strong>{orderLabel(order.status)}</strong>
