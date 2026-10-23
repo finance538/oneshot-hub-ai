@@ -159,14 +159,7 @@ export async function executePayment(
       .select()
       .from(quoteRequests)
       .where(eq(quoteRequests.offerId, uuid(String(body.quoteOffer))));
-    if (
-      !quote ||
-      quote.kind !== "service" ||
-      quote.status !== "quoted" ||
-      !quote.amountCents ||
-      !quote.expiresAt ||
-      quote.expiresAt <= new Date()
-    )
+    if (!quote || quote.kind !== "service")
       throw new ApiError(
         409,
         "العرض غير متاح أو انتهت صلاحيته.",
@@ -181,6 +174,28 @@ export async function executePayment(
         403,
         "سجل الدخول بالبريد المؤكد الذي أُرسل منه طلب العرض.",
         "QUOTE_EMAIL_REQUIRED",
+      );
+    // Expiry and CRM closure stop new checkouts, but must not hide an
+    // existing financial outcome. Recover only the original owner's order.
+    const [saved] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.quoteId, quote.id));
+    if (saved) {
+      if (saved.ownerId !== user.id || saved.gateway !== gateway)
+        throw new ApiError(409, "هذا العرض مرتبط بطلب آخر.");
+      return { order: publicOrder(saved), replayed: true };
+    }
+    if (
+      quote.status !== "quoted" ||
+      !quote.amountCents ||
+      !quote.expiresAt ||
+      quote.expiresAt <= new Date()
+    )
+      throw new ApiError(
+        409,
+        "العرض غير متاح أو انتهت صلاحيته.",
+        "QUOTE_UNAVAILABLE",
       );
     quoteId = quote.id;
     productId = quote.productId;

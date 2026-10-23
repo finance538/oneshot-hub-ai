@@ -5,8 +5,8 @@ export type QuoteStatus = (typeof quoteStatuses)[number];
 export const quoteStatusLabels: Record<QuoteStatus, [string, string]> = {
   new: ["جديد", "New"],
   in_review: ["قيد المراجعة", "In review"],
-  quoted: ["تم إرسال العرض", "Quoted"],
-  closed: ["مكتمل", "Closed"],
+  quoted: ["تم اعتماد العرض", "Quote approved"],
+  closed: ["مغلق", "Closed"],
 };
 export type PriceKind = "fixed" | "starting" | "monthly";
 export function priceKind(

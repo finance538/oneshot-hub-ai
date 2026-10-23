@@ -1,5 +1,15 @@
 # Deployment and domain transition
 
+## Current acceptance scope — 23 October 2026
+
+The current release preserves existing domain assignments and does not require another domain move. The historical transfer procedure below is conditional guidance, not an instruction to consolidate independently deployed ecosystem apps. Keep the API hostname on the VPS.
+
+Fixed, ready-to-sell one-time catalog services now support reviewed hosted checkout; starting-price and monthly services require an approved quote. The older blanket expectation that every imported service must reject direct checkout is superseded by this pricing policy. Pro remains inquiry-only. Verify both allowed fixed-price checkout and rejection of monthly/custom direct payment.
+
+After automatic platform validation, verify that an expired or closed quote cannot create a new order, but its original customer can recover an already created order using the same quote and verified account. Confirm no additional provider session is created. Check that expired offers cannot be presented as fresh links in the CRM, quote approval does not claim message delivery, and a failed health refresh clears old successful indicators. New regression cases were added but not executed during this follow-up.
+
+Read-only production checks found connected local database health, 53 catalog products, implemented Stripe capabilities and JSON 401 protection on quote administration and diagnostics. Full SSO for the five independent apps remained unverified. These observations do not certify merchant credentials, email delivery, signed native releases or the deployment of this patch. Keep those dependent services accurately labeled until owner-operated acceptance succeeds.
+
 The Hostinger migration is partial: new application requests use Netlify, but VPS records and several services have not been supplied or moved. Read [the current migration status](hostinger-migration.md) before any retirement or cutover.
 
 The approved order is deployment → verification → domain transfer. External setup is being prepared by the owner. No repeat approval is required for the same conditional transfer, but readiness evidence is required.
