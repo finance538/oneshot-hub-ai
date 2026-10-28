@@ -12,7 +12,15 @@ interface HubCopy {
   pillars: [AppCopy, AppCopy, AppCopy, AppCopy];
   appsTitle: string;
   appsIntro: string;
-  apps: [AppCopy, AppCopy, AppCopy, AppCopy, AppCopy, AppCopy];
+  apps: [
+    AppCopy,
+    AppCopy,
+    AppCopy,
+    AppCopy,
+    AppCopy,
+    AppCopy,
+    AppCopy,
+  ];
   benefit: string;
   open: string;
   native: string;
@@ -61,13 +69,13 @@ export const hubCopy: Record<Language, HubCopy> = {
     intro:
       "لا تشترك في أداة منفصلة. اجمع التخطيط مع مديرك التنفيذي، البحث والبريد، الدفع والهوية في منظومة واحدة. ابدأ بخفة، وتوسّع بقدر طموحك.",
     signIn: "الدخول الموحد والبدء",
-    explore: "استكشف التطبيقات الستة",
+    explore: "استكشف التطبيقات السبعة",
     nav: [
       "الرئيسية",
       "ذكاء يخدم أعمالك",
       "لوحة القيادة",
       "لماذا OneShot؟",
-      "التطبيقات الستة",
+      "التطبيقات السبعة",
     ],
     power: "من فكرة في المحادثة، إلى خطوة في أعمالك.",
     pillars: [
@@ -92,7 +100,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → Dedicated Apps",
       ],
     ],
-    appsTitle: "ست وجهات. طموح واحد.",
+    appsTitle: "سبع وجهات. طموح واحد.",
     appsIntro:
       "منظومة OneShot المتكاملة — لكل مهمة مساحتها، ولك أنت مركز القيادة.",
     apps: [
@@ -125,6 +133,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "مختبر الحركة والأداء",
         "افتح المختبر لمراجعة الحركة وتجربة واجهات التحميل والأداء وفق الأدوات المتاحة في التطبيق.",
         "حركة · تشخيص · تجربة الواجهات",
+      ],
+      [
+        "استوديو المحتوى للمبدعين",
+        "من فكرة في رأسك إلى محتوى جاهز للنشر: مخرج ذكاء اصطناعي يعلّمك الكادر والإضاءة، ومصنع مقاطع ليوتيوب وشورتس وتيك توك، واستوديو وثائقي، ومترجم عقود — مع مساعد يعرف أسلوبك من أول يوم.",
+        "يوتيوب · تيك توك · ريلز · مخرج ذكاء اصطناعي",
       ],
     ],
     benefit: "الفائدة العملية لك",
@@ -178,13 +191,13 @@ export const hubCopy: Record<Language, HubCopy> = {
     intro:
       "Go beyond another subscription. Bring executive planning, research, email, payments and brand identity into one ecosystem. Start light. Grow with purpose.",
     signIn: "Sign in & get started",
-    explore: "Explore all six apps",
+    explore: "Explore all seven apps",
     nav: [
       "Overview",
       "AI business power",
       "Lite command hub",
       "Why OneShot",
-      "The six apps",
+      "The seven apps",
     ],
     power: "From a conversation to your next business move.",
     pillars: [
@@ -209,7 +222,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → Dedicated Apps",
       ],
     ],
-    appsTitle: "Six destinations. One ambition.",
+    appsTitle: "Seven destinations. One ambition.",
     appsIntro:
       "The complete OneShot ecosystem. Every task has a home. You have command.",
     apps: [
@@ -242,6 +255,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Motion & performance laboratory",
         "Open the lab to explore motion, loading interfaces and performance with the tools available in that application.",
         "Motion · Diagnostics · Interface experiments",
+      ],
+      [
+        "The creator content studio",
+        "From an idea in your head to publishable content: an AI director that teaches framing and lighting, a clip factory for YouTube, Shorts and TikTok, a documentary studio and a contract translator — with an assistant that knows your style from day one.",
+        "YouTube · TikTok · Reels · AI director",
       ],
     ],
     benefit: "What it does for you",
@@ -296,13 +314,13 @@ export const hubCopy: Record<Language, HubCopy> = {
     intro:
       "Allez au-delà des abonnements séparés. Réunissez conseil stratégique, recherche, e-mail, paiements et identité de marque. Commencez simplement, développez votre activité.",
     signIn: "Se connecter et commencer",
-    explore: "Découvrir les six applications",
+    explore: "Découvrir les sept applications",
     nav: [
       "Accueil",
       "L’IA pour votre activité",
       "Espace de commande",
       "Pourquoi OneShot",
-      "Les six applications",
+      "Les sept applications",
     ],
     power: "D’une conversation à votre prochaine décision.",
     pillars: [
@@ -327,7 +345,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → Applications dédiées",
       ],
     ],
-    appsTitle: "Six destinations. Une ambition.",
+    appsTitle: "Sept destinations. Une ambition.",
     appsIntro:
       "L’écosystème OneShot complet. Un espace pour chaque tâche, un centre de commande pour vous.",
     apps: [
@@ -360,6 +378,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Laboratoire de mouvement et performance",
         "Explorez les animations, interfaces de chargement et outils de diagnostic disponibles.",
         "Animation · Diagnostic · Interfaces",
+      ],
+      [
+        "Le studio de contenu pour créateurs",
+        "D'une idée en tête à un contenu prêt à publier : un réalisateur IA qui enseigne le cadre et la lumière, une fabrique de clips pour YouTube, Shorts et TikTok, un studio documentaire et un traducteur de contrats — avec un assistant qui connaît votre style dès le premier jour.",
+        "YouTube · TikTok · Reels · réalisateur IA",
       ],
     ],
     benefit: "Votre bénéfice concret",
@@ -414,13 +437,13 @@ export const hubCopy: Record<Language, HubCopy> = {
     intro:
       "Ve más allá de otra suscripción. Reúne planificación, investigación, correo, pagos e identidad de marca. Empieza con agilidad y crece con propósito.",
     signIn: "Acceder y empezar",
-    explore: "Explorar las seis aplicaciones",
+    explore: "Explorar las siete aplicaciones",
     nav: [
       "Inicio",
       "IA para tu negocio",
       "Centro de mando",
       "Por qué OneShot",
-      "Las seis aplicaciones",
+      "Las siete aplicaciones",
     ],
     power: "De una conversación a tu siguiente paso.",
     pillars: [
@@ -445,7 +468,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → Aplicaciones dedicadas",
       ],
     ],
-    appsTitle: "Seis destinos. Una ambición.",
+    appsTitle: "Siete destinos. Una ambición.",
     appsIntro:
       "Todo el ecosistema OneShot. Cada tarea tiene su espacio y tú tienes el control.",
     apps: [
@@ -478,6 +501,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Laboratorio de movimiento y rendimiento",
         "Explora animaciones, interfaces de carga y herramientas de diagnóstico disponibles.",
         "Movimiento · Diagnóstico · Interfaces",
+      ],
+      [
+        "El estudio de contenido para creadores",
+        "De una idea en tu cabeza a contenido listo para publicar: un director de IA que enseña encuadre e iluminación, una fábrica de clips para YouTube, Shorts y TikTok, un estudio documental y un traductor de contratos, con un asistente que conoce tu estilo desde el primer día.",
+        "YouTube · TikTok · Reels · director IA",
       ],
     ],
     benefit: "Tu beneficio práctico",
@@ -531,13 +559,13 @@ export const hubCopy: Record<Language, HubCopy> = {
     intro:
       "Bir abonelikten fazlası. Strateji, araştırma, e-posta, ödeme ve marka kimliğini bir ekosistemde birleştirin. Hafif başlayın, hedefinizle büyüyün.",
     signIn: "Giriş yap ve başla",
-    explore: "Altı uygulamayı keşfet",
+    explore: "Yedi uygulamayı keşfet",
     nav: [
       "Genel bakış",
       "İş için yapay zekâ",
       "Hızlı komuta",
       "Neden OneShot",
-      "Altı uygulama",
+      "Yedi uygulama",
     ],
     power: "Bir sohbetten sonraki iş adımınıza.",
     pillars: [
@@ -562,7 +590,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → Özel uygulamalar",
       ],
     ],
-    appsTitle: "Altı hedef. Tek vizyon.",
+    appsTitle: "Yedi hedef. Tek vizyon.",
     appsIntro:
       "OneShot ekosistemi. Her görevin bir alanı, sizin bir komuta merkeziniz var.",
     apps: [
@@ -595,6 +623,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Hareket ve performans laboratuvarı",
         "Mevcut animasyon, yükleme arayüzü ve tanılama araçlarını keşfedin.",
         "Hareket · Tanılama · Arayüzler",
+      ],
+      [
+        "İçerik üreticisi stüdyosu",
+        "Aklınızdaki fikirden yayına hazır içeriğe: kadraj ve ışığı öğreten bir yapay zekâ yönetmeni, YouTube, Shorts ve TikTok için klip fabrikası, belgesel stüdyosu ve sözleşme çevirmeni — üslubunuzu ilk günden bilen bir asistanla.",
+        "YouTube · TikTok · Reels · yapay zekâ yönetmen",
       ],
     ],
     benefit: "Size sağladığı fayda",
@@ -648,13 +681,13 @@ export const hubCopy: Record<Language, HubCopy> = {
     intro:
       "不再只是订阅另一款工具。将战略规划、研究、邮件、支付和品牌身份融入一个生态系统。轻松起步，稳步成长。",
     signIn: "登录并开始",
-    explore: "探索六款应用",
+    explore: "探索七款应用",
     nav: [
       "概览",
       "商业人工智能",
       "轻量指挥中心",
       "为什么选择 OneShot",
-      "六款应用",
+      "七款应用",
     ],
     power: "从一次对话，到下一步业务行动。",
     pillars: [
@@ -679,7 +712,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → 独立应用",
       ],
     ],
-    appsTitle: "六个目的地。一个愿景。",
+    appsTitle: "七个目的地。一个愿景。",
     appsIntro: "完整的 OneShot 生态系统。每项任务都有专属空间，由你掌控。",
     apps: [
       [
@@ -711,6 +744,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "动效与性能实验室",
         "探索应用内可用的动效、加载界面与诊断工具。",
         "动效 · 诊断 · 界面体验",
+      ],
+      [
+        "创作者内容工作台",
+        "从脑海里的想法到可直接发布的内容：教你取景与灯光的 AI 导演、面向 YouTube、Shorts 与 TikTok 的片段工厂、纪录片工作台与合同翻译器，还有从第一天就了解你风格的助手。",
+        "YouTube · TikTok · Reels · AI 导演",
       ],
     ],
     benefit: "为你带来的价值",
@@ -764,13 +802,13 @@ export const hubCopy: Record<Language, HubCopy> = {
     intro:
       "एक और सदस्यता से आगे बढ़ें। रणनीति, शोध, ईमेल, भुगतान और ब्रांड पहचान को एक इकोसिस्टम में जोड़ें। सरल शुरुआत करें, अपने लक्ष्य के साथ बढ़ें।",
     signIn: "साइन इन करके शुरू करें",
-    explore: "छह ऐप देखें",
+    explore: "सात ऐप देखें",
     nav: [
       "परिचय",
       "व्यवसाय के लिए AI",
       "त्वरित कमांड",
       "OneShot क्यों",
-      "छह ऐप",
+      "सात ऐप",
     ],
     power: "एक बातचीत से व्यवसाय के अगले कदम तक।",
     pillars: [
@@ -795,7 +833,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → समर्पित ऐप",
       ],
     ],
-    appsTitle: "छह मंज़िलें। एक लक्ष्य।",
+    appsTitle: "सात मंज़िलें। एक लक्ष्य।",
     appsIntro: "पूरा OneShot इकोसिस्टम। हर काम के लिए जगह, नियंत्रण आपके पास।",
     apps: [
       [
@@ -827,6 +865,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "मोशन और प्रदर्शन प्रयोगशाला",
         "ऐप में उपलब्ध एनीमेशन, लोडिंग इंटरफ़ेस और निदान उपकरण खोजें।",
         "मोशन · निदान · इंटरफ़ेस",
+      ],
+      [
+        "क्रिएटर कंटेंट स्टूडियो",
+        "दिमाग़ में मौजूद आइडिया से पब्लिश करने योग्य कंटेंट तक: फ़्रेमिंग और लाइटिंग सिखाने वाला AI डायरेक्टर, YouTube, Shorts और TikTok के लिए क्लिप फ़ैक्ट्री, डॉक्युमेंट्री स्टूडियो और कॉन्ट्रैक्ट अनुवादक — साथ में ऐसा सहायक जो पहले दिन से आपकी शैली जानता है।",
+        "YouTube · TikTok · Reels · AI डायरेक्टर",
       ],
     ],
     benefit: "आपको व्यावहारिक लाभ",
@@ -880,8 +923,8 @@ export const hubCopy: Record<Language, HubCopy> = {
     intro:
       "ایک اور رکنیت سے آگے بڑھیں۔ منصوبہ بندی، تحقیق، ای میل، ادائیگی اور برانڈ کی شناخت ایک نظام میں لائیں۔ آسان آغاز کریں، اپنے مقصد کے ساتھ بڑھیں۔",
     signIn: "سائن ان کریں اور شروع کریں",
-    explore: "چھ ایپس دریافت کریں",
-    nav: ["تعارف", "کاروباری ذہانت", "فوری کمانڈ", "OneShot کیوں", "چھ ایپس"],
+    explore: "سات ایپس دریافت کریں",
+    nav: ["تعارف", "کاروباری ذہانت", "فوری کمانڈ", "OneShot کیوں", "سات ایپس"],
     power: "ایک گفتگو سے کاروبار کے اگلے قدم تک۔",
     pillars: [
       [
@@ -905,7 +948,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → مخصوص ایپس",
       ],
     ],
-    appsTitle: "چھ منزلیں۔ ایک مقصد۔",
+    appsTitle: "سات منزلیں۔ ایک مقصد۔",
     appsIntro: "مکمل OneShot نظام۔ ہر کام کی اپنی جگہ، اختیار آپ کے پاس۔",
     apps: [
       [
@@ -937,6 +980,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "حرکت اور کارکردگی کی لیب",
         "ایپ میں دستیاب حرکت، لوڈنگ انٹرفیس اور تشخیصی اوزار دیکھیں۔",
         "حرکت · تشخیص · انٹرفیس",
+      ],
+      [
+        "کریئیٹر کانٹینٹ اسٹوڈیو",
+        "ذہن میں موجود آئیڈیا سے اشاعت کے قابل مواد تک: فریمنگ اور لائٹنگ سکھانے والا AI ڈائریکٹر، YouTube، Shorts اور TikTok کے لیے کلپ فیکٹری، دستاویزی اسٹوڈیو اور معاہدہ مترجم — ساتھ ایسا معاون جو پہلے دن سے آپ کا انداز جانتا ہے۔",
+        "YouTube · TikTok · Reels · AI ڈائریکٹر",
       ],
     ],
     benefit: "آپ کا عملی فائدہ",

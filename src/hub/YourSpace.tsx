@@ -4,6 +4,7 @@ import {
   Bot,
   Check,
   CheckCircle2,
+  Clapperboard,
   Clock3,
   Command,
   CreditCard,
@@ -38,6 +39,7 @@ const spaceCatalog: Record<EcosystemAppId, string[]> = {
   pay: ["AUT"],
   brand: ["BRD", "MED"],
   loader: ["WEB"],
+  media: ["MED"],
 };
 const serviceIcons: Record<EcosystemAppId, typeof Command> = {
   hub: Command,
@@ -46,6 +48,7 @@ const serviceIcons: Record<EcosystemAppId, typeof Command> = {
   pay: CreditCard,
   brand: Palette,
   loader: Gauge,
+  media: Clapperboard,
 };
 const PRODUCT_LIMIT = 6;
 

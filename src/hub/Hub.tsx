@@ -419,7 +419,7 @@ function HubPage() {
                   <p>{s.pageIntro}</p>
                 </div>
                 <span className="hub-outline-label">
-                  <Zap size={14} /> ONE ACCOUNT · SIX SERVICES
+                  <Zap size={14} /> ONE ACCOUNT · SEVEN SERVICES
                 </span>
               </div>
               {spaceShowcase}

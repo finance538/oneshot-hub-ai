@@ -1,6 +1,7 @@
 import {
   ArrowUpRight,
   Camera,
+  Clapperboard,
   Workflow,
   Sparkles,
   CreditCard,
@@ -18,6 +19,7 @@ const icons = {
   pay: CreditCard,
   brand: Palette,
   loader: FlaskConical,
+  media: Clapperboard,
 };
 export default function EcosystemSwitcher() {
   const { tr } = useAppearance();
