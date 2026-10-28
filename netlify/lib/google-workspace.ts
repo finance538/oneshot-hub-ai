@@ -163,12 +163,12 @@ async function googleIdentity(
     const existing = users.find((user) => user.email?.toLowerCase() === email);
     if (existing) {
       // Do not attach Google to an unverified password account created by someone else.
-      if (!existing.confirmedAt)
-        throw new ApiError(
-          409,
-          "أكد حساب البريد الحالي أو استعد كلمة مروره أولاً.",
-          "GOOGLE_ACCOUNT_UNVERIFIED",
-        );
+      if (!existing.confirmedAt) {
+        // Google أثبت ملكية البريد (email_verified === true أعلاه)، وصاحب الحساب لم يستلم
+        // رسالة التأكيد لأن SMTP غير مضبوط على Identity. نتبنّى الحساب بدل قفله في وجه صاحبه.
+        const adopted = await admin.updateUser(existing.id, { confirm: true });
+        return persistOwnerRole(adopted);
+      }
       return persistOwnerRole(existing);
     }
     if (users.length < 100) {
