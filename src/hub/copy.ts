@@ -137,7 +137,7 @@ export const hubCopy: Record<Language, HubCopy> = {
       [
         "استوديو المحتوى للمبدعين",
         "من فكرة في رأسك إلى محتوى جاهز للنشر: مخرج ذكاء اصطناعي يعلّمك الكادر والإضاءة، ومصنع مقاطع ليوتيوب وشورتس وتيك توك، واستوديو وثائقي، ومترجم عقود — مع مساعد يعرف أسلوبك من أول يوم.",
-        "يوتيوب · تيك توك · ريلز · مخرج ذكاء اصطناعي",
+        "يوتيوب · تيك توك · ريلز",
       ],
     ],
     benefit: "الفائدة العملية لك",
@@ -259,7 +259,7 @@ export const hubCopy: Record<Language, HubCopy> = {
       [
         "The creator content studio",
         "From an idea in your head to publishable content: an AI director that teaches framing and lighting, a clip factory for YouTube, Shorts and TikTok, a documentary studio and a contract translator — with an assistant that knows your style from day one.",
-        "YouTube · TikTok · Reels · AI director",
+        "YouTube · TikTok · Reels",
       ],
     ],
     benefit: "What it does for you",
@@ -382,7 +382,7 @@ export const hubCopy: Record<Language, HubCopy> = {
       [
         "Le studio de contenu pour créateurs",
         "D'une idée en tête à un contenu prêt à publier : un réalisateur IA qui enseigne le cadre et la lumière, une fabrique de clips pour YouTube, Shorts et TikTok, un studio documentaire et un traducteur de contrats — avec un assistant qui connaît votre style dès le premier jour.",
-        "YouTube · TikTok · Reels · réalisateur IA",
+        "YouTube · TikTok · Reels",
       ],
     ],
     benefit: "Votre bénéfice concret",
@@ -505,7 +505,7 @@ export const hubCopy: Record<Language, HubCopy> = {
       [
         "El estudio de contenido para creadores",
         "De una idea en tu cabeza a contenido listo para publicar: un director de IA que enseña encuadre e iluminación, una fábrica de clips para YouTube, Shorts y TikTok, un estudio documental y un traductor de contratos, con un asistente que conoce tu estilo desde el primer día.",
-        "YouTube · TikTok · Reels · director IA",
+        "YouTube · TikTok · Reels",
       ],
     ],
     benefit: "Tu beneficio práctico",
@@ -627,7 +627,7 @@ export const hubCopy: Record<Language, HubCopy> = {
       [
         "İçerik üreticisi stüdyosu",
         "Aklınızdaki fikirden yayına hazır içeriğe: kadraj ve ışığı öğreten bir yapay zekâ yönetmeni, YouTube, Shorts ve TikTok için klip fabrikası, belgesel stüdyosu ve sözleşme çevirmeni — üslubunuzu ilk günden bilen bir asistanla.",
-        "YouTube · TikTok · Reels · yapay zekâ yönetmen",
+        "YouTube · TikTok · Reels",
       ],
     ],
     benefit: "Size sağladığı fayda",
@@ -748,7 +748,7 @@ export const hubCopy: Record<Language, HubCopy> = {
       [
         "创作者内容工作台",
         "从脑海里的想法到可直接发布的内容：教你取景与灯光的 AI 导演、面向 YouTube、Shorts 与 TikTok 的片段工厂、纪录片工作台与合同翻译器，还有从第一天就了解你风格的助手。",
-        "YouTube · TikTok · Reels · AI 导演",
+        "YouTube · TikTok · Reels",
       ],
     ],
     benefit: "为你带来的价值",
@@ -869,7 +869,7 @@ export const hubCopy: Record<Language, HubCopy> = {
       [
         "क्रिएटर कंटेंट स्टूडियो",
         "दिमाग़ में मौजूद आइडिया से पब्लिश करने योग्य कंटेंट तक: फ़्रेमिंग और लाइटिंग सिखाने वाला AI डायरेक्टर, YouTube, Shorts और TikTok के लिए क्लिप फ़ैक्ट्री, डॉक्युमेंट्री स्टूडियो और कॉन्ट्रैक्ट अनुवादक — साथ में ऐसा सहायक जो पहले दिन से आपकी शैली जानता है।",
-        "YouTube · TikTok · Reels · AI डायरेक्टर",
+        "YouTube · TikTok · Reels",
       ],
     ],
     benefit: "आपको व्यावहारिक लाभ",
@@ -984,7 +984,7 @@ export const hubCopy: Record<Language, HubCopy> = {
       [
         "کریئیٹر کانٹینٹ اسٹوڈیو",
         "ذہن میں موجود آئیڈیا سے اشاعت کے قابل مواد تک: فریمنگ اور لائٹنگ سکھانے والا AI ڈائریکٹر، YouTube، Shorts اور TikTok کے لیے کلپ فیکٹری، دستاویزی اسٹوڈیو اور معاہدہ مترجم — ساتھ ایسا معاون جو پہلے دن سے آپ کا انداز جانتا ہے۔",
-        "YouTube · TikTok · Reels · AI ڈائریکٹر",
+        "YouTube · TikTok · Reels",
       ],
     ],
     benefit: "آپ کا عملی فائدہ",
