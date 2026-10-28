@@ -128,8 +128,20 @@ export default async (req: Request) => {
       if (!expected || expected.length < 16 || supplied !== expected)
         throw new ApiError(401, "غير مصرح.");
       const dryRun = new URL(req.url).searchParams.get("dry") === "1";
-      const report = await healUnconfirmedAccounts(dryRun);
-      return json({ ok: true, dryRun, ...report });
+      try {
+        const report = await healUnconfirmedAccounts(dryRun);
+        return json({ ok: true, dryRun, ...report });
+      } catch (error) {
+        // تشخيص إداري: الرسالة تظهر فقط لحامل المفتاح.
+        return json(
+          {
+            ok: false,
+            stage: "identity",
+            detail: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+          },
+          500,
+        );
+      }
     }
     if (path === "/api/auth/session" && method === "POST") {
       const token = cookieValue(req, "nf_jwt");
