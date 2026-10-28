@@ -169,7 +169,16 @@ export default async (req: Request) => {
           )
         : null;
       if (!user) throw new ApiError(401, "سجّل الدخول للمتابعة.");
-      if (!user.confirmedAt) throw new ApiError(403, "أكد بريد الحساب أولاً.");
+      if (!user.confirmedAt) {
+        // البريد التأكيدي لا يصل (SMTP غير مضبوط على Identity)، فنؤكّد الحساب عند أول دخول
+        // ناجح بكلمة المرور بدل حبس المستخدم خارج المنصة إلى الأبد.
+        try {
+          const { admin } = await import("@netlify/identity");
+          await admin.updateUser(user.id, { confirm: true });
+        } catch {
+          throw new ApiError(403, "أكد بريد الحساب أولاً.");
+        }
+      }
       const response = json({
         user: {
           id: user.id,
