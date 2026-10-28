@@ -47,6 +47,14 @@ export const ecosystemApps = [
     color: "#a6aca0",
     mark: "06",
   },
+  {
+    id: "media",
+    name: "OneShot Media",
+    origin: "https://media.1shotcam.com",
+    season: "Signal Ember",
+    color: "#ff5500",
+    mark: "07",
+  },
 ] as const;
 export type EcosystemAppId = (typeof ecosystemApps)[number]["id"];
 export const hubOrigin = ecosystemApps[0].origin;

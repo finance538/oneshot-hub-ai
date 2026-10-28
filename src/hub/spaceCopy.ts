@@ -36,7 +36,7 @@ export interface SpaceCopy {
 export const spaceCopy: Record<Language, SpaceCopy> = {
   ar: {
     kicker: "YOUR SPACE · ONESHOT HUB",
-    title: "مساحتك: حساب واحد يفتح ست خدمات لأعمالك.",
+    title: "مساحتك: حساب واحد يفتح سبع خدمات لأعمالك.",
     lead: "OneShot Hub هو الباب. من هنا تدخل مقر شركتك الرقمي وفريقك الذكي، ومساحة الذكاء المتخصص، وبوابات الدفع، واستوديو الهوية، ومختبر الأداء. ومن المساحة نفسها تطلب خدمات ومنتجات OneShot التي تنفّذها لك فرقنا.",
     plainLabel: "بكلمات بسيطة:",
     plain:
@@ -44,7 +44,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     stepsTitle: "تبدأ في 3 خطوات",
     steps: [
       "أنشئ حسابك ببريدك الإلكتروني وسمِّ مساحة عملك",
-      "اختر الخدمة من الست: فريقك، الدفع، الهوية أو الذكاء",
+      "اختر الخدمة من السبع: فريقك، الدفع، الهوية أو الذكاء",
       "اطلب المنتج المناسب من الكتالوج أو ابدأ العمل مع فريقك",
     ],
     trust: [
@@ -53,7 +53,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       "دفع مستضاف دون تخزين بطاقات",
       "أسعار معلنة بالريال السعودي",
     ],
-    servicesTitle: "الخدمات الست في منظومة OneShot",
+    servicesTitle: "الخدمات السبع في منظومة OneShot",
     servicesIntro:
       "اختر خدمة لتعرف ما تقدمه لك عملياً، وما المنتجات المرتبطة بها من كتالوجنا.",
     roles: {
@@ -63,6 +63,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       pay: "المدفوعات: بوابات، خزنة مشفرة ودفع مستضاف آمن.",
       brand: "الهوية: شعارك وألوانك وأصولك وثيماتك الموسمية.",
       loader: "المختبر: الحركة وواجهات التحميل وتشخيص الأداء.",
+      media: "المحتوى: استوديو للمبدعين — مخرج ذكاء اصطناعي، مصنع مقاطع، وثائقي ومترجم عقود.",
     },
     productsTitle: "منتجات وخدمات مرتبطة",
     productsIntro:
@@ -82,12 +83,12 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     current: "أنت هنا",
     pageTitle: "ONESHOT HUB — مساحتك",
     pageIntro:
-      "هذه صفحتك بعد الدخول: الفكرة كاملة، الخدمات الست، منتجاتنا، ثم غرفة قيادتك السريعة.",
+      "هذه صفحتك بعد الدخول: الفكرة كاملة، الخدمات السبع، منتجاتنا، ثم غرفة قيادتك السريعة.",
     portalNote: "غرفة القيادة السريعة تظهر هنا بعد تسجيل الدخول.",
   },
   en: {
     kicker: "YOUR SPACE · ONESHOT HUB",
-    title: "Your space: one account opens six services for your business.",
+    title: "Your space: one account opens seven services for your business.",
     lead: "OneShot Hub is the front door. From here you enter your digital headquarters and intelligent team, a specialist AI workspace, payment gateways, the brand studio and the performance lab. From the same space you order the OneShot services and products our teams deliver for you.",
     plainLabel: "In plain words:",
     plain:
@@ -95,7 +96,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     stepsTitle: "START IN 3 STEPS",
     steps: [
       "Create your account with your email and name your workspace",
-      "Pick a service of the six: team, payments, brand or intelligence",
+      "Pick a service of the seven: team, payments, brand or intelligence",
       "Order the right product from the catalog or start working with your team",
     ],
     trust: [
@@ -104,7 +105,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       "Hosted checkout with no card storage",
       "Published prices in Saudi riyals",
     ],
-    servicesTitle: "The six services of the OneShot ecosystem",
+    servicesTitle: "The seven services of the OneShot ecosystem",
     servicesIntro:
       "Choose a service to see what it does for you in practice and which catalog products belong to it.",
     roles: {
@@ -115,6 +116,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       pay: "Payments: gateways, an encrypted vault and secure hosted checkout.",
       brand: "Identity: your logo, colours, assets and seasonal themes.",
       loader: "The lab: motion, loading interfaces and performance diagnostics.",
+      media: "Content: a creator studio — AI director, clip factory, documentary studio and contract translator.",
     },
     productsTitle: "Related products and services",
     productsIntro:
@@ -134,12 +136,12 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     current: "You are here",
     pageTitle: "ONESHOT HUB — Your space",
     pageIntro:
-      "Your page after sign-in: the full idea, the six services, our products, then your quick command room.",
+      "Your page after sign-in: the full idea, the seven services, our products, then your quick command room.",
     portalNote: "The quick command room appears here after you sign in.",
   },
   fr: {
     kicker: "YOUR SPACE · ONESHOT HUB",
-    title: "Votre espace : un compte ouvre six services pour votre entreprise.",
+    title: "Votre espace : un compte ouvre sept services pour votre entreprise.",
     lead: "OneShot Hub est la porte d'entrée. D'ici vous rejoignez votre siège numérique et votre équipe intelligente, un espace d'IA spécialisée, les passerelles de paiement, le studio de marque et le laboratoire de performance. Depuis le même espace, vous commandez les services et produits OneShot réalisés par nos équipes.",
     plainLabel: "En clair :",
     plain:
@@ -147,7 +149,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     stepsTitle: "COMMENCEZ EN 3 ÉTAPES",
     steps: [
       "Créez votre compte avec votre e-mail et nommez votre espace",
-      "Choisissez un des six services : équipe, paiements, marque ou IA",
+      "Choisissez un des sept services : équipe, paiements, marque ou IA",
       "Commandez le bon produit du catalogue ou travaillez avec votre équipe",
     ],
     trust: [
@@ -156,7 +158,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       "Paiement hébergé sans stockage de carte",
       "Prix publiés en riyals saoudiens",
     ],
-    servicesTitle: "Les six services de l'écosystème OneShot",
+    servicesTitle: "Les sept services de l'écosystème OneShot",
     servicesIntro:
       "Choisissez un service pour voir ce qu'il vous apporte concrètement et les produits du catalogue qui s'y rattachent.",
     roles: {
@@ -167,6 +169,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       pay: "Paiements : passerelles, coffre chiffré et paiement hébergé sécurisé.",
       brand: "Identité : logo, couleurs, ressources et thèmes saisonniers.",
       loader: "Le labo : animation, interfaces de chargement et diagnostics de performance.",
+      media: "Contenu : un studio pour créateurs — réalisateur IA, fabrique de clips, documentaire et traducteur de contrats.",
     },
     productsTitle: "Produits et services liés",
     productsIntro:
@@ -186,12 +189,12 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     current: "Vous êtes ici",
     pageTitle: "ONESHOT HUB — Votre espace",
     pageIntro:
-      "Votre page après connexion : l'idée complète, les six services, nos produits, puis votre espace de commande rapide.",
+      "Votre page après connexion : l'idée complète, les sept services, nos produits, puis votre espace de commande rapide.",
     portalNote: "L'espace de commande rapide apparaît ici après connexion.",
   },
   es: {
     kicker: "YOUR SPACE · ONESHOT HUB",
-    title: "Tu espacio: una cuenta abre seis servicios para tu negocio.",
+    title: "Tu espacio: una cuenta abre siete servicios para tu negocio.",
     lead: "OneShot Hub es la puerta. Desde aquí entras a tu sede digital y tu equipo inteligente, a un espacio de IA especializada, a las pasarelas de pago, al estudio de marca y al laboratorio de rendimiento. Desde el mismo espacio pides los servicios y productos OneShot que nuestros equipos realizan para ti.",
     plainLabel: "En pocas palabras:",
     plain:
@@ -199,7 +202,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     stepsTitle: "EMPIEZA EN 3 PASOS",
     steps: [
       "Crea tu cuenta con tu correo y nombra tu espacio de trabajo",
-      "Elige uno de los seis servicios: equipo, pagos, marca o inteligencia",
+      "Elige uno de los siete servicios: equipo, pagos, marca o inteligencia",
       "Pide el producto adecuado del catálogo o empieza a trabajar con tu equipo",
     ],
     trust: [
@@ -208,7 +211,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       "Pago alojado sin almacenar tarjetas",
       "Precios publicados en riales saudíes",
     ],
-    servicesTitle: "Los seis servicios del ecosistema OneShot",
+    servicesTitle: "Los siete servicios del ecosistema OneShot",
     servicesIntro:
       "Elige un servicio para ver qué hace por ti en la práctica y qué productos del catálogo le pertenecen.",
     roles: {
@@ -219,6 +222,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       pay: "Pagos: pasarelas, bóveda cifrada y pago alojado seguro.",
       brand: "Identidad: tu logo, colores, recursos y temas de temporada.",
       loader: "El laboratorio: movimiento, interfaces de carga y diagnóstico de rendimiento.",
+      media: "Contenido: un estudio para creadores — director de IA, fábrica de clips, documental y traductor de contratos.",
     },
     productsTitle: "Productos y servicios relacionados",
     productsIntro:
@@ -238,12 +242,12 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     current: "Estás aquí",
     pageTitle: "ONESHOT HUB — Tu espacio",
     pageIntro:
-      "Tu página tras iniciar sesión: la idea completa, los seis servicios, nuestros productos y luego tu centro de mando rápido.",
+      "Tu página tras iniciar sesión: la idea completa, los siete servicios, nuestros productos y luego tu centro de mando rápido.",
     portalNote: "El centro de mando rápido aparece aquí tras iniciar sesión.",
   },
   tr: {
     kicker: "YOUR SPACE · ONESHOT HUB",
-    title: "Alanınız: tek hesap, işiniz için altı hizmet.",
+    title: "Alanınız: tek hesap, işiniz için yedi hizmet.",
     lead: "OneShot Hub giriş kapısıdır. Buradan dijital merkezinize ve akıllı ekibinize, uzman yapay zekâ alanına, ödeme ağ geçitlerine, marka stüdyosuna ve performans laboratuvarına girersiniz. Aynı alandan, ekiplerimizin sizin için ürettiği OneShot hizmet ve ürünlerini sipariş edersiniz.",
     plainLabel: "Kısaca:",
     plain:
@@ -251,7 +255,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     stepsTitle: "3 ADIMDA BAŞLAYIN",
     steps: [
       "E-postanızla hesap oluşturun ve çalışma alanınızı adlandırın",
-      "Altı hizmetten birini seçin: ekip, ödeme, marka veya yapay zekâ",
+      "Yedi hizmetten birini seçin: ekip, ödeme, marka veya yapay zekâ",
       "Katalogdan uygun ürünü sipariş edin veya ekibinizle çalışmaya başlayın",
     ],
     trust: [
@@ -260,7 +264,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       "Kart saklamayan barındırılan ödeme",
       "Suudi riyali ile yayımlanmış fiyatlar",
     ],
-    servicesTitle: "OneShot ekosisteminin altı hizmeti",
+    servicesTitle: "OneShot ekosisteminin yedi hizmeti",
     servicesIntro:
       "Bir hizmet seçin; size pratikte ne sağladığını ve katalogdaki hangi ürünlerin ona ait olduğunu görün.",
     roles: {
@@ -271,6 +275,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       pay: "Ödemeler: ağ geçitleri, şifreli kasa ve güvenli barındırılan ödeme.",
       brand: "Kimlik: logonuz, renkleriniz, varlıklarınız ve mevsimsel temalar.",
       loader: "Laboratuvar: hareket, yükleme arayüzleri ve performans tanılama.",
+      media: "İçerik: içerik üreticisi stüdyosu — yapay zekâ yönetmen, klip fabrikası, belgesel ve sözleşme çevirmeni.",
     },
     productsTitle: "İlgili ürün ve hizmetler",
     productsIntro:
@@ -290,12 +295,12 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     current: "Buradasınız",
     pageTitle: "ONESHOT HUB — Alanınız",
     pageIntro:
-      "Girişten sonraki sayfanız: fikrin tamamı, altı hizmet, ürünlerimiz ve ardından hızlı komuta odanız.",
+      "Girişten sonraki sayfanız: fikrin tamamı, yedi hizmet, ürünlerimiz ve ardından hızlı komuta odanız.",
     portalNote: "Hızlı komuta odası giriş yaptıktan sonra burada görünür.",
   },
   zh: {
     kicker: "YOUR SPACE · ONESHOT HUB",
-    title: "你的空间：一个账户，打开面向业务的六项服务。",
+    title: "你的空间：一个账户，打开面向业务的七项服务。",
     lead: "OneShot Hub 是入口。从这里进入你的数字总部与智能团队、专业 AI 工作区、支付网关、品牌工作室和性能实验室。在同一个空间里，你还可以订购由我们团队交付的 OneShot 服务与产品。",
     plainLabel: "简单来说：",
     plain:
@@ -303,7 +308,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     stepsTitle: "三步开始",
     steps: [
       "用邮箱创建账户并为工作区命名",
-      "从六项服务中选择：团队、支付、品牌或智能",
+      "从七项服务中选择：团队、支付、品牌或智能",
       "从目录订购合适的产品，或开始与团队协作",
     ],
     trust: [
@@ -312,7 +317,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       "托管支付，不存储银行卡",
       "以沙特里亚尔公开标价",
     ],
-    servicesTitle: "OneShot 生态系统的六项服务",
+    servicesTitle: "OneShot 生态系统的七项服务",
     servicesIntro: "选择一项服务，了解它为你带来的实际价值以及相关的目录产品。",
     roles: {
       hub: "入口与中心：统一登录、轻量智能团队和你的订单。",
@@ -321,6 +326,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       pay: "支付：网关、加密保险库与安全托管结账。",
       brand: "品牌：标志、色彩、素材与季节主题。",
       loader: "实验室：动效、加载界面与性能诊断。",
+      media: "内容：创作者工作台 — AI 导演、片段工厂、纪录片工作台与合同翻译器。",
     },
     productsTitle: "相关产品与服务",
     productsIntro: "来自真实的 OneShot 目录。价格为沙特里亚尔，详情见各产品页。",
@@ -338,12 +344,12 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     enterGuest: "登录并打开你的空间",
     current: "你在这里",
     pageTitle: "ONESHOT HUB — 你的空间",
-    pageIntro: "登录后的页面：完整理念、六项服务、我们的产品，然后是你的快速指挥室。",
+    pageIntro: "登录后的页面：完整理念、七项服务、我们的产品，然后是你的快速指挥室。",
     portalNote: "登录后，快速指挥室将显示在这里。",
   },
   hi: {
     kicker: "YOUR SPACE · ONESHOT HUB",
-    title: "आपका स्पेस: एक खाता, आपके व्यवसाय के लिए छह सेवाएँ।",
+    title: "आपका स्पेस: एक खाता, आपके व्यवसाय के लिए सात सेवाएँ।",
     lead: "OneShot Hub प्रवेश द्वार है। यहाँ से आप अपने डिजिटल मुख्यालय और बुद्धिमान टीम, विशेषज्ञ AI वर्कस्पेस, भुगतान गेटवे, ब्रांड स्टूडियो और परफ़ॉर्मेंस लैब में जाते हैं। इसी स्पेस से आप वे OneShot सेवाएँ और उत्पाद ऑर्डर करते हैं जिन्हें हमारी टीमें आपके लिए पूरा करती हैं।",
     plainLabel: "सरल शब्दों में:",
     plain:
@@ -351,7 +357,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     stepsTitle: "3 चरणों में शुरू करें",
     steps: [
       "अपने ईमेल से खाता बनाएँ और वर्कस्पेस का नाम रखें",
-      "छह सेवाओं में से चुनें: टीम, भुगतान, ब्रांड या इंटेलिजेंस",
+      "सात सेवाओं में से चुनें: टीम, भुगतान, ब्रांड या इंटेलिजेंस",
       "कैटलॉग से सही उत्पाद ऑर्डर करें या अपनी टीम के साथ काम शुरू करें",
     ],
     trust: [
@@ -360,7 +366,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       "कार्ड संग्रह के बिना होस्टेड चेकआउट",
       "सऊदी रियाल में प्रकाशित मूल्य",
     ],
-    servicesTitle: "OneShot इकोसिस्टम की छह सेवाएँ",
+    servicesTitle: "OneShot इकोसिस्टम की सात सेवाएँ",
     servicesIntro:
       "कोई सेवा चुनें और देखें कि वह व्यवहार में आपके लिए क्या करती है और कैटलॉग के कौन से उत्पाद उससे जुड़े हैं।",
     roles: {
@@ -370,6 +376,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       pay: "भुगतान: गेटवे, एन्क्रिप्टेड वॉल्ट और सुरक्षित होस्टेड चेकआउट।",
       brand: "पहचान: आपका लोगो, रंग, एसेट और मौसमी थीम।",
       loader: "लैब: मोशन, लोडिंग इंटरफ़ेस और परफ़ॉर्मेंस डायग्नोस्टिक्स।",
+      media: "कंटेंट: क्रिएटर स्टूडियो — AI डायरेक्टर, क्लिप फ़ैक्ट्री, डॉक्युमेंट्री और कॉन्ट्रैक्ट अनुवादक।",
     },
     productsTitle: "संबंधित उत्पाद और सेवाएँ",
     productsIntro:
@@ -389,12 +396,12 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     current: "आप यहाँ हैं",
     pageTitle: "ONESHOT HUB — आपका स्पेस",
     pageIntro:
-      "साइन इन के बाद आपका पृष्ठ: पूरा विचार, छह सेवाएँ, हमारे उत्पाद, फिर आपका त्वरित कमांड रूम।",
+      "साइन इन के बाद आपका पृष्ठ: पूरा विचार, सात सेवाएँ, हमारे उत्पाद, फिर आपका त्वरित कमांड रूम।",
     portalNote: "साइन इन करने के बाद त्वरित कमांड रूम यहाँ दिखेगा।",
   },
   ur: {
     kicker: "YOUR SPACE · ONESHOT HUB",
-    title: "آپ کی جگہ: ایک اکاؤنٹ، آپ کے کاروبار کے لیے چھ خدمات۔",
+    title: "آپ کی جگہ: ایک اکاؤنٹ، آپ کے کاروبار کے لیے سات خدمات۔",
     lead: "OneShot Hub دروازہ ہے۔ یہاں سے آپ اپنے ڈیجیٹل ہیڈکوارٹر اور ذہین ٹیم، ماہر AI ورک اسپیس، ادائیگی کے گیٹ ویز، برانڈ اسٹوڈیو اور کارکردگی لیب میں داخل ہوتے ہیں۔ اسی جگہ سے آپ وہ OneShot خدمات اور مصنوعات آرڈر کرتے ہیں جو ہماری ٹیمیں آپ کے لیے مکمل کرتی ہیں۔",
     plainLabel: "آسان الفاظ میں:",
     plain:
@@ -402,7 +409,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     stepsTitle: "3 مراحل میں شروع کریں",
     steps: [
       "اپنے ای میل سے اکاؤنٹ بنائیں اور ورک اسپیس کا نام رکھیں",
-      "چھ خدمات میں سے چنیں: ٹیم، ادائیگی، برانڈ یا ذہانت",
+      "سات خدمات میں سے چنیں: ٹیم، ادائیگی، برانڈ یا ذہانت",
       "کیٹلاگ سے مناسب پروڈکٹ آرڈر کریں یا اپنی ٹیم کے ساتھ کام شروع کریں",
     ],
     trust: [
@@ -411,7 +418,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       "کارڈ محفوظ کیے بغیر ہوسٹڈ چیک آؤٹ",
       "سعودی ریال میں شائع شدہ قیمتیں",
     ],
-    servicesTitle: "OneShot ایکو سسٹم کی چھ خدمات",
+    servicesTitle: "OneShot ایکو سسٹم کی سات خدمات",
     servicesIntro:
       "کوئی خدمت چنیں اور دیکھیں کہ یہ عملی طور پر آپ کے لیے کیا کرتی ہے اور کیٹلاگ کی کون سی مصنوعات اس سے جڑی ہیں۔",
     roles: {
@@ -421,6 +428,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       pay: "ادائیگیاں: گیٹ ویز، خفیہ کردہ والٹ اور محفوظ ہوسٹڈ چیک آؤٹ۔",
       brand: "شناخت: آپ کا لوگو، رنگ، اثاثے اور موسمی تھیمز۔",
       loader: "لیب: حرکت، لوڈنگ انٹرفیس اور کارکردگی کی تشخیص۔",
+      media: "مواد: کریئیٹر اسٹوڈیو — AI ڈائریکٹر، کلپ فیکٹری، دستاویزی اسٹوڈیو اور معاہدہ مترجم۔",
     },
     productsTitle: "متعلقہ مصنوعات اور خدمات",
     productsIntro:
@@ -440,7 +448,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     current: "آپ یہاں ہیں",
     pageTitle: "ONESHOT HUB — آپ کی جگہ",
     pageIntro:
-      "سائن ان کے بعد آپ کا صفحہ: مکمل خیال، چھ خدمات، ہماری مصنوعات، پھر آپ کا فوری کمانڈ روم۔",
+      "سائن ان کے بعد آپ کا صفحہ: مکمل خیال، سات خدمات، ہماری مصنوعات، پھر آپ کا فوری کمانڈ روم۔",
     portalNote: "سائن ان کرنے کے بعد فوری کمانڈ روم یہاں ظاہر ہوگا۔",
   },
 };

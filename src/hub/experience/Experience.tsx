@@ -10,6 +10,7 @@ import {
   Check,
   CirclePause,
   CirclePlay,
+  Clapperboard,
   CreditCard,
   Fingerprint,
   Focus,
@@ -32,7 +33,7 @@ import ValueStudio from "./ValueStudio";
 import InstallStudio from "./InstallStudio";
 import "./experience.css";
 const Concierge = lazy(() => import("./Concierge"));
-const icons = [Layers3, Workflow, Bot, CreditCard, Palette, Zap];
+const icons = [Layers3, Workflow, Bot, CreditCard, Palette, Zap, Clapperboard];
 const labelsAr = [
   "مركز أعمالك",
   "فريقك ومسارات عملك",
@@ -40,6 +41,7 @@ const labelsAr = [
   "مدفوعات أعمالك",
   "هويتك ومحتواك",
   "مختبر الاختبار",
+  "استوديو المحتوى",
 ];
 const labelsEn = [
   "Your command center",
@@ -48,6 +50,7 @@ const labelsEn = [
   "Business payments",
   "Your brand & content",
   "Testing laboratory",
+  "Content studio",
 ];
 
 export default function Experience({
@@ -192,13 +195,13 @@ export default function Experience({
             <Fingerprint size={17} />
             <span>{tr("حساب واحد", "ONE ACCOUNT")}</span>
             <i />
-            <span>{tr("ست وجهات مترابطة", "SIX CONNECTED DESTINATIONS")}</span>
+            <span>{tr("سبع وجهات مترابطة", "SEVEN CONNECTED DESTINATIONS")}</span>
           </div>
         </div>
         <div className="lux-spatial">
           <div className="lux-scene-caption">
             <span>THE ONESHOT UNIVERSE</span>
-            <span>01 — 06</span>
+            <span>01 — 07</span>
           </div>
           <SpatialScene energy={ambience.energy} calm={zen} paused={paused} />
           <div className="lux-scene-center" aria-hidden="true">
@@ -368,8 +371,8 @@ export default function Experience({
           </div>
           <p>
             {tr(
-              "خمس منصات متخصصة ومركز قيادة واحد. اختر وجهتك، وابدأ من حيث يحتاج عملك.",
-              "Five specialist platforms and one command center. Choose a destination and start where your business needs you.",
+              "ست منصات متخصصة ومركز قيادة واحد. اختر وجهتك، وابدأ من حيث يحتاج عملك.",
+              "Six specialist platforms and one command center. Choose a destination and start where your business needs you.",
             )}
           </p>
         </div>
@@ -401,8 +404,9 @@ export default function Experience({
                       e.key === "Home"
                         ? 0
                         : e.key === "End"
-                          ? 5
-                          : (active + (e.key === "ArrowDown" ? 1 : 5)) % 6;
+                          ? ecosystemApps.length - 1
+                          : (active + (e.key === "ArrowDown" ? 1 : -1) + ecosystemApps.length) %
+                            ecosystemApps.length;
                     setActive(next);
                     document.getElementById(`destination-${next}`)?.focus();
                   }}
