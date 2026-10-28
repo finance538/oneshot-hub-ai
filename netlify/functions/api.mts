@@ -59,6 +59,44 @@ import { toolsRoute } from "../lib/tools.js";
 import { executiveChat, overview } from "../lib/ai.js";
 import { gateways, endpoints } from "../../shared/contracts.js";
 
+
+const reply = (value: unknown, status = 200) =>
+  new Response(JSON.stringify(value), {
+    status,
+    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+  });
+
+async function healRoute(req: Request): Promise<Response> {
+  try {
+    const expected = Netlify.env.get("AUTH_HEAL_KEY") || "";
+    const supplied = req.headers.get("x-heal-key") || "";
+    if (!expected || expected.length < 16 || supplied !== expected)
+      return reply({ ok: false, error: "غير مصرح." }, 401);
+    const dryRun = new URL(req.url).searchParams.get("dry") === "1";
+    const { admin } = await import("@netlify/identity");
+    const report: any = { total: 0, unconfirmed: 0, healed: [] as string[], failed: [] as string[] };
+    for (let page = 1; page <= 50; page++) {
+      const users = await admin.listUsers({ page, perPage: 100 });
+      report.total += users.length;
+      for (const user of users) {
+        if (user.confirmedAt) continue;
+        report.unconfirmed++;
+        if (dryRun) continue;
+        try {
+          await admin.updateUser(user.id, { confirm: true });
+          report.healed.push(user.email || user.id);
+        } catch (err) {
+          report.failed.push(`${user.email || user.id}: ${err instanceof Error ? err.message : "error"}`);
+        }
+      }
+      if (users.length < 100) break;
+    }
+    return reply({ ok: true, dryRun, ...report });
+  } catch (err: any) {
+    return reply({ ok: false, stage: "heal", name: err?.name, detail: err?.message || String(err) }, 200);
+  }
+}
+
 export default async (req: Request) => {
   const requestId = crypto.randomUUID();
   const cors = corsHeaders(req);
@@ -79,6 +117,7 @@ export default async (req: Request) => {
       route ? `/api/${route.replace(/^\/+/, "")}` : url.pathname
     ).replace(/\/+$/, "");
     const method = req.method;
+    if (path === "/api/auth/heal") return healRoute(req);
     if (method === "OPTIONS") {
       assertOrigin(req);
       return new Response(null, {
