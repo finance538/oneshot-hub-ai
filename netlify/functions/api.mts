@@ -1,4 +1,5 @@
 import { googleRoute } from "../lib/google-workspace.js";
+import { healUnconfirmedAccounts } from "../lib/identity-heal.js";
 import {
   createSharedSession,
   revokeSharedSession,
@@ -119,6 +120,16 @@ export default async (req: Request) => {
       response.headers.set("Cache-Control", "no-store");
       response.headers.set("Referrer-Policy", "no-referrer");
       return response;
+    }
+    if (path === "/api/auth/heal" && method === "POST") {
+      // إصلاح إداري: تأكيد الحسابات العالقة. مفتاح سري + إلزام origin.
+      const expected = env("AUTH_HEAL_KEY");
+      const supplied = req.headers.get("x-heal-key") || "";
+      if (!expected || expected.length < 16 || supplied !== expected)
+        throw new ApiError(401, "غير مصرح.");
+      const dryRun = new URL(req.url).searchParams.get("dry") === "1";
+      const report = await healUnconfirmedAccounts(dryRun);
+      return json({ ok: true, dryRun, ...report });
     }
     if (path === "/api/auth/session" && method === "POST") {
       const token = cookieValue(req, "nf_jwt");
