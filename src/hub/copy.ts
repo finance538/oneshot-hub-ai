@@ -69,13 +69,13 @@ export const hubCopy: Record<Language, HubCopy> = {
     intro:
       "لا تشترك في أداة منفصلة. اجمع التخطيط مع مديرك التنفيذي، البحث والبريد، الدفع والهوية في منظومة واحدة. ابدأ بخفة، وتوسّع بقدر طموحك.",
     signIn: "الدخول الموحد والبدء",
-    explore: "استكشف التطبيقات السبعة",
+    explore: "استكشف التطبيقات",
     nav: [
       "الرئيسية",
       "ذكاء يخدم أعمالك",
       "لوحة القيادة",
       "لماذا OneShot؟",
-      "التطبيقات السبعة",
+      "التطبيقات",
     ],
     power: "من فكرة في المحادثة، إلى خطوة في أعمالك.",
     pillars: [
@@ -100,7 +100,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → Dedicated Apps",
       ],
     ],
-    appsTitle: "سبع وجهات. طموح واحد.",
+    appsTitle: "وجهات مترابطة. طموح واحد.",
     appsIntro:
       "منظومة OneShot المتكاملة — لكل مهمة مساحتها، ولك أنت مركز القيادة.",
     apps: [
@@ -191,13 +191,13 @@ export const hubCopy: Record<Language, HubCopy> = {
     intro:
       "Go beyond another subscription. Bring executive planning, research, email, payments and brand identity into one ecosystem. Start light. Grow with purpose.",
     signIn: "Sign in & get started",
-    explore: "Explore all seven apps",
+    explore: "Explore all apps",
     nav: [
       "Overview",
       "AI business power",
       "Lite command hub",
       "Why OneShot",
-      "The seven apps",
+      "The apps",
     ],
     power: "From a conversation to your next business move.",
     pillars: [
