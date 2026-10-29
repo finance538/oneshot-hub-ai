@@ -62,6 +62,15 @@ export const ecosystemApps = [
     mark: "07",
     hidden: false,
   },
+  {
+    id: "quran",
+    name: "OneShot Quran",
+    origin: "https://oneshot-quran.netlify.app",
+    season: "Crescent Dawn",
+    color: "#88bfc5",
+    mark: "08",
+    hidden: false,
+  },
 ] as const;
 export type EcosystemAppId = (typeof ecosystemApps)[number]["id"];
 // `hidden: true` keeps an app wired to the ecosystem (SSO, handshake, health probing) while

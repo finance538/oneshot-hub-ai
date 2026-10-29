@@ -6,6 +6,7 @@ import {
   ArrowUpLeft,
   ArrowUpRight,
   AudioLines,
+  BookOpen,
   Bot,
   Check,
   CirclePause,
@@ -33,7 +34,7 @@ import ValueStudio from "./ValueStudio";
 import InstallStudio from "./InstallStudio";
 import "./experience.css";
 const Concierge = lazy(() => import("./Concierge"));
-const allIcons = [Layers3, Workflow, Bot, CreditCard, Palette, Zap, Clapperboard];
+const allIcons = [Layers3, Workflow, Bot, CreditCard, Palette, Zap, Clapperboard, BookOpen];
 const allLabelsAr = [
   "مركز أعمالك",
   "فريقك ومسارات عملك",
@@ -42,6 +43,7 @@ const allLabelsAr = [
   "هويتك ومحتواك",
   "مختبر الاختبار",
   "استوديو المحتوى",
+  "القرآن الكريم والحفظ الذكي",
 ];
 const allLabelsEn = [
   "Your command center",
@@ -51,6 +53,7 @@ const allLabelsEn = [
   "Your brand & content",
   "Testing laboratory",
   "Content studio",
+  "Quran & smart memorization",
 ];
 // Icons and captions are positional, so they are trimmed with the same predicate that hides an
 // app: a hidden app leaves the list without shifting every icon after it.
@@ -207,7 +210,7 @@ export default function Experience({
         <div className="lux-spatial">
           <div className="lux-scene-caption">
             <span>THE ONESHOT UNIVERSE</span>
-            <span>01 — 07</span>
+            <span>01 — 08</span>
           </div>
           <SpatialScene energy={ambience.energy} calm={zen} paused={paused} />
           <div className="lux-scene-center" aria-hidden="true">
@@ -377,8 +380,8 @@ export default function Experience({
           </div>
           <p>
             {tr(
-              "ست منصات متخصصة ومركز قيادة واحد. اختر وجهتك، وابدأ من حيث يحتاج عملك.",
-              "Six specialist platforms and one command center. Choose a destination and start where your business needs you.",
+              "سبع منصات متخصصة ومركز قيادة واحد. اختر وجهتك، وابدأ من حيث يحتاج عملك.",
+              "Seven specialist platforms and one command center. Choose a destination and start where your business needs you.",
             )}
           </p>
         </div>
