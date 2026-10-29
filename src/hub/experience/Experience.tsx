@@ -201,7 +201,7 @@ export default function Experience({
             <Fingerprint size={17} />
             <span>{tr("حساب واحد", "ONE ACCOUNT")}</span>
             <i />
-            <span>{tr("سبع وجهات مترابطة", "SEVEN CONNECTED DESTINATIONS")}</span>
+            <span>{tr("وجهات مترابطة", "CONNECTED DESTINATIONS")}</span>
           </div>
         </div>
         <div className="lux-spatial">
