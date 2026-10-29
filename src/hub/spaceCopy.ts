@@ -36,7 +36,7 @@ export interface SpaceCopy {
 export const spaceCopy: Record<Language, SpaceCopy> = {
   ar: {
     kicker: "YOUR SPACE · ONESHOT HUB",
-    title: "مساحتك: حساب واحد يفتح سبع خدمات لأعمالك.",
+    title: "مساحتك: حساب واحد يفتح خدمات أعمالك.",
     lead: "OneShot Hub هو الباب. من هنا تدخل مقر شركتك الرقمي وفريقك الذكي، ومساحة الذكاء المتخصص، وبوابات الدفع، واستوديو الهوية، ومختبر الأداء. ومن المساحة نفسها تطلب خدمات ومنتجات OneShot التي تنفّذها لك فرقنا.",
     plainLabel: "بكلمات بسيطة:",
     plain:
@@ -44,7 +44,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     stepsTitle: "تبدأ في 3 خطوات",
     steps: [
       "أنشئ حسابك ببريدك الإلكتروني وسمِّ مساحة عملك",
-      "اختر الخدمة من السبع: فريقك، الدفع، الهوية أو الذكاء",
+      "اختر خدمتك: فريقك، الهوية أو الذكاء",
       "اطلب المنتج المناسب من الكتالوج أو ابدأ العمل مع فريقك",
     ],
     trust: [
@@ -53,7 +53,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       "دفع مستضاف دون تخزين بطاقات",
       "أسعار معلنة بالريال السعودي",
     ],
-    servicesTitle: "الخدمات السبع في منظومة OneShot",
+    servicesTitle: "خدمات منظومة OneShot",
     servicesIntro:
       "اختر خدمة لتعرف ما تقدمه لك عملياً، وما المنتجات المرتبطة بها من كتالوجنا.",
     roles: {
@@ -83,12 +83,12 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     current: "أنت هنا",
     pageTitle: "ONESHOT HUB — مساحتك",
     pageIntro:
-      "هذه صفحتك بعد الدخول: الفكرة كاملة، الخدمات السبع، منتجاتنا، ثم غرفة قيادتك السريعة.",
+      "هذه صفحتك بعد الدخول: الفكرة كاملة، الخدمات، منتجاتنا، ثم غرفة قيادتك السريعة.",
     portalNote: "غرفة القيادة السريعة تظهر هنا بعد تسجيل الدخول.",
   },
   en: {
     kicker: "YOUR SPACE · ONESHOT HUB",
-    title: "Your space: one account opens seven services for your business.",
+    title: "Your space: one account opens your business services.",
     lead: "OneShot Hub is the front door. From here you enter your digital headquarters and intelligent team, a specialist AI workspace, payment gateways, the brand studio and the performance lab. From the same space you order the OneShot services and products our teams deliver for you.",
     plainLabel: "In plain words:",
     plain:
@@ -96,7 +96,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     stepsTitle: "START IN 3 STEPS",
     steps: [
       "Create your account with your email and name your workspace",
-      "Pick a service of the seven: team, payments, brand or intelligence",
+      "Pick your service: team, brand or intelligence",
       "Order the right product from the catalog or start working with your team",
     ],
     trust: [
@@ -105,7 +105,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       "Hosted checkout with no card storage",
       "Published prices in Saudi riyals",
     ],
-    servicesTitle: "The seven services of the OneShot ecosystem",
+    servicesTitle: "The services of the OneShot ecosystem",
     servicesIntro:
       "Choose a service to see what it does for you in practice and which catalog products belong to it.",
     roles: {
@@ -136,7 +136,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
     current: "You are here",
     pageTitle: "ONESHOT HUB — Your space",
     pageIntro:
-      "Your page after sign-in: the full idea, the seven services, our products, then your quick command room.",
+      "Your page after sign-in: the full idea, the services, our products, then your quick command room.",
     portalNote: "The quick command room appears here after you sign in.",
   },
   fr: {
