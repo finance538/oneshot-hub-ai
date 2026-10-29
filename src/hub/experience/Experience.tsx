@@ -22,7 +22,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { EcosystemStatus } from "../../../shared/ecosystem";
-import { ecosystemApps } from "../../../shared/ecosystem";
+import { ecosystemApps, visibleApps } from "../../../shared/ecosystem";
 import type { SessionUser } from "../../components/auth";
 import { useAppearance, appearanceLink } from "../../storefront/i18n";
 import { hubCopy } from "../copy";
@@ -33,8 +33,8 @@ import ValueStudio from "./ValueStudio";
 import InstallStudio from "./InstallStudio";
 import "./experience.css";
 const Concierge = lazy(() => import("./Concierge"));
-const icons = [Layers3, Workflow, Bot, CreditCard, Palette, Zap, Clapperboard];
-const labelsAr = [
+const allIcons = [Layers3, Workflow, Bot, CreditCard, Palette, Zap, Clapperboard];
+const allLabelsAr = [
   "مركز أعمالك",
   "فريقك ومسارات عملك",
   "مساحة الذكاء الاصطناعي",
@@ -43,7 +43,7 @@ const labelsAr = [
   "مختبر الاختبار",
   "استوديو المحتوى",
 ];
-const labelsEn = [
+const allLabelsEn = [
   "Your command center",
   "Your team & workflows",
   "AI workspace",
@@ -52,6 +52,12 @@ const labelsEn = [
   "Testing laboratory",
   "Content studio",
 ];
+// Icons and captions are positional, so they are trimmed with the same predicate that hides an
+// app: a hidden app leaves the list without shifting every icon after it.
+const shown = (_: unknown, index: number) => !ecosystemApps[index].hidden;
+const icons = allIcons.filter(shown);
+const labelsAr = allLabelsAr.filter(shown);
+const labelsEn = allLabelsEn.filter(shown);
 
 export default function Experience({
   status,
@@ -215,7 +221,7 @@ export default function Experience({
             className="lux-scene-links"
             aria-label={tr("وجهات المنظومة", "Ecosystem destinations")}
           >
-            {ecosystemApps.slice(1).map((app, i) => {
+            {visibleApps.slice(1).map((app, i) => {
               const Icon = icons[i + 1];
               return (
                 <a
@@ -383,7 +389,7 @@ export default function Experience({
             aria-label={c.explore}
             aria-orientation="vertical"
           >
-            {ecosystemApps.map((app, i) => {
+            {visibleApps.map((app, i) => {
               const Icon = icons[i];
               return (
                 <button
@@ -404,9 +410,9 @@ export default function Experience({
                       e.key === "Home"
                         ? 0
                         : e.key === "End"
-                          ? ecosystemApps.length - 1
-                          : (active + (e.key === "ArrowDown" ? 1 : -1) + ecosystemApps.length) %
-                            ecosystemApps.length;
+                          ? visibleApps.length - 1
+                          : (active + (e.key === "ArrowDown" ? 1 : -1) + visibleApps.length) %
+                            visibleApps.length;
                     setActive(next);
                     document.getElementById(`destination-${next}`)?.focus();
                   }}
@@ -430,7 +436,7 @@ export default function Experience({
             className="lux-app-panel"
           >
             <span className="lux-eyebrow">
-              ONESHOT / {ecosystemApps[active].id.toUpperCase()}
+              ONESHOT / {visibleApps[active].id.toUpperCase()}
             </span>
             <div className="lux-app-art" aria-hidden="true">
               <div />
@@ -440,7 +446,7 @@ export default function Experience({
                 const Icon = icons[active];
                 return <Icon size={52} strokeWidth={1} />;
               })()}
-              <span>{ecosystemApps[active].mark}</span>
+              <span>{visibleApps[active].mark}</span>
             </div>
             <h3>{c.apps[active][0]}</h3>
             <p>{c.apps[active][1]}</p>
@@ -468,7 +474,7 @@ export default function Experience({
               ) : (
                 <a
                   className="lux-button"
-                  href={appHref(ecosystemApps[active].id)}
+                  href={appHref(visibleApps[active].id)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -477,7 +483,7 @@ export default function Experience({
                 </a>
               )}
               <small>
-                {status?.apps.find((a) => a.id === ecosystemApps[active].id)
+                {status?.apps.find((a) => a.id === visibleApps[active].id)
                   ?.status === "available" ? (
                   <>
                     <i className="lux-verified-dot" />
