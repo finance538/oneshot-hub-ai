@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   ArrowUpRight,
+  BookOpen,
   Bot,
   Check,
   CheckCircle2,
@@ -40,6 +41,7 @@ const spaceCatalog: Record<EcosystemAppId, string[]> = {
   brand: ["BRD", "MED"],
   loader: ["WEB"],
   media: ["MED"],
+  quran: [],
 };
 const serviceIcons: Record<EcosystemAppId, typeof Command> = {
   hub: Command,
@@ -49,6 +51,7 @@ const serviceIcons: Record<EcosystemAppId, typeof Command> = {
   brand: Palette,
   loader: Gauge,
   media: Clapperboard,
+  quran: BookOpen,
 };
 const PRODUCT_LIMIT = 6;
 

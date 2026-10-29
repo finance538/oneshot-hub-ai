@@ -20,6 +20,7 @@ interface HubCopy {
     AppCopy,
     AppCopy,
     AppCopy,
+    AppCopy,
   ];
   benefit: string;
   open: string;
@@ -139,6 +140,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "من فكرة في رأسك إلى محتوى جاهز للنشر: مخرج ذكاء اصطناعي يعلّمك الكادر والإضاءة، ومصنع مقاطع ليوتيوب وشورتس وتيك توك، واستوديو وثائقي، ومترجم عقود — مع مساعد يعرف أسلوبك من أول يوم.",
         "يوتيوب · تيك توك · ريلز",
       ],
+      [
+        "منصة القرآن الكريم والحفظ الذكي",
+        "اقرأ المصحف وتدرّب على التلاوة بصوتك، ويصحّح لك شيخ افتراضي ذكي كل كلمة فوراً — مع تتبّع حفظك ومراجعته دورياً.",
+        "تلاوة · تصحيح فوري · تتبّع الحفظ",
+      ],
     ],
     benefit: "الفائدة العملية لك",
     open: "افتح تطبيق الويب",
@@ -222,7 +228,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → Dedicated Apps",
       ],
     ],
-    appsTitle: "Seven destinations. One ambition.",
+    appsTitle: "Eight destinations. One ambition.",
     appsIntro:
       "The complete OneShot ecosystem. Every task has a home. You have command.",
     apps: [
@@ -260,6 +266,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "The creator content studio",
         "From an idea in your head to publishable content: an AI director that teaches framing and lighting, a clip factory for YouTube, Shorts and TikTok, a documentary studio and a contract translator — with an assistant that knows your style from day one.",
         "YouTube · TikTok · Reels",
+      ],
+      [
+        "The Quran & smart memorization platform",
+        "Read the mushaf, practise recitation aloud and get instant word-by-word correction from a virtual sheikh — with memorization tracking and scheduled review.",
+        "Recitation · Instant correction · Progress tracking",
       ],
     ],
     benefit: "What it does for you",
@@ -345,7 +356,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → Applications dédiées",
       ],
     ],
-    appsTitle: "Sept destinations. Une ambition.",
+    appsTitle: "Huit destinations. Une ambition.",
     appsIntro:
       "L’écosystème OneShot complet. Un espace pour chaque tâche, un centre de commande pour vous.",
     apps: [
@@ -383,6 +394,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Le studio de contenu pour créateurs",
         "D'une idée en tête à un contenu prêt à publier : un réalisateur IA qui enseigne le cadre et la lumière, une fabrique de clips pour YouTube, Shorts et TikTok, un studio documentaire et un traducteur de contrats — avec un assistant qui connaît votre style dès le premier jour.",
         "YouTube · TikTok · Reels",
+      ],
+      [
+        "La plateforme du Coran et de la mémorisation intelligente",
+        "Lisez le moushaf, entraînez-vous à réciter à voix haute et recevez une correction instantanée mot à mot d'un cheikh virtuel — avec suivi de mémorisation et révision programmée.",
+        "Récitation · Correction instantanée · Suivi",
       ],
     ],
     benefit: "Votre bénéfice concret",
@@ -468,7 +484,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → Aplicaciones dedicadas",
       ],
     ],
-    appsTitle: "Siete destinos. Una ambición.",
+    appsTitle: "Ocho destinos. Una ambición.",
     appsIntro:
       "Todo el ecosistema OneShot. Cada tarea tiene su espacio y tú tienes el control.",
     apps: [
@@ -506,6 +522,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "El estudio de contenido para creadores",
         "De una idea en tu cabeza a contenido listo para publicar: un director de IA que enseña encuadre e iluminación, una fábrica de clips para YouTube, Shorts y TikTok, un estudio documental y un traductor de contratos, con un asistente que conoce tu estilo desde el primer día.",
         "YouTube · TikTok · Reels",
+      ],
+      [
+        "La plataforma del Corán y la memorización inteligente",
+        "Lee el musjaf, practica la recitación en voz alta y recibe corrección instantánea palabra por palabra de un sheij virtual — con seguimiento de memorización y repaso programado.",
+        "Recitación · Corrección instantánea · Seguimiento",
       ],
     ],
     benefit: "Tu beneficio práctico",
@@ -590,7 +611,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → Özel uygulamalar",
       ],
     ],
-    appsTitle: "Yedi hedef. Tek vizyon.",
+    appsTitle: "Sekiz hedef. Tek vizyon.",
     appsIntro:
       "OneShot ekosistemi. Her görevin bir alanı, sizin bir komuta merkeziniz var.",
     apps: [
@@ -628,6 +649,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "İçerik üreticisi stüdyosu",
         "Aklınızdaki fikirden yayına hazır içeriğe: kadraj ve ışığı öğreten bir yapay zekâ yönetmeni, YouTube, Shorts ve TikTok için klip fabrikası, belgesel stüdyosu ve sözleşme çevirmeni — üslubunuzu ilk günden bilen bir asistanla.",
         "YouTube · TikTok · Reels",
+      ],
+      [
+        "Kur'an ve akıllı ezber platformu",
+        "Mushaf'ı okuyun, sesli tilavet yapın ve sanal bir şeyhten anında kelime kelime düzeltme alın — ezber takibi ve programlı tekrarla.",
+        "Tilavet · Anında düzeltme · Takip",
       ],
     ],
     benefit: "Size sağladığı fayda",
@@ -712,7 +738,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → 独立应用",
       ],
     ],
-    appsTitle: "七个目的地。一个愿景。",
+    appsTitle: "八个目的地。一个愿景。",
     appsIntro: "完整的 OneShot 生态系统。每项任务都有专属空间，由你掌控。",
     apps: [
       [
@@ -749,6 +775,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "创作者内容工作台",
         "从脑海里的想法到可直接发布的内容：教你取景与灯光的 AI 导演、面向 YouTube、Shorts 与 TikTok 的片段工厂、纪录片工作台与合同翻译器，还有从第一天就了解你风格的助手。",
         "YouTube · TikTok · Reels",
+      ],
+      [
+        "古兰经与智能背诵平台",
+        "阅读古兰经，练习朗读，并获得虚拟谢赫的逐字即时纠错——带背诵进度跟踪与定期复习。",
+        "诵读 · 即时纠错 · 进度跟踪",
       ],
     ],
     benefit: "为你带来的价值",
@@ -833,7 +864,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → समर्पित ऐप",
       ],
     ],
-    appsTitle: "सात मंज़िलें। एक लक्ष्य।",
+    appsTitle: "आठ मंज़िलें। एक लक्ष्य।",
     appsIntro: "पूरा OneShot इकोसिस्टम। हर काम के लिए जगह, नियंत्रण आपके पास।",
     apps: [
       [
@@ -870,6 +901,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "क्रिएटर कंटेंट स्टूडियो",
         "दिमाग़ में मौजूद आइडिया से पब्लिश करने योग्य कंटेंट तक: फ़्रेमिंग और लाइटिंग सिखाने वाला AI डायरेक्टर, YouTube, Shorts और TikTok के लिए क्लिप फ़ैक्ट्री, डॉक्युमेंट्री स्टूडियो और कॉन्ट्रैक्ट अनुवादक — साथ में ऐसा सहायक जो पहले दिन से आपकी शैली जानता है।",
         "YouTube · TikTok · Reels",
+      ],
+      [
+        "क़ुरआन और स्मार्ट याद करने का प्लेटफ़ॉर्म",
+        "मुशाफ़ पढ़ें, ज़ोर से तिलावत का अभ्यास करें और एक वर्चुअल शेख़ से शब्द-दर-शब्द तुरंत सुधार पाएँ — याद करने की ट्रैकिंग और निर्धारित दोहराव के साथ।",
+        "तिलावत · तुरंत सुधार · ट्रैकिंग",
       ],
     ],
     benefit: "आपको व्यावहारिक लाभ",
@@ -948,7 +984,7 @@ export const hubCopy: Record<Language, HubCopy> = {
         "Lite Hub → مخصوص ایپس",
       ],
     ],
-    appsTitle: "سات منزلیں۔ ایک مقصد۔",
+    appsTitle: "آٹھ منزلیں۔ ایک مقصد۔",
     appsIntro: "مکمل OneShot نظام۔ ہر کام کی اپنی جگہ، اختیار آپ کے پاس۔",
     apps: [
       [
@@ -985,6 +1021,11 @@ export const hubCopy: Record<Language, HubCopy> = {
         "کریئیٹر کانٹینٹ اسٹوڈیو",
         "ذہن میں موجود آئیڈیا سے اشاعت کے قابل مواد تک: فریمنگ اور لائٹنگ سکھانے والا AI ڈائریکٹر، YouTube، Shorts اور TikTok کے لیے کلپ فیکٹری، دستاویزی اسٹوڈیو اور معاہدہ مترجم — ساتھ ایسا معاون جو پہلے دن سے آپ کا انداز جانتا ہے۔",
         "YouTube · TikTok · Reels",
+      ],
+      [
+        "قرآن اور اسمارٹ حفظ پلیٹ فارم",
+        "مصحف پڑھیں، بلند آواز سے تلاوت کی مشق کریں اور ایک ورچوئل شیخ سے لفظ بہ لفظ فوری تصحیح پائیں — حفظ کی ٹریکنگ اور طے شدہ مراجعے کے ساتھ۔",
+        "تلاوت · فوری تصحیح · ٹریکنگ",
       ],
     ],
     benefit: "آپ کا عملی فائدہ",

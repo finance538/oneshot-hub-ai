@@ -64,6 +64,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       brand: "الهوية: شعارك وألوانك وأصولك وثيماتك الموسمية.",
       loader: "المختبر: الحركة وواجهات التحميل وتشخيص الأداء.",
       media: "المحتوى: استوديو للمبدعين — مخرج ذكاء اصطناعي، مصنع مقاطع، وثائقي ومترجم عقود.",
+      quran: "القرآن الكريم: تلاوة بتصحيح فوري بالذكاء الاصطناعي، وتتبّع حفظك ومراجعته.",
     },
     productsTitle: "منتجات وخدمات مرتبطة",
     productsIntro:
@@ -117,6 +118,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       brand: "Identity: your logo, colours, assets and seasonal themes.",
       loader: "The lab: motion, loading interfaces and performance diagnostics.",
       media: "Content: a creator studio — AI director, clip factory, documentary studio and contract translator.",
+      quran: "The Quran: recitation with instant AI correction, plus memorization tracking and review.",
     },
     productsTitle: "Related products and services",
     productsIntro:
@@ -170,6 +172,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       brand: "Identité : logo, couleurs, ressources et thèmes saisonniers.",
       loader: "Le labo : animation, interfaces de chargement et diagnostics de performance.",
       media: "Contenu : un studio pour créateurs — réalisateur IA, fabrique de clips, documentaire et traducteur de contrats.",
+      quran: "Le Coran : récitation corrigée instantanément par l'IA, avec suivi de mémorisation.",
     },
     productsTitle: "Produits et services liés",
     productsIntro:
@@ -223,6 +226,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       brand: "Identidad: tu logo, colores, recursos y temas de temporada.",
       loader: "El laboratorio: movimiento, interfaces de carga y diagnóstico de rendimiento.",
       media: "Contenido: un estudio para creadores — director de IA, fábrica de clips, documental y traductor de contratos.",
+      quran: "El Corán: recitación con corrección instantánea por IA y seguimiento de memorización.",
     },
     productsTitle: "Productos y servicios relacionados",
     productsIntro:
@@ -276,6 +280,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       brand: "Kimlik: logonuz, renkleriniz, varlıklarınız ve mevsimsel temalar.",
       loader: "Laboratuvar: hareket, yükleme arayüzleri ve performans tanılama.",
       media: "İçerik: içerik üreticisi stüdyosu — yapay zekâ yönetmen, klip fabrikası, belgesel ve sözleşme çevirmeni.",
+      quran: "Kur'an: anında yapay zekâ düzeltmeli tilavet, ezber takibi ve tekrar.",
     },
     productsTitle: "İlgili ürün ve hizmetler",
     productsIntro:
@@ -327,6 +332,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       brand: "品牌：标志、色彩、素材与季节主题。",
       loader: "实验室：动效、加载界面与性能诊断。",
       media: "内容：创作者工作台 — AI 导演、片段工厂、纪录片工作台与合同翻译器。",
+      quran: "古兰经：AI 即时纠错的诵读，以及背诵进度跟踪与复习。",
     },
     productsTitle: "相关产品与服务",
     productsIntro: "来自真实的 OneShot 目录。价格为沙特里亚尔，详情见各产品页。",
@@ -377,6 +383,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       brand: "पहचान: आपका लोगो, रंग, एसेट और मौसमी थीम।",
       loader: "लैब: मोशन, लोडिंग इंटरफ़ेस और परफ़ॉर्मेंस डायग्नोस्टिक्स।",
       media: "कंटेंट: क्रिएटर स्टूडियो — AI डायरेक्टर, क्लिप फ़ैक्ट्री, डॉक्युमेंट्री और कॉन्ट्रैक्ट अनुवादक।",
+      quran: "क़ुरआन: तुरंत AI सुधार के साथ तिलावत, याद करने की ट्रैकिंग और दोहराव।",
     },
     productsTitle: "संबंधित उत्पाद और सेवाएँ",
     productsIntro:
@@ -429,6 +436,7 @@ export const spaceCopy: Record<Language, SpaceCopy> = {
       brand: "شناخت: آپ کا لوگو، رنگ، اثاثے اور موسمی تھیمز۔",
       loader: "لیب: حرکت، لوڈنگ انٹرفیس اور کارکردگی کی تشخیص۔",
       media: "مواد: کریئیٹر اسٹوڈیو — AI ڈائریکٹر، کلپ فیکٹری، دستاویزی اسٹوڈیو اور معاہدہ مترجم۔",
+      quran: "قرآن: فوری AI تصحیح کے ساتھ تلاوت، حفظ کی ٹریکنگ اور مراجعہ۔",
     },
     productsTitle: "متعلقہ مصنوعات اور خدمات",
     productsIntro:

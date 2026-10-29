@@ -1,5 +1,6 @@
 import {
   ArrowUpRight,
+  BookOpen,
   Camera,
   Clapperboard,
   Workflow,
@@ -20,6 +21,7 @@ const icons = {
   brand: Palette,
   loader: FlaskConical,
   media: Clapperboard,
+  quran: BookOpen,
 };
 export default function EcosystemSwitcher() {
   const { tr } = useAppearance();
