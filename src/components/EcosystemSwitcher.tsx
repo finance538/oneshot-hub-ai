@@ -8,7 +8,7 @@ import {
   Palette,
   FlaskConical,
 } from "lucide-react";
-import { ecosystemApps } from "../../shared/ecosystem";
+import { ecosystemApps, visibleApps } from "../../shared/ecosystem";
 import { useAppearance } from "../storefront/i18n";
 import "./ecosystem-switcher.css";
 
@@ -33,7 +33,7 @@ export default function EcosystemSwitcher() {
         <small>{tr("المنظومة", "ECOSYSTEM")}</small>
       </span>
       <div className="ecosystem-switcher-links">
-        {ecosystemApps.map((app) => {
+        {visibleApps.map((app) => {
           const Icon = icons[app.id];
           const active =
             app.origin === location.origin ||
