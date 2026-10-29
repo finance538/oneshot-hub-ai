@@ -6,6 +6,7 @@ export const ecosystemApps = [
     season: "Solar Summer",
     color: "#cfbc97",
     mark: "01",
+    hidden: false,
   },
   {
     id: "workflow",
@@ -14,6 +15,7 @@ export const ecosystemApps = [
     season: "Equinox Dusk",
     color: "#b9a78d",
     mark: "02",
+    hidden: false,
   },
   {
     id: "ai",
@@ -22,6 +24,7 @@ export const ecosystemApps = [
     season: "Frost Winter",
     color: "#a8b8ad",
     mark: "03",
+    hidden: false,
   },
   {
     id: "pay",
@@ -30,6 +33,7 @@ export const ecosystemApps = [
     season: "Copper Autumn",
     color: "#bba58a",
     mark: "04",
+    hidden: true,
   },
   {
     id: "brand",
@@ -38,6 +42,7 @@ export const ecosystemApps = [
     season: "Prism Spring",
     color: "#9daf91",
     mark: "05",
+    hidden: false,
   },
   {
     id: "loader",
@@ -46,6 +51,7 @@ export const ecosystemApps = [
     season: "Eclipse Lab",
     color: "#a6aca0",
     mark: "06",
+    hidden: true,
   },
   {
     id: "media",
@@ -54,9 +60,13 @@ export const ecosystemApps = [
     season: "Signal Ember",
     color: "#ff5500",
     mark: "07",
+    hidden: false,
   },
 ] as const;
 export type EcosystemAppId = (typeof ecosystemApps)[number]["id"];
+// `hidden: true` keeps an app wired to the ecosystem (SSO, handshake, health probing) while
+// taking it out of every launcher and switcher list. Flip the flag back to false to restore it.
+export const visibleApps = ecosystemApps.filter((app) => !app.hidden);
 export const hubOrigin = ecosystemApps[0].origin;
 export interface AppConnection {
   id: EcosystemAppId;
