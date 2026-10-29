@@ -15,7 +15,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import {
-  ecosystemApps,
+  visibleApps,
   type EcosystemAppId,
   type EcosystemStatus,
 } from "../../shared/ecosystem";
@@ -136,8 +136,9 @@ export default function YourSpace({
         .sort((a, b) => a.sortOrder - b.sortOrder),
     [rows, language],
   );
-  const index = ecosystemApps.findIndex((app) => app.id === selected);
-  const app = ecosystemApps[index];
+  const visible = visibleApps;
+  const index = visible.findIndex((app) => app.id === selected);
+  const app = visible[index];
   const related = products
     .filter((item) => spaceCatalog[selected].includes(item.category))
     .slice(0, PRODUCT_LIMIT);
@@ -149,10 +150,9 @@ export default function YourSpace({
       maximumFractionDigits: 0,
     }).format(value);
   function move(step: number) {
-    const next =
-      (index + step + ecosystemApps.length) % ecosystemApps.length;
-    setSelected(ecosystemApps[next].id);
-    document.getElementById(`space-tab-${ecosystemApps[next].id}`)?.focus();
+    const next = (index + step + visible.length) % visible.length;
+    setSelected(visible[next].id);
+    document.getElementById(`space-tab-${visible[next].id}`)?.focus();
   }
   const Icon = serviceIcons[selected];
   return (
@@ -218,7 +218,7 @@ export default function YourSpace({
               <small>HUB · YOUR SPACE</small>
             </span>
           </div>
-          {ecosystemApps.map((item, i) => {
+          {visibleApps.map((item, i) => {
             const ItemIcon = serviceIcons[item.id];
             const itemHealth = status?.apps.find(
               (entry) => entry.id === item.id,
