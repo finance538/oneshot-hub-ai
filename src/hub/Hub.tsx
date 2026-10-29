@@ -32,7 +32,7 @@ import {
 } from "../storefront/i18n";
 import Experience from "./experience/Experience";
 import BusinessFooter from "./experience/BusinessFooter";
-import { ecosystemApps, type EcosystemStatus } from "../../shared/ecosystem";
+import { ecosystemApps, visibleApps, type EcosystemStatus } from "../../shared/ecosystem";
 import { api } from "../lib/api";
 import { hubCopy } from "./copy";
 import { spaceCopy } from "./spaceCopy";
@@ -136,7 +136,7 @@ function HubPage() {
   }
   const launcher = (compact = false) => (
     <div className={compact ? "hub-launchbar" : "hub-switcher-grid"}>
-      {ecosystemApps.map((app) => {
+      {visibleApps.map((app) => {
         const health = status?.apps.find((item) => item.id === app.id);
         return (
           <div key={app.id} style={{ "--season": app.color } as CSSProperties}>
