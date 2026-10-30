@@ -4153,3 +4153,11 @@ tr:last-child td {
     text-align: start;
   }
 }
+
+/* Account name opens the shared oneShot profile */
+.account-profile { border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; padding: 6px 8px; border-radius: 8px; }
+.account-profile:hover, .account-profile:focus-visible { background: #f2652210; }
+.profile-form { display: grid; gap: 12px; }
+.profile-form label { display: grid; gap: 6px; font-size: 13px; }
+.profile-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+@media (max-width: 480px) { .profile-row { grid-template-columns: 1fr; } }

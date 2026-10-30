@@ -16,6 +16,7 @@ import {
 } from "@netlify/identity";
 import { LogIn, LogOut, UserRound, ArrowLeft } from "lucide-react";
 import { Modal, Notice, Busy } from "./common";
+import { ProfileDialog } from "./profile";
 import { api, clearApiSession } from "../lib/api";
 import { useAppearance, appearanceLink } from "../storefront/i18n";
 import {
@@ -47,7 +48,8 @@ export function useAuth() {
   const identitySignature = useRef("");
   const [user, setUser] = useState<SessionUser | null>(null),
     [ready, setReady] = useState(false),
-    [open, setOpen] = useState(false);
+    [open, setOpen] = useState(false),
+    [profileOpen, setProfileOpen] = useState(false);
   const [callback, setCallback] = useState<{
       type: "invite" | "recovery";
       token?: string;
@@ -237,13 +239,19 @@ export function useAuth() {
     <div className="account-controls">
       {user ? (
         <>
-          <span className="account-label">
+          <button
+            type="button"
+            className="account-label account-profile"
+            onClick={() => setProfileOpen(true)}
+            title={tr("ملفي الشخصي", "My profile")}
+          >
             <UserRound size={16} />
             {user.name || tr("حسابي", "My account")}
             {user.roles?.includes("admin") && (
               <small>{tr("مسؤول", "Administrator")}</small>
             )}
-          </span>
+          </button>
+          {profileOpen && <ProfileDialog onClose={() => setProfileOpen(false)} />}
           <button
             className="icon-button"
             onClick={signOut}
