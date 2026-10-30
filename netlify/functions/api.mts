@@ -203,6 +203,33 @@ export default async (req: Request) => {
         );
       return response;
     }
+    // One personal profile for every oneShot site, stored by ai.1shotcam.com. The Identity
+    // token is forwarded server-side only; the AI site verifies it against this hub.
+    if (path === "/api/profile" && (method === "GET" || method === "PUT")) {
+      assertOrigin(req);
+      const token = cookieValue(req, "nf_jwt");
+      if (!token) throw new ApiError(401, "سجّل الدخول للمتابعة.");
+      const body = method === "PUT" ? await req.text() : undefined;
+      if (body && body.length > 8000) throw new ApiError(413, "البيانات أكبر من المسموح.");
+      let upstream: Response;
+      try {
+        upstream = await fetch("https://ai.1shotcam.com/api/profile", {
+          method,
+          redirect: "error",
+          signal: AbortSignal.timeout(10000),
+          headers: {
+            Authorization: `Bearer ${decodeURIComponent(token)}`,
+            ...(body ? { "Content-Type": "application/json" } : {}),
+          },
+          body,
+        });
+      } catch {
+        throw new ApiError(503, "خدمة الملف الشخصي غير متاحة مؤقتاً. أعد المحاولة.");
+      }
+      const result = await upstream.json().catch(() => null);
+      if (!result) throw new ApiError(503, "خدمة الملف الشخصي غير متاحة مؤقتاً. أعد المحاولة.");
+      return json(result, upstream.status);
+    }
     if (path === "/api/diagnostics/client" || path === "/api/admin/diagnostics")
       return json(await diagnosticsRoute(req, path));
     if (
