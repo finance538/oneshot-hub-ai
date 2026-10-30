@@ -39,10 +39,10 @@ interface SpeechRecognizer {
   stop: () => void;
   abort: () => void;
 }
+// Customer-facing local models keep their safety training; uncensored builds are not offered here.
 const OLLAMA_MODELS = [
   "command-r7b-arabic-128k",
-  "dolphin3:8b",
-  "huihui_ai/qwen3-abliterated:8b",
+  "deepseek-v4.1-flash:cloud",
 ];
 function providerFor(model: string): "ollama" | "gemini" {
   return OLLAMA_MODELS.includes(model) ? "ollama" : "gemini";
@@ -258,9 +258,8 @@ export function Assistant({ staffId }: { staffId?: string }) {
               <option value="command-r7b-arabic-128k">
                 Command R7B Arabic 128K
               </option>
-              <option value="dolphin3:8b">Dolphin 3 8B</option>
-              <option value="huihui_ai/qwen3-abliterated:8b">
-                Qwen 3 Abliterated 8B
+              <option value="deepseek-v4.1-flash:cloud">
+                DeepSeek V4.1 Flash
               </option>
             </optgroup>
           </select>

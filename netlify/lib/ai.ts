@@ -4,7 +4,7 @@ import { database } from "../../db/index.js";
 import { conversations, messages, orders, staff } from "../../db/schema.js";
 import { ApiError, stringField, uuid } from "./security.js";
 const OLLAMA_BASE_URL =
-  Netlify.env.get("OLLAMA_BASE_URL") || "http://187.7.65.45:32768/v1";
+  Netlify.env.get("OLLAMA_BASE_URL") || "http://187.7.65.45:32772/v1";
 async function ollamaChat(opts: {
   system: string;
   history: { role: string; content: string }[];
@@ -66,10 +66,10 @@ export async function executiveChat(
     "gemini-2.5-pro",
     "gemini-2.5-flash",
   ];
+  // Customer-facing local models keep their safety training; uncensored builds are not offered.
   const OLLAMA_MODELS = [
     "command-r7b-arabic-128k",
-    "dolphin3:8b",
-    "huihui_ai/qwen3-abliterated:8b",
+    "deepseek-v4.1-flash:cloud",
   ];
   if (provider === "gemini") {
     if (!GEMINI_MODELS.includes(model))
