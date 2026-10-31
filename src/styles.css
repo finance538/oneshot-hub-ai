@@ -4179,3 +4179,12 @@ tr:last-child td {
   background: currentColor;
   opacity: 0.25;
 }
+
+.account-profile .profile-hint {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(207, 188, 151, 0.16);
+  color: #e6d3a8;
+  font-size: 11px;
+  font-weight: 600;
+}

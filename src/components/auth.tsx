@@ -49,7 +49,8 @@ export function useAuth() {
   const [user, setUser] = useState<SessionUser | null>(null),
     [ready, setReady] = useState(false),
     [open, setOpen] = useState(false),
-    [profileOpen, setProfileOpen] = useState(false);
+    [profileOpen, setProfileOpen] = useState(false),
+    [profileIncomplete, setProfileIncomplete] = useState(false);
   const [callback, setCallback] = useState<{
       type: "invite" | "recovery";
       token?: string;
@@ -231,6 +232,17 @@ export function useAuth() {
       document.removeEventListener("visibilitychange", verify);
     };
   }, [user?.id, user?.roles?.join(",")]);
+  // A signed-in account without a country gets a gentle "complete your profile" hint.
+  useEffect(() => {
+    if (!user?.id || profileOpen) return;
+    let alive = true;
+    api<{ profile: { country?: string } }>("/api/profile")
+      .then((data) => alive && setProfileIncomplete(!data.profile?.country))
+      .catch(() => alive && setProfileIncomplete(false));
+    return () => {
+      alive = false;
+    };
+  }, [user?.id, profileOpen]);
   function openLogin(onSuccess?: () => void) {
     afterLogin.current = onSuccess;
     setOpen(true);
@@ -247,6 +259,9 @@ export function useAuth() {
           >
             <UserRound size={16} />
             {user.name || tr("حسابي", "My account")}
+            {profileIncomplete && (
+              <small className="profile-hint">{tr("أكمل ملفك", "Complete profile")}</small>
+            )}
             {user.roles?.includes("admin") && (
               <small>{tr("مسؤول", "Administrator")}</small>
             )}
