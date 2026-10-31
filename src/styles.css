@@ -4161,3 +4161,21 @@ tr:last-child td {
 .profile-form label { display: grid; gap: 6px; font-size: 13px; }
 .profile-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 @media (max-width: 480px) { .profile-row { grid-template-columns: 1fr; } }
+
+/* "or with email" between Google and the form, so the empty gap reads as a choice. */
+.auth-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -6px 0 14px;
+  font-size: 13px;
+  color: var(--muted, #9aa294);
+}
+.auth-or::before,
+.auth-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.25;
+}

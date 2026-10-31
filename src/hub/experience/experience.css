@@ -1648,3 +1648,35 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- Readability for everyday visitors ---------- */
+.hub-account-short {
+  display: none;
+  font-weight: 600;
+}
+@media (max-width: 760px) {
+  /* A word, not just a fingerprint: people did not recognise the icon as "sign in". */
+  .hub .hub-account.hub-account-signin {
+    width: auto;
+    padding: 0 12px;
+    gap: 6px;
+  }
+  .hub .hub-account.hub-account-signin > .hub-account-short {
+    display: inline;
+    font-size: 13px;
+  }
+  /* Footer links were 10–11px with 21px tap targets. */
+  .hub-luxury .store-footer-columns p,
+  .hub-luxury .store-footer-columns a {
+    font-size: 13px;
+  }
+  .hub-luxury .store-footer-columns a,
+  .hub-luxury .store-footer-policies a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+  }
+  .hub-luxury .store-footer-policies a {
+    font-size: 12px;
+  }
+}

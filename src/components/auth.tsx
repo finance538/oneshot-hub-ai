@@ -474,6 +474,9 @@ function AuthDialog({
           {tr("تسجيل الدخول عبر جوجل", "Continue with Google")}
         </button>
       )}
+      {!callback && mode !== "forgot" && googleEnabled && (
+        <p className="auth-or">{tr("أو بالبريد الإلكتروني", "or with email")}</p>
+      )}
       {!callback && settingsState === "error" && (
         <Notice>
           {tr(
