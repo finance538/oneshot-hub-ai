@@ -40,6 +40,12 @@ import "./hub.css";
 const LitePortal = lazy(() => import("./LitePortal"));
 const YourSpace = lazy(() => import("./YourSpace"));
 const SsoAuthorize = lazy(() => import("./SsoAuthorize"));
+// Phones show a one-word label instead of an unexplained fingerprint icon.
+const signInShort: Record<Language, string> = {
+  ar: "دخول", en: "Sign in", fr: "Connexion", es: "Entrar",
+  tr: "Giriş", zh: "登录", hi: "लॉग इन", ur: "لاگ ان",
+};
+
 export default function Hub() {
   return <HubPage />;
 }
@@ -328,7 +334,7 @@ function HubPage() {
           </label>
           {auth.user ? (
             <>
-              <button className="hub-account" onClick={openPortal}>
+              <button className="hub-account" aria-label={c.portal} onClick={openPortal}>
                 <Command size={16} />
                 <span>{c.portal}</span>
               </button>
@@ -336,12 +342,14 @@ function HubPage() {
             </>
           ) : (
             <button
-              className="hub-account"
+              className="hub-account hub-account-signin"
+              aria-label={c.signIn}
               disabled={!auth.ready}
               onClick={openPortal}
             >
               <Fingerprint size={17} />
               <span>{c.signIn}</span>
+              <b className="hub-account-short" aria-hidden="true">{signInShort[language]}</b>
             </button>
           )}
           <button
