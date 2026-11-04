@@ -1,5 +1,11 @@
-import { useEffect } from "react";
-import { Languages, Search } from "lucide-react";
+import { lazy, Suspense, useEffect } from "react";
+import {
+  ArrowUpLeft,
+  ArrowUpRight,
+  Languages,
+  Search,
+  Swords,
+} from "lucide-react";
 import { useAppearance, appearanceLink } from "../storefront/i18n";
 import BusinessFooter from "../hub/experience/BusinessFooter";
 import { findTool, toolPages } from "../../shared/tools/catalog";
@@ -17,15 +23,22 @@ import Radar from "./Radar";
 import { applyHead } from "./head";
 import "./tools.css";
 
+// The arsenal carries its own weapon dataset, so it loads only when opened.
+const Arsenal = lazy(() => import("./Arsenal"));
+
 type Route =
   | { kind: "tool"; slug: string }
   | { kind: "hub"; cluster?: Cluster }
+  | { kind: "arsenal"; game?: string; weapon?: string }
   | { kind: "radar" }
   | { kind: "missing" };
 
 export function resolveToolsRoute(pathname: string): Route {
   const parts = pathname.replace(/\/+$/, "").split("/").filter(Boolean);
   if (parts[0] === "admin" && parts[1] === "radar") return { kind: "radar" };
+  // /tools/arsenal[/<game>[/<weapon>]] — a stepped tool, not a catalog page.
+  if (parts[0] === "tools" && parts[1] === "arsenal")
+    return { kind: "arsenal", game: parts[2], weapon: parts[3] };
   if (parts[0] === "solutions") {
     const page = parts[1] ? findTool(parts[1]) : undefined;
     // Static hosting answers /solutions/* with 301s; this covers the SPA path.
@@ -121,8 +134,34 @@ function Hub({ cluster, lang }: { cluster?: Cluster; lang: "ar" | "en" }) {
           ))}
         </ul>
       ) : null}
+      {!cluster || cluster.id === "gaming" ? <ArsenalFeature ar={ar} /> : null}
       <Vault lang={lang} initialCluster={cluster?.id ?? "all"} />
     </section>
+  );
+}
+
+/** Entry point to the stepped arsenal tool, which is not a catalog page. */
+function ArsenalFeature({ ar }: { ar: boolean }) {
+  const Arrow = ar ? ArrowUpLeft : ArrowUpRight;
+  return (
+    <a className="tools-feature" href="/tools/arsenal">
+      <span className="tools-feature-icon" aria-hidden="true">
+        <Swords size={20} />
+      </span>
+      <span>
+        <strong>
+          {ar
+            ? "⚡ جيمنج · ترسانة كول أوف ديوتي"
+            : "⚡ Gaming · Call of Duty arsenal"}
+        </strong>
+        <small>
+          {ar
+            ? "اختر اللعبة ثم السلاح ثم نمط لعبك — سريع، ايم قوي، مدى، أو تخفّي — وتطلع لك أفضل الإضافات لكل خانة وإيش تسوي كل واحدة مع البركات المناسبة."
+            : "Pick the game, the weapon and your playstyle to get the best attachment per slot, what each one does and the matching perks."}
+        </small>
+      </span>
+      <Arrow size={18} aria-hidden="true" />
+    </a>
   );
 }
 
@@ -174,6 +213,10 @@ function Shell() {
           <ToolPage key={page.slug} page={page} lang={lang} />
         ) : route.kind === "hub" ? (
           <Hub cluster={route.cluster} lang={lang} />
+        ) : route.kind === "arsenal" ? (
+          <Suspense fallback={<p role="status">OneShot…</p>}>
+            <Arsenal lang={lang} gameId={route.game} weaponId={route.weapon} />
+          </Suspense>
         ) : route.kind === "radar" ? (
           <Radar lang={lang} />
         ) : (
