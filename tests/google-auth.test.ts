@@ -221,6 +221,7 @@ function oauthHarness() {
   );
   const destination = "https://ai.1shotcam.com/workforce?tab=accounts#drive";
   return {
+    googleRoute: module.googleRoute,
     async start() {
       const url = new URL("/api/auth/google/start", hubOrigin);
       url.searchParams.set("return_to", destination);
@@ -257,41 +258,25 @@ function oauthHarness() {
   };
 }
 
-test("Google callback binds browser state, verifies identity, consumes once and returns to the original app", async () => {
-  const h = oauthHarness(),
-    cookie = await h.start();
-  await assert.rejects(h.callback(cookie.replace(/=.*/, "=wrong-browser")), {
-    status: 401,
-  });
-  assert.equal(h.counts().exchanges, 0);
-  const response = await h.callback(cookie);
-  assert.equal(response.headers.get("location"), h.destination);
-  assert.equal(h.counts().sessions, 1);
-  await assert.rejects(h.callback(cookie), { status: 401 });
-  assert.equal(h.counts().sessions, 1);
-});
+test("signing in with Google is retired and cannot mint a session", async () => {
+  const h = oauthHarness();
+  // The entry point is gone: /start no longer redirects anyone to Google.
+  const start = await h.googleRoute(
+    new Request(new URL("/api/auth/google/start", hubOrigin)),
+    "/api/auth/google/start",
+  );
+  assert.equal(start.status, 410);
+  assert.equal((await start.json()).code, "GOOGLE_LOGIN_RETIRED");
 
-test("Google callbacks reject expired state, unverified email and wrong nonce without creating a session", async () => {
-  const expired = oauthHarness(),
-    oldCookie = await expired.start();
-  expired.expire();
-  await assert.rejects(expired.callback(oldCookie), { status: 401 });
-  for (const claims of [{ email_verified: false }, { nonce: "wrong-nonce" }]) {
-    const h = oauthHarness(),
-      cookie = await h.start();
-    h.claims(claims);
-    const response = await h.callback(cookie);
-    assert.equal(
-      new URL(response.headers.get("location")!).origin,
-      "https://ai.1shotcam.com",
-    );
-    assert.equal(h.counts().sessions, 0);
-    assert.equal(h.counts().identities, 0);
-    assert.equal(
-      response.headers.get("location")!.includes("synthetic-code"),
-      false,
-    );
-  }
+  // Settings answer, so an older client still renders rather than erroring,
+  // but they report the method as unavailable.
+  const settings = await h.googleRoute(
+    new Request(new URL("/api/auth/google/settings", hubOrigin)),
+    "/api/auth/google/settings",
+  );
+  assert.equal(settings.status, 200);
+  assert.equal((await settings.json()).enabled, false);
+  assert.equal(h.counts().sessions, 0);
 });
 
 test("Gemini resolves runtime aliases without routing a direct Google key through the gateway", () => {

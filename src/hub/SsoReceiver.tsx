@@ -4,7 +4,6 @@ import {
   receiverApp,
   saveEcosystemSession,
   ecosystemUser,
-  googleLoginUrl,
 } from "../lib/ecosystem-session";
 import { isLanguage } from "../../shared/workforce";
 import { useAppearance, appearanceLink } from "../storefront/i18n";
@@ -38,8 +37,10 @@ export default function SsoReceiver() {
               ? "/?module=gateway"
               : "/");
         const destination = new URL(returnTo, app.origin).href;
-        if (await ecosystemUser()) location.replace(destination);
-        else location.replace(googleLoginUrl(destination));
+        // Sign-in is passwordless and issued by the Hub for every origin, so
+        // the destination app can prompt in place instead of bouncing the
+        // person through a provider first.
+        location.replace(destination);
         return;
       }
       const fragment = new URLSearchParams(location.hash.slice(1));

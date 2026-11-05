@@ -596,3 +596,89 @@ export const toolOffers = pgTable("tool_offers", {
     .defaultNow()
     .notNull(),
 });
+
+// ---------------------------------------------------------------------------
+// Passwordless sign-in: one-time codes, then a device lock (PIN or biometric)
+// for every later entry. Codes and PINs are only ever stored as hashes.
+// ---------------------------------------------------------------------------
+
+// A pending one-time code. `destination` is the normalised email or E.164
+// phone the code was sent to; `codeHash` is scrypt over the code so a database
+// read cannot replay a sign-in. Rows are consumed on first successful verify.
+export const authCodes = pgTable(
+  "auth_codes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    channel: text("channel").notNull(),
+    destination: text("destination").notNull(),
+    codeHash: text("code_hash").notNull(),
+    // Binds the code to the browser that asked for it, so a code read from
+    // another device's inbox cannot be redeemed somewhere else.
+    browserHash: text("browser_hash").notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check("auth_codes_channel", sql`${t.channel} in ('email','sms')`),
+    index("auth_codes_destination").on(t.destination),
+    index("auth_codes_expiry").on(t.expiresAt),
+  ],
+);
+
+// The PIN that unlocks a returning session. One row per account; the salt is
+// per-account and the hash is scrypt, so the PIN never exists in plain text.
+export const deviceLocks = pgTable("device_locks", {
+  ownerId: text("owner_id").primaryKey(),
+  pinHash: text("pin_hash").notNull(),
+  pinSalt: text("pin_salt").notNull(),
+  failedAttempts: integer("failed_attempts").notNull().default(0),
+  // While set and in the future, unlocking is refused: a stolen phone cannot
+  // be brute-forced through the six-digit space.
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// A biometric credential (Face ID, fingerprint) registered through WebAuthn.
+// Only the public key is stored; the private key never leaves the device's
+// secure element, and the PIN above stays available as the fallback.
+export const devicePasskeys = pgTable(
+  "device_passkeys",
+  {
+    credentialId: text("credential_id").primaryKey(),
+    ownerId: text("owner_id").notNull(),
+    publicKey: text("public_key").notNull(),
+    algorithm: integer("algorithm").notNull(),
+    // Replay guard: an authenticator's counter must never go backwards.
+    signCount: integer("sign_count").notNull().default(0),
+    label: text("label"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  },
+  (t) => [index("device_passkeys_owner").on(t.ownerId)],
+);
+
+// Short-lived challenge for a WebAuthn registration or assertion.
+export const passkeyChallenges = pgTable(
+  "passkey_challenges",
+  {
+    challengeHash: text("challenge_hash").primaryKey(),
+    ownerId: text("owner_id").notNull(),
+    purpose: text("purpose").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    check(
+      "passkey_challenges_purpose",
+      sql`${t.purpose} in ('register','assert')`,
+    ),
+    index("passkey_challenges_expiry").on(t.expiresAt),
+  ],
+);
