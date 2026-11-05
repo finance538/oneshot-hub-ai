@@ -1,46 +1,35 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
-  login,
-  signup,
-  logout,
-  getUser,
-  getSettings,
-  onAuthChange,
-  handleAuthCallback,
-  acceptInvite,
-  updateUser,
-  requestPasswordRecovery,
-  AuthError,
-  MissingIdentityError,
-  type Settings,
-} from "@netlify/identity";
-import { LogIn, LogOut, UserRound, ArrowLeft } from "lucide-react";
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
+import { LogIn, LogOut, UserRound, ArrowLeft, RotateCcw } from "lucide-react";
 import { Modal, Notice, Busy } from "./common";
-import { ProfileDialog } from "./profile";
 import { api, clearApiSession } from "../lib/api";
-import { useAppearance, appearanceLink } from "../storefront/i18n";
-import {
-  waitForAuth,
-  prepareIdentitySession,
-  AuthTimeoutError,
-  takeAuthReturn,
-} from "../lib/auth-session";
+import { ProfileDialog } from "./profile";
+import { useAppearance } from "../storefront/i18n";
 import {
   clearEcosystemSession,
   ecosystemUser,
-  receiverApp,
-  authOrigin,
-  hasSharedCookieSession,
-  googleLoginUrl,
-  syncIdentitySession,
   logoutSharedSession,
 } from "../lib/ecosystem-session";
+import {
+  AuthRequestError,
+  otpSettings,
+  requestCode,
+  verifyCode,
+} from "../lib/passwordless";
+import { AppLock } from "./app-lock";
+
 export interface SessionUser {
   id: string;
   name?: string;
   email?: string;
   roles?: string[];
 }
+
 export function useAuth() {
   const { tr } = useAppearance();
   const [signingOut, setSigningOut] = useState(false);
@@ -50,111 +39,27 @@ export function useAuth() {
     [ready, setReady] = useState(false),
     [open, setOpen] = useState(false),
     [profileOpen, setProfileOpen] = useState(false),
-    [profileIncomplete, setProfileIncomplete] = useState(false);
-  const [callback, setCallback] = useState<{
-      type: "invite" | "recovery";
-      token?: string;
-    } | null>(null),
+    [profileIncomplete, setProfileIncomplete] = useState(false),
     [error, setError] = useState("");
+
   useEffect(() => {
     let alive = true;
-    const applyUser = (u: SessionUser | null) => {
-      if (!alive) return;
-      const signature = `${u?.id || ""}:${u?.roles?.join(",") || ""}`;
-      if (signature !== identitySignature.current) clearApiSession();
-      identitySignature.current = signature;
-      setUser(u);
-    };
-    const unsubscribe = onAuthChange((event) => {
-      if (!alive || receiverApp()) return;
-      if (event === "login" || event === "user_updated") {
-        clearApiSession();
-        void syncIdentitySession()
-          .then(applyUser)
-          .catch(() => {
-            if (alive)
-              setError(
-                tr(
-                  "تعذّر مزامنة الحساب. أعد تحميل الصفحة.",
-                  "Could not synchronize your account. Reload the page.",
-                ),
-              );
-          });
-      }
-    });
-    const returned = new URL(location.href);
-    if (returned.searchParams.has("google_error")) {
-      returned.searchParams.delete("google_error");
-      history.replaceState(history.state, "", returned.href);
-      setError(
-        tr(
-          "لم يكتمل اتصال Google. تحقق من الموافقة وحاول مجدداً.",
-          "Google connection did not complete. Check consent and try again.",
-        ),
-      );
-      setOpen(true);
-    }
     (async () => {
       try {
-        if (receiverApp()) {
-          const current = await ecosystemUser();
-          if (alive) setUser(current);
-          return;
-        }
-        const fragment = new URLSearchParams(location.hash.slice(1));
-        if (fragment.has("error") || fragment.has("error_description")) {
-          history.replaceState(
-            history.state,
-            "",
-            location.pathname + location.search,
-          );
-          throw new Error("OAuth rejected");
-        }
-        const result = await waitForAuth(handleAuthCallback());
+        // The shared cookie is the whole session now: no OAuth fragment to
+        // unpick, no refresh token to exchange before the first paint.
+        const current = await ecosystemUser();
         if (!alive) return;
-        if (result?.type === "invite") {
-          setCallback({ type: "invite", token: result.token });
-          setOpen(true);
-        }
-        if (result?.type === "recovery") {
-          setCallback({ type: "recovery" });
-          setOpen(true);
-        }
-        let current = await ecosystemUser();
-        if (current && !hasSharedCookieSession())
-          current = await syncIdentitySession();
-        if (!current && !hasSharedCookieSession()) {
-          await prepareIdentitySession();
-          if (await waitForAuth(getUser()))
-            current = await syncIdentitySession();
-        }
-        if (alive) {
-          identitySignature.current = `${current?.id || ""}:${current?.roles?.join(",") || ""}`;
-          setUser(current);
-        }
-        if (alive && current && result?.type === "oauth") {
-          const destination = takeAuthReturn();
-          if (destination) location.replace(destination);
-        }
+        identitySignature.current = `${current?.id || ""}:${current?.roles?.join(",") || ""}`;
+        setUser(current);
       } catch {
         if (alive) {
-          if (
-            /(?:access_token|confirmation_token|recovery_token|invite_token|email_change_token)=/.test(
-              location.hash,
-            )
-          )
-            history.replaceState(
-              history.state,
-              "",
-              location.pathname + location.search,
-            );
           setError(
             tr(
-              "تعذّر إكمال الدخول. تحقق من الاتصال أو اطلب رابطاً جديداً.",
-              "Could not complete sign-in. Check your connection or request a new link.",
+              "تعذّر التحقق من الجلسة. تحقق من اتصالك ثم أعد المحاولة.",
+              "Could not verify your session. Check your connection and try again.",
             ),
           );
-          setOpen(true);
         }
       } finally {
         if (alive) setReady(true);
@@ -162,38 +67,18 @@ export function useAuth() {
     })();
     return () => {
       alive = false;
-      unsubscribe();
     };
   }, []);
+
   async function signOut() {
     if (signingOut) return;
     setSigningOut(true);
     afterLogin.current = undefined;
-    let sharedRevokeFailed = false;
-    try {
-      await api(
-        "/api/ecosystem/sso/revoke",
-        {},
-        { quiet: true, timeoutMs: 10000 },
-      );
-    } catch {
-      sharedRevokeFailed = true;
-    }
     try {
       await logoutSharedSession();
       clearEcosystemSession();
-      if (!receiverApp()) await waitForAuth(logout());
       clearApiSession();
       setUser(null);
-      if (sharedRevokeFailed) {
-        setError(
-          tr(
-            "تم إغلاق الجلسة المشتركة. تعذّر تأكيد إلغاء روابط الدخول القديمة؛ تنتهي خلال عشر دقائق.",
-            "The shared session is closed. Legacy sign-in grants could not be revoked; they expire within ten minutes.",
-          ),
-        );
-        setOpen(true);
-      }
     } catch {
       setError(
         tr(
@@ -206,6 +91,9 @@ export function useAuth() {
       setSigningOut(false);
     }
   }
+
+  // A session can be revoked from another device; re-check while the tab is
+  // visible rather than trusting the copy held in memory.
   useEffect(() => {
     let alive = true;
     const verify = async () => {
@@ -232,6 +120,7 @@ export function useAuth() {
       document.removeEventListener("visibilitychange", verify);
     };
   }, [user?.id, user?.roles?.join(",")]);
+
   // A signed-in account without a country gets a gentle "complete your profile" hint.
   useEffect(() => {
     if (!user?.id || profileOpen) return;
@@ -243,10 +132,12 @@ export function useAuth() {
       alive = false;
     };
   }, [user?.id, profileOpen]);
+
   function openLogin(onSuccess?: () => void) {
     afterLogin.current = onSuccess;
     setOpen(true);
   }
+
   const control = (
     <div className="account-controls">
       {user ? (
@@ -259,11 +150,11 @@ export function useAuth() {
           >
             <UserRound size={16} />
             {user.name || tr("حسابي", "My account")}
-            {profileIncomplete && (
-              <small className="profile-hint">{tr("أكمل ملفك", "Complete profile")}</small>
-            )}
             {user.roles?.includes("admin") && (
               <small>{tr("مسؤول", "Administrator")}</small>
+            )}
+            {profileIncomplete && (
+              <small className="profile-hint">{tr("أكمل ملفك", "Complete profile")}</small>
             )}
           </button>
           {profileOpen && <ProfileDialog onClose={() => setProfileOpen(false)} />}
@@ -288,332 +179,266 @@ export function useAuth() {
       )}
     </div>
   );
-  const dialog =
-    open && receiverApp() ? (
-      <Modal
-        title={tr("OneShot · الدخول الموحد", "OneShot · Unified sign-in")}
-        onClose={() => {
-          setOpen(false);
-          setError("");
-        }}
-      >
-        {error && <Notice>{error}</Notice>}
-        <button
-          className="button primary"
-          onClick={() => location.assign(googleLoginUrl())}
-        >
-          {tr("المتابعة باستخدام Google", "Continue with Google")}
-        </button>
-      </Modal>
-    ) : open ? (
-      <AuthDialog
-        callback={callback}
-        initialError={error}
-        onClose={() => {
-          afterLogin.current = undefined;
-          setOpen(false);
-          setError("");
-        }}
-        onDone={() => {
-          const onSuccess = afterLogin.current;
-          afterLogin.current = undefined;
-          setOpen(false);
-          setCallback(null);
-          onSuccess?.();
-        }}
-      />
-    ) : null;
-  return { user, ready, openLogin, control, dialog };
+
+  const dialog = open ? (
+    <SignInDialog
+      initialError={error}
+      onClose={() => {
+        afterLogin.current = undefined;
+        setOpen(false);
+        setError("");
+      }}
+      onDone={(signedIn) => {
+        clearApiSession();
+        identitySignature.current = `${signedIn.id}:${signedIn.roles?.join(",") || ""}`;
+        setUser(signedIn);
+        const onSuccess = afterLogin.current;
+        afterLogin.current = undefined;
+        setOpen(false);
+        setError("");
+        onSuccess?.();
+      }}
+    />
+  ) : null;
+
+  // The lock sits over the app once a session exists, so a returning visit
+  // asks for a PIN or a fingerprint instead of another code.
+  const lock: ReactNode = user ? <AppLock user={user} /> : null;
+
+  return { user, ready, openLogin, control, dialog, lock };
 }
-function AuthDialog({
-  callback,
+
+// ---------------------------------------------------------------------------
+// Sign-in: a destination, then the six digits sent to it
+// ---------------------------------------------------------------------------
+
+function SignInDialog({
   initialError,
   onClose,
   onDone,
 }: {
-  callback: { type: "invite" | "recovery"; token?: string } | null;
   initialError: string;
   onClose: () => void;
-  onDone: () => void;
+  onDone: (user: SessionUser) => void;
 }) {
   const { tr } = useAppearance();
   const alive = useRef(true);
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login"),
+  const [step, setStep] = useState<"destination" | "code">("destination"),
+    [destination, setDestination] = useState(""),
+    [masked, setMasked] = useState(""),
+    [channels, setChannels] = useState<{ email: boolean; sms: boolean }>({
+      email: true,
+      sms: false,
+    }),
     [error, setError] = useState(initialError),
     [notice, setNotice] = useState(""),
     [busy, setBusy] = useState(false),
-    [googleEnabled, setGoogleEnabled] = useState(false),
-    [settings, setSettings] = useState<Settings | null>(null),
-    [settingsState, setSettingsState] = useState<"loading" | "ready" | "error">(
-      "loading",
-    );
-  async function loadSettings() {
-    setSettingsState("loading");
-    try {
-      const [value, googleSettings] = await Promise.all([
-        waitForAuth(getSettings(), 10000).catch(() => null),
-        fetch(`${authOrigin()}/api/auth/google/settings`, {
-          signal: AbortSignal.timeout(10000),
-        })
-          .then((response) => (response.ok ? response.json() : null))
-          .catch(() => null),
-      ]);
-      if (!value && !googleSettings) throw new Error("settings unavailable");
-      if (alive.current) {
-        setSettings(value);
-        setGoogleEnabled(googleSettings?.enabled === true);
-        setSettingsState("ready");
-      }
-    } catch {
-      if (alive.current) setSettingsState("error");
-    }
-  }
+    [secondsLeft, setSecondsLeft] = useState(0);
+
   useEffect(() => {
     alive.current = true;
-    void loadSettings();
+    void otpSettings()
+      .then((value) => {
+        if (alive.current) setChannels(value);
+      })
+      .catch(() => {
+        /* Falls back to email, which the form already assumes. */
+      });
     return () => {
       alive.current = false;
     };
   }, []);
-  function authError(cause: unknown) {
-    if (cause instanceof AuthTimeoutError)
+
+  // Counts down to when asking for a new code is worth doing, so people do not
+  // hammer "resend" while the first message is still in flight.
+  useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const timer = setTimeout(() => setSecondsLeft((value) => value - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [secondsLeft]);
+
+  function failure(cause: unknown) {
+    if (cause instanceof AuthRequestError) return cause.message;
+    if (cause instanceof DOMException && cause.name === "TimeoutError")
       return tr(
-        "استغرقت الاستجابة وقتاً طويلاً. لم نكرر العملية. تحقق من اتصالك وبريدك قبل المحاولة مجدداً.",
-        "The response took too long. The operation was not repeated. Check your connection and inbox before trying again.",
-      );
-    if (cause instanceof MissingIdentityError)
-      return tr(
-        "خدمة الحسابات بانتظار التفعيل لدى مسؤول المنصة.",
-        "Account services are awaiting activation by the site administrator.",
-      );
-    const status = cause instanceof AuthError ? cause.status : undefined;
-    if (status === 403)
-      return tr(
-        "العملية غير متاحة لهذا الحساب. قد يتطلب التسجيل دعوة؛ تواصل مع الدعم.",
-        "This action is unavailable for this account. Registration may require an invitation; contact support.",
-      );
-    if (status === 429)
-      return tr(
-        "طلبات كثيرة خلال وقت قصير. انتظر دقيقة ثم حاول مجدداً.",
-        "Too many requests. Wait a minute and try again.",
+        "استغرقت الاستجابة وقتاً طويلاً. تحقق من اتصالك وحاول مجدداً.",
+        "The response took too long. Check your connection and try again.",
       );
     return tr(
-      "تعذّر إتمام العملية. تحقق من بياناتك وتأكيد بريدك، ثم حاول مجدداً.",
-      "Could not complete the request. Check your details and email confirmation, then try again.",
+      "تعذّر إتمام العملية. حاول مجدداً.",
+      "Could not complete the request. Try again.",
     );
   }
-  async function submit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (busy) return;
+
+  async function send(value: string, resending = false) {
     setBusy(true);
     setError("");
     setNotice("");
-    const data = new FormData(e.currentTarget);
-    const email = String(data.get("email") || "").trim(),
-      password = String(data.get("password") || "");
     try {
-      if (callback?.type === "invite") {
-        await waitForAuth(acceptInvite(callback.token!, password));
-        if (alive.current) onDone();
-      } else if (callback?.type === "recovery") {
-        await waitForAuth(updateUser({ password }));
-        if (alive.current) onDone();
-      } else if (mode === "forgot") {
-        await waitForAuth(requestPasswordRecovery(email));
-        if (alive.current)
-          setNotice(
-            tr(
-              "إذا كان الحساب موجوداً، تصلك رسالة لاستعادة كلمة المرور.",
-              "If the account exists, a password recovery email is on its way.",
-            ),
-          );
-      } else if (mode === "signup") {
-        if (!settings || settings.disableSignup)
-          throw new AuthError("Registration unavailable", 403);
-        const u = await waitForAuth(
-          signup(email, password, {
-            full_name: String(data.get("name") || "").trim(),
-          }),
+      const result = await requestCode(value);
+      if (!alive.current) return;
+      setMasked(result.destination);
+      setStep("code");
+      setSecondsLeft(45);
+      if (resending)
+        setNotice(
+          tr("أرسلنا رمزاً جديداً.", "A new code is on its way."),
         );
-        if (!alive.current) return;
-        if (u.confirmedAt) onDone();
-        else
-          setNotice(
-            tr(
-              "راجع بريدك الإلكتروني لتأكيد الحساب، ثم سجّل الدخول.",
-              "Check your inbox to confirm your account, then sign in.",
-            ),
-          );
-      } else {
-        await waitForAuth(login(email, password));
-        if (alive.current) onDone();
-      }
     } catch (cause) {
-      if (alive.current) setError(authError(cause));
+      if (alive.current) setError(failure(cause));
     } finally {
       if (alive.current) setBusy(false);
     }
   }
-  function google() {
-    if (busy || !googleEnabled) return;
-    location.assign(googleLoginUrl(window.location.href));
+
+  async function submitDestination(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const value = String(
+      new FormData(event.currentTarget).get("destination") || "",
+    ).trim();
+    setDestination(value);
+    await send(value);
   }
-  function changeMode(value: typeof mode) {
-    setMode(value);
+
+  async function submitCode(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
     setError("");
     setNotice("");
+    try {
+      const code = String(
+        new FormData(event.currentTarget).get("code") || "",
+      ).trim();
+      const result = await verifyCode(destination, code);
+      if (alive.current) onDone(result.user);
+    } catch (cause) {
+      if (!alive.current) return;
+      setError(failure(cause));
+      // An expired or spent code cannot be retyped: send the person back to
+      // ask for a new one rather than leaving them guessing.
+      if (
+        cause instanceof AuthRequestError &&
+        (cause.code === "OTP_EXPIRED" || cause.code === "OTP_LOCKED")
+      ) {
+        setStep("destination");
+        setSecondsLeft(0);
+      }
+    } finally {
+      if (alive.current) setBusy(false);
+    }
   }
-  const title = callback
-    ? tr("تعيين كلمة المرور", "Set your password")
-    : mode === "signup"
-      ? tr("انضم إلى oneShot", "Join oneShot")
-      : mode === "forgot"
-        ? tr("استعادة الحساب", "Recover your account")
-        : tr("مرحباً بعودتك", "Welcome back");
+
+  const label = channels.sms
+    ? tr("البريد الإلكتروني أو رقم الجوال", "Email or mobile number")
+    : tr("البريد الإلكتروني", "Email");
+
   return (
-    <Modal title={title} onClose={onClose}>
-      <p className="muted">
-        {tr(
-          "حساب واحد للمتجر ومقر شركتك الرقمي وموظفي AI.",
-          "One account for the store, your workspace and AI employees.",
-        )}
-      </p>
-      {!callback && mode !== "forgot" && googleEnabled && (
-        <button
-          type="button"
-          className="button subtle auth-google"
-          disabled={busy}
-          onClick={google}
-        >
-          <LogIn size={18} />
-          {tr("تسجيل الدخول عبر جوجل", "Continue with Google")}
-        </button>
-      )}
-      {!callback && mode !== "forgot" && googleEnabled && (
-        <p className="auth-or">{tr("أو بالبريد الإلكتروني", "or with email")}</p>
-      )}
-      {!callback && settingsState === "error" && (
-        <Notice>
-          {tr(
-            "تعذّر تحميل خيارات التسجيل. يمكنك محاولة الدخول بالبريد أو إعادة التحقق.",
-            "Could not load sign-up options. Try email sign-in or check again.",
-          )}
-          <button
-            type="button"
-            className="button subtle small"
-            onClick={() => void loadSettings()}
-          >
-            {tr("إعادة التحقق", "Check again")}
-          </button>
-        </Notice>
-      )}
-      {!callback && settingsState === "loading" && (
-        <p role="status">
-          {tr("جارٍ التحقق من خيارات الدخول…", "Checking sign-in options…")}
-        </p>
-      )}
-      <form onSubmit={submit} className="form-stack" aria-busy={busy}>
-        {!callback && mode === "signup" && (
-          <label>
-            {tr("الاسم", "Name")}
-            <input
-              name="name"
-              required
-              autoComplete="name"
-              maxLength={100}
-              disabled={busy}
-            />
-          </label>
-        )}
-        {!callback && (
-          <label>
-            {tr("البريد الإلكتروني", "Email")}
-            <input
-              name="email"
-              type="email"
-              dir="ltr"
-              autoComplete="email"
-              required
-              disabled={busy}
-            />
-          </label>
-        )}
-        {(callback || mode !== "forgot") && (
-          <label>
-            {tr("كلمة المرور", "Password")}
-            <input
-              name="password"
-              type="password"
-              dir="ltr"
-              minLength={mode === "login" && !callback ? undefined : 8}
-              required
-              disabled={busy}
-              autoComplete={
-                mode === "login" && !callback
-                  ? "current-password"
-                  : "new-password"
-              }
-            />
-          </label>
-        )}
-        {error && <Notice>{error}</Notice>}
-        {notice && <Notice success>{notice}</Notice>}
-        <button
-          type="submit"
-          className="button primary"
-          disabled={
-            busy || (mode === "signup" && (!settings || settings.disableSignup))
-          }
-        >
-          {busy ? <Busy /> : <ArrowLeft size={17} />}
-          {callback
-            ? tr("حفظ كلمة المرور", "Save password")
-            : mode === "login"
-              ? tr("دخول إلى حسابك", "Sign in")
-              : mode === "forgot"
-                ? tr("إرسال رابط الاستعادة", "Send recovery link")
-                : tr("إنشاء الحساب", "Create account")}
-        </button>
-      </form>
-      {!callback && (
-        <div className="auth-links">
-          {mode === "login" ? (
-            <>
-              <button
-                type="button"
+    <Modal
+      title={
+        step === "destination"
+          ? tr("الدخول إلى oneShot", "Sign in to oneShot")
+          : tr("أدخل رمز التحقق", "Enter your code")
+      }
+      onClose={onClose}
+    >
+      {step === "destination" ? (
+        <>
+          <p className="muted">
+            {tr(
+              "حساب واحد للمتجر ومقر شركتك الرقمي وموظفي AI. نرسل لك رمزاً للدخول — بدون كلمة مرور.",
+              "One account for the store, your workspace and AI employees. We send you a code — no password needed.",
+            )}
+          </p>
+          <form onSubmit={submitDestination} className="form-stack" aria-busy={busy}>
+            <label>
+              {label}
+              <input
+                name="destination"
+                type={channels.sms ? "text" : "email"}
+                inputMode={channels.sms ? "email" : undefined}
+                dir="ltr"
+                autoComplete={channels.sms ? "username" : "email"}
+                defaultValue={destination}
+                required
+                maxLength={254}
                 disabled={busy}
-                onClick={() => changeMode("forgot")}
-              >
-                {tr("نسيت كلمة المرور", "Forgot password")}
-              </button>
-              {settings && !settings.disableSignup && (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => changeMode("signup")}
-                >
-                  {tr("إنشاء حساب جديد", "Create an account")}
-                </button>
-              )}
-              {settings?.disableSignup && (
-                <p>
-                  {tr(
-                    "التسجيل بالدعوات فقط. تواصل مع الدعم لطلب دعوة.",
-                    "Registration is by invitation. Contact support for an invitation.",
-                  )}
-                </p>
-              )}
-            </>
-          ) : (
+                autoFocus
+              />
+            </label>
+            {error && <Notice>{error}</Notice>}
+            <button type="submit" className="button primary" disabled={busy}>
+              {busy ? <Busy /> : <ArrowLeft size={17} />}
+              {tr("أرسل رمز الدخول", "Send my code")}
+            </button>
+          </form>
+        </>
+      ) : (
+        <>
+          <p className="muted">
+            {tr("أرسلنا رمزاً من ٦ أرقام إلى ", "We sent a 6-digit code to ")}
+            <bdi dir="ltr">{masked}</bdi>
+            {tr(". صالح لعشر دقائق.", ". It is valid for ten minutes.")}
+          </p>
+          <form onSubmit={submitCode} className="form-stack" aria-busy={busy}>
+            <label>
+              {tr("رمز التحقق", "Verification code")}
+              <input
+                name="code"
+                type="text"
+                dir="ltr"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                // The platform fills this from the message itself, so the
+                // person never has to leave the app to read it.
+                autoComplete="one-time-code"
+                maxLength={6}
+                required
+                disabled={busy}
+                autoFocus
+                style={{
+                  letterSpacing: ".4em",
+                  textAlign: "center",
+                  fontSize: "1.3rem",
+                }}
+              />
+            </label>
+            {error && <Notice>{error}</Notice>}
+            {notice && <Notice success>{notice}</Notice>}
+            <button type="submit" className="button primary" disabled={busy}>
+              {busy ? <Busy /> : <ArrowLeft size={17} />}
+              {tr("تأكيد الدخول", "Confirm sign-in")}
+            </button>
+          </form>
+          <div className="auth-links">
+            <button
+              type="button"
+              disabled={busy || secondsLeft > 0}
+              onClick={() => void send(destination, true)}
+            >
+              <RotateCcw size={14} />
+              {secondsLeft > 0
+                ? tr(
+                    `إعادة الإرسال بعد ${secondsLeft} ثانية`,
+                    `Resend in ${secondsLeft}s`,
+                  )
+                : tr("إرسال رمز جديد", "Send a new code")}
+            </button>
             <button
               type="button"
               disabled={busy}
-              onClick={() => changeMode("login")}
+              onClick={() => {
+                setStep("destination");
+                setError("");
+                setNotice("");
+                setSecondsLeft(0);
+              }}
             >
-              {tr("العودة لتسجيل الدخول", "Back to sign in")}
+              {tr("تغيير العنوان", "Use a different address")}
             </button>
-          )}
-        </div>
+          </div>
+        </>
       )}
     </Modal>
   );

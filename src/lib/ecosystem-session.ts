@@ -52,11 +52,6 @@ export function clearEcosystemSession() {
 }
 export const authOrigin = () =>
   productionOrigin(location.origin) ? hubOrigin : location.origin;
-export function googleLoginUrl(returnTo = location.href) {
-  const url = new URL("/api/auth/google/start", authOrigin());
-  url.searchParams.set("return_to", returnTo);
-  return url.href;
-}
 let sharedCookieSession = false;
 export const hasSharedCookieSession = () => sharedCookieSession;
 export async function ecosystemUser(): Promise<SessionUser | null> {

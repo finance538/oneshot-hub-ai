@@ -1,4 +1,6 @@
 import { googleRoute } from "../lib/google-workspace.js";
+import { otpRoute } from "../lib/otp-auth.js";
+import { deviceLockRoute } from "../lib/device-lock.js";
 import {
   createSharedSession,
   revokeSharedSession,
@@ -147,6 +149,25 @@ export default async (req: Request) => {
     if (!["GET", "POST", "DELETE", "PATCH"].includes(method))
       throw new ApiError(405, "طريقة الطلب غير مدعومة.");
     if (method !== "GET") assertOrigin(req);
+    // Passwordless sign-in and the device lock that guards every later entry.
+    if (path.startsWith("/api/auth/otp/")) {
+      const response = await otpRoute(req, path);
+      Object.entries(cors).forEach(([key, value]) =>
+        response.headers.set(key, value),
+      );
+      response.headers.set("Cache-Control", "no-store");
+      response.headers.set("Referrer-Policy", "no-referrer");
+      return response;
+    }
+    if (path.startsWith("/api/auth/lock")) {
+      const response = await deviceLockRoute(req, path);
+      Object.entries(cors).forEach(([key, value]) =>
+        response.headers.set(key, value),
+      );
+      response.headers.set("Cache-Control", "no-store");
+      response.headers.set("Referrer-Policy", "no-referrer");
+      return response;
+    }
     if (
       path.startsWith("/api/auth/google/") ||
       path.startsWith("/api/google/workspace")
