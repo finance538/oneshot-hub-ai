@@ -469,6 +469,7 @@ function HubPage() {
         </Modal>
       )}
       {auth.dialog}
+      {auth.lock}
     </div>
   );
 }

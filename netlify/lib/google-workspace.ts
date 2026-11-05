@@ -196,13 +196,20 @@ export async function googleRoute(
   req: Request,
   path: string,
 ): Promise<Response> {
-  if (path === "/api/auth/google/settings" && req.method === "GET")
+  // Signing in with Google is retired: accounts are opened with a one-time
+  // code and reopened with the device lock. Connecting Google Workspace for
+  // Drive is a separate, still-supported feature below.
+  if (path.startsWith("/api/auth/google/"))
     return Response.json(
-      { enabled: googleReady() },
-      { headers: { "Cache-Control": "no-store" } },
+      {
+        enabled: false,
+        error: "الدخول عبر Google لم يعد مستخدماً. استخدم رمز التحقق.",
+        code: "GOOGLE_LOGIN_RETIRED",
+        destination: "/api/auth/otp/request",
+      },
+      { status: path.endsWith("/settings") ? 200 : 410, headers: { "Cache-Control": "no-store" } },
     );
-  if (path === "/api/auth/google/start" && req.method === "GET")
-    return start(req, "login", new URL(req.url).searchParams.get("return_to"));
+  // The callback stays for Google Workspace (Drive) connections only.
   if (path === "/api/auth/google/callback" && req.method === "GET") {
     const params = new URL(req.url).searchParams,
       state = params.get("state") || "";
@@ -225,6 +232,14 @@ export async function googleRoute(
       .returning();
     if (!pending)
       throw new ApiError(401, "انتهت محاولة الدخول أو استُخدمت سابقاً.");
+    // A sign-in grant minted before Google login was retired must not still
+    // be redeemable for a session.
+    if (pending.purpose !== "workspace")
+      throw new ApiError(
+        410,
+        "الدخول عبر Google لم يعد مستخدماً. استخدم رمز التحقق.",
+        "GOOGLE_LOGIN_RETIRED",
+      );
     const destination = checkedReturn(req, pending.returnTo);
     const clear = `${name}=; ${sharedCookieAttributes(new URL(req.url).origin)}; Max-Age=0`;
     try {

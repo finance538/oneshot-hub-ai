@@ -109,6 +109,7 @@ export default function App() {
         accountControl={auth.control}
       />
       {auth.dialog}
+      {auth.lock}
     </>
   );
 }
