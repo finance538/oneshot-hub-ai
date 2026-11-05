@@ -1,0 +1,358 @@
+/* Gaming arsenal: the same charcoal panels and single accent as the rest of
+   the tools engine. Mobile first; RTL through logical properties only. */
+.arsenal h2 {
+  font-size: var(--ui-section-size);
+  margin: 32px 0 12px;
+}
+.arsenal h3 {
+  font-size: 16px;
+  margin: 20px 0 8px;
+  color: var(--ui-muted);
+}
+.arsenal-note {
+  color: var(--ui-muted);
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 0 0 12px;
+}
+
+/* ── Step rail ──────────────────────────────────────────────────────── */
+.arsenal-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+}
+.arsenal-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  background: var(--ui-panel);
+  color: var(--ui-muted);
+  font-size: var(--ui-control-size);
+}
+.arsenal-steps li > span {
+  display: grid;
+  place-items: center;
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: 50%;
+  background: var(--ui-raised);
+  font-variant-numeric: tabular-nums;
+}
+.arsenal-steps li.is-active {
+  color: var(--ui-text);
+  border-color: var(--tool-accent, var(--ui-accent));
+}
+.arsenal-steps li.is-active > span {
+  background: var(--tool-accent, var(--ui-accent));
+  color: var(--ui-on-accent);
+}
+.arsenal-steps li.is-done {
+  color: var(--ui-text);
+}
+.arsenal-steps button {
+  min-block-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ── Step 1: games ─────────────────────────────────────────────────── */
+.arsenal-games,
+.arsenal-weapon-list,
+.arsenal-styles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.arsenal-games {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.arsenal-games button {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  inline-size: 100%;
+  block-size: 100%;
+  padding: 16px;
+  text-align: start;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  font: inherit;
+  cursor: pointer;
+}
+.arsenal-games button:hover:not(:disabled),
+.arsenal-weapon-list button:hover,
+.arsenal-styles button:hover {
+  border-color: var(--tool-accent, var(--ui-accent));
+}
+.arsenal-games button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.arsenal-game-emoji {
+  font-size: 26px;
+  line-height: 1;
+}
+.arsenal-games strong,
+.arsenal-weapon-list strong,
+.arsenal-styles strong {
+  display: block;
+  margin-block-end: 4px;
+}
+.arsenal-games small,
+.arsenal-weapon-list small,
+.arsenal-styles small {
+  display: block;
+  color: var(--ui-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.arsenal-badge {
+  display: inline-block;
+  margin-block-start: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ui-raised);
+  color: var(--ui-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Step 2: weapons ──────────────────────────────────────────────── */
+.arsenal-weapons .tools-search {
+  margin-block-end: 12px;
+}
+.arsenal-weapon-list {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.arsenal-weapon-list button {
+  inline-size: 100%;
+  block-size: 100%;
+  padding: 14px;
+  text-align: start;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  font: inherit;
+  cursor: pointer;
+}
+.arsenal-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block-start: 8px;
+}
+.arsenal-stats span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ui-raised);
+  color: var(--ui-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.arsenal-weapon-head {
+  margin-block-start: 24px;
+  padding: 16px;
+  border: 1px solid var(--ui-border);
+  border-inline-start: 3px solid var(--tool-accent, var(--ui-accent));
+  border-radius: var(--ui-radius);
+  background: var(--ui-panel);
+}
+.arsenal-weapon-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+.arsenal-weapon-head h2 small {
+  color: var(--ui-muted);
+  font-size: 13px;
+}
+.arsenal-weapon-head p {
+  margin: 0;
+  color: var(--ui-muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* ── Step 3: styles ───────────────────────────────────────────────── */
+.arsenal-styles {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+.arsenal-styles button {
+  inline-size: 100%;
+  block-size: 100%;
+  padding: 14px;
+  text-align: start;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  font: inherit;
+  cursor: pointer;
+}
+.arsenal-styles button > span {
+  font-size: 20px;
+}
+.arsenal-styles button.is-active {
+  border-color: var(--tool-accent, var(--ui-accent));
+  background: var(--ui-raised);
+}
+
+/* ── Step 4: the class ────────────────────────────────────────────── */
+.arsenal-result > section {
+  margin-block-start: 28px;
+}
+.arsenal-class header p {
+  color: var(--ui-muted);
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 0 0 12px;
+}
+.arsenal td small {
+  display: block;
+  color: var(--ui-muted);
+  font-size: 11px;
+  margin-block-start: 3px;
+}
+.arsenal th small {
+  display: block;
+  color: var(--ui-muted);
+  font-size: 11px;
+  font-weight: 400;
+  margin-block-start: 3px;
+}
+.arsenal-cost {
+  color: var(--ui-muted);
+}
+.arsenal-perks ul,
+.arsenal-published ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.arsenal-perks ul {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.arsenal-perks li {
+  padding: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-panel);
+}
+.arsenal-perks strong {
+  display: block;
+  margin-block-start: 6px;
+}
+.arsenal-perks small {
+  display: block;
+  margin-block-start: 4px;
+  color: var(--ui-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.arsenal-perks .arsenal-badge {
+  margin-block-start: 0;
+}
+.arsenal-apex {
+  padding: 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-panel);
+}
+.arsenal-apex h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.arsenal-apex p {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.arsenal-published article {
+  margin-block-start: 12px;
+  padding: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-panel);
+}
+.arsenal-published h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 10px;
+  color: var(--ui-text);
+}
+.arsenal-published h3 .arsenal-badge {
+  margin-block-start: 0;
+}
+.arsenal-published li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block-end: 6px;
+  border-block-end: 1px dashed var(--ui-border);
+  font-size: 13px;
+}
+.arsenal-published li span {
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+.arsenal-build-perks {
+  margin: 10px 0 0;
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+.arsenal-published a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-block-start: 10px;
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+.arsenal-slots details {
+  margin-block-start: 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-panel);
+}
+.arsenal-slots summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.arsenal-slots summary .arsenal-badge {
+  margin-block-start: 0;
+}
+.arsenal-slots .tools-table-wrap {
+  padding: 0 14px 14px;
+}
