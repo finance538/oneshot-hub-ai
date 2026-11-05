@@ -832,3 +832,42 @@
     transition: none;
   }
 }
+
+/* Featured entry to the stepped arsenal tool, shown on the hub and on the
+   gaming cluster page above the 500-tool vault. */
+.tools-feature {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 20px 0 8px;
+  padding: 16px;
+  border: 1px solid var(--ui-border);
+  border-inline-start: 3px solid #a7c08f;
+  border-radius: var(--ui-radius);
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  text-decoration: none;
+}
+.tools-feature:hover {
+  border-color: #a7c08f;
+}
+.tools-feature-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 50%;
+  background: var(--ui-raised);
+  color: #a7c08f;
+}
+.tools-feature strong {
+  display: block;
+  margin-block-end: 4px;
+}
+.tools-feature small {
+  display: block;
+  color: var(--ui-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}

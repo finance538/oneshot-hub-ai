@@ -92,6 +92,26 @@ Discovery is through the mobile quick-control dock, the desktop vault button (Ct
 
 Language preference is restored before the app renders from `?lang`, then `localStorage`, then the `oneshot_lang` cookie, defaulting to Arabic RTL. `npm test` runs the tool, audit, owner-recommendation and mobile-dock test suites (route count, unique slugs and metadata, every engine on every page, reference math, sitemap, pre-rendered head, legal footer, language script); `npm run typecheck` runs `tsc --noEmit`.
 
+## Gaming arsenal (Call of Duty weapons and attachments)
+
+`/tools/arsenal` adds a stepped tool to the gaming cluster: the visitor picks the game, then
+the weapon, then a playstyle (fast and aggressive, strong aim, long range, stealth, or
+balanced), and gets the best attachment for each Gunsmith slot with what it does and what it
+costs, the perks that fit the style, the weapon's Apex attachment and the published builds
+for it. Modern Warfare 4 is loaded with all 33 launch weapons, their slot sets and the 18
+pick-3 perks; Black Ops 7, Warzone, Black Ops 6 and Modern Warfare III are listed with their
+rosters not yet gathered rather than with invented data.
+
+Data lives in `shared/gaming/` and the scoring in `shared/gaming/engine.ts` runs entirely in
+the browser. Attachment effects are stored as directions on a −2…+2 scale, never as
+percentages: Activision retunes attachments every season and the same family behaves
+differently per weapon, so the page states that the in-game Gunsmith holds the exact numbers.
+Each game carries the patch its data came from and the date it was last checked, both shown
+on the page, and every published build is attributed to a dated source. `scripts/tools-prerender.ts`
+writes static Arabic HTML for the arsenal hub, each live game and each weapon, and adds them
+to `dist/sitemap.xml`. `tests/arsenal.test.ts` guards the dataset and the engine.
+`docs/arsenal.md` holds the seasonal refresh procedure and how to add another title.
+
 ## Technology and local development
 
 - React 19, TypeScript and Vite for the responsive client.
