@@ -226,7 +226,9 @@ export async function ecosystemRoute(req: Request, path: string) {
       throw new ApiError(400, "Invalid authorization code.");
     await limit(`sso:${Netlify.context?.ip || "unknown"}`, "redeem", 20);
     const sessionToken = `osh_${randomBytes(32).toString("base64url")}`;
-    const expiresAt = new Date(Date.now() + 10 * 60_000);
+    // The ecosystem session must outlive a working day: ten minutes signed users out
+    // of every app while they were still using it. Codes stay at 60s (below).
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60_000);
     // Atomic compare-and-set is replay protection even under concurrent redemption.
     const [grant] = await database()
       .update(ecosystemGrants)
