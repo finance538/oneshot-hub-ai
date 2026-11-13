@@ -16,6 +16,7 @@ import {
   isDue,
   reminderDays,
 } from "../../shared/follow-ups.js";
+import { mailable } from "./follow-up-mail.js";
 
 /**
  * متابعة العروض — تتذكّر العرض المرسل وتُنبّه عند موعده، ولا تُرسل شيئاً.
@@ -55,15 +56,31 @@ export async function followUpsRoute(req: Request, path: string) {
       await limit(user.id, "follow-up", 30);
       const body = await payload(req, 20000);
       const subject = stringField(body.subject, "موضوع العرض", 200);
+      const contact = stringField(body.contact, "جهة الاتصال", 200);
+      // العنوان يأتي صريحاً أو من جهة الاتصال إن كانت بريداً.
+      const candidate = String(body.contactEmail || contact).trim();
+      const contactEmail = mailable(candidate) ? candidate.slice(0, 200) : "";
+      if (body.contactEmail && !contactEmail)
+        throw new ApiError(400, "بريد العميل غير صالح للمراسلة.");
+      const wantsMail = body.autoSend === true || body.autoReply === true;
+      if (wantsMail && !contactEmail)
+        throw new ApiError(
+          400,
+          "المتابعة التلقائية تحتاج بريد العميل.",
+          "FOLLOW_UP_EMAIL_REQUIRED",
+        );
       const [created] = await db
         .insert(followUps)
         .values({
           ownerId: user.id,
-          contact: stringField(body.contact, "جهة الاتصال", 200),
+          contact,
+          contactEmail,
           subject,
           remindAfterDays: reminderDays(body.remindAfterDays),
           sentAt: body.sentAt ? new Date(String(body.sentAt)) : new Date(),
           draft: defaultDraft(subject, "ar"),
+          autoSend: body.autoSend === true,
+          autoReply: body.autoReply === true,
         })
         .returning();
       await audit(user.id, "follow_up_started", created.id);
@@ -87,7 +104,20 @@ export async function followUpsRoute(req: Request, path: string) {
       status?: string;
       draft?: string;
       remindAfterDays?: number;
+      autoSend?: boolean;
+      autoReply?: boolean;
     } = {};
+    if (typeof body.autoSend === "boolean") changes.autoSend = body.autoSend;
+    if (typeof body.autoReply === "boolean") changes.autoReply = body.autoReply;
+    if (
+      (changes.autoSend || changes.autoReply) &&
+      !mailable(owned.contactEmail)
+    )
+      throw new ApiError(
+        400,
+        "المتابعة التلقائية تحتاج بريد العميل.",
+        "FOLLOW_UP_EMAIL_REQUIRED",
+      );
     if (typeof body.status === "string") {
       if (!(FOLLOW_UP_STATUSES as readonly string[]).includes(body.status))
         throw new ApiError(400, "حالة المتابعة غير معروفة.");

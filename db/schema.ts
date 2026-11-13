@@ -770,6 +770,14 @@ export const followUps = pgTable(
     status: text("status").notNull().default("waiting"),
     draft: text("draft").notNull().default(""),
     checkedAt: timestamp("checked_at", { withTimezone: true }),
+    // البريد: عنوان العميل ومحادثته في Gmail، وإذن المالك بأن تتولّى المنصة
+    // المتابعة والردّ عنه. مغلق افتراضياً: الإرسال باسم المالك لا يُفترض.
+    contactEmail: text("contact_email").notNull().default(""),
+    threadId: text("thread_id").notNull().default(""),
+    autoSend: boolean("auto_send").notNull().default(false),
+    autoReply: boolean("auto_reply").notNull().default(false),
+    messagesSent: integer("messages_sent").notNull().default(0),
+    lastReplyAt: timestamp("last_reply_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
