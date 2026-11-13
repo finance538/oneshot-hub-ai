@@ -30,6 +30,7 @@ import { Gateway, Vault } from "./components/gateway";
 import { appearanceLink, useAppearance } from "./storefront/i18n";
 import { Executive } from "./components/executive";
 import { AccessGate, Modal, Notice } from "./components/common";
+import { BetaLayer } from "./components/beta";
 const navigation = [
   {
     id: "store" as Module,
@@ -110,6 +111,7 @@ export default function App() {
       />
       {auth.dialog}
       {auth.lock}
+      <BetaLayer />
     </>
   );
 }
