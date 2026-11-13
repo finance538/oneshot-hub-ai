@@ -15,6 +15,7 @@ import { api, money, orderLabel } from "../lib/api";
 import type { Order } from "../../shared/contracts";
 import { Assistant } from "./assistant";
 import { SectionHeading, Notice, Modal, Busy } from "./common";
+import { BusinessPulse } from "./pulse";
 interface Employee {
   id: string;
   name: string;
@@ -111,6 +112,7 @@ export function Executive() {
       </SectionHeading>
       {error && <Notice>{error}</Notice>}
       <RevenueCard />
+      <BusinessPulse />
       <EstimateNotice />
       <p>
         <a href="/admin/radar">{t("رادار المالك")} · Owner Radar</a>

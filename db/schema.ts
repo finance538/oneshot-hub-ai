@@ -754,3 +754,35 @@ export const pageBookings = pgTable(
   },
   (t) => [index("page_bookings_owner").on(t.ownerId, t.createdAt)],
 );
+
+// المتابعات — الجزء الهادئ من كسب العمل: عرض يُرسل ثم لا يحدث شيء، لا لأن
+// العميل رفض، بل لأن أحداً لم يسأل مرة أخرى. هذا الجدول يتذكّر ما أُرسل،
+// ويُنبّه عند حلول موعد التذكير، ويحتفظ بمسودة. لا يُرسل شيئاً أبداً.
+export const followUps = pgTable(
+  "follow_ups",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ownerId: text("owner_id").notNull(),
+    contact: text("contact").notNull(),
+    subject: text("subject").notNull().default(""),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+    remindAfterDays: integer("remind_after_days").notNull().default(3),
+    status: text("status").notNull().default("waiting"),
+    draft: text("draft").notNull().default(""),
+    checkedAt: timestamp("checked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("follow_ups_owner").on(t.ownerId, t.status),
+    index("follow_ups_due").on(t.status, t.checkedAt),
+    check(
+      "follow_ups_status",
+      sql`${t.status} in ('waiting','due','replied','closed')`,
+    ),
+  ],
+);
