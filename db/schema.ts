@@ -682,3 +682,75 @@ export const passkeyChallenges = pgTable(
     index("passkey_challenges_expiry").on(t.expiresAt),
   ],
 );
+
+// نتائج قابلة لإعادة الاستخدام: مخرج محفوظ أجزاؤه المتغيّرة {{متغيّرات}}.
+// المتغيّرات تُقرأ من المحتوى نفسه فلا يفترقان أبداً.
+export const templates = pgTable(
+  "templates",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ownerId: text("owner_id").notNull(),
+    title: text("title").notNull(),
+    kind: text("kind").notNull().default("document"),
+    language: text("language").notNull().default(""),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("templates_owner").on(t.ownerId, t.updatedAt)],
+);
+
+// صفحات فورية: صفحة تعريف أو حجز ينشرها المالك على رابط عام.
+// الـ HTML المخزَّن يُقدَّم بسياسة لا تسمح بأي سكربت (انظر page.mts).
+export const publishedPages = pgTable(
+  "published_pages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ownerId: text("owner_id").notNull(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    kind: text("kind").notNull().default("bio"),
+    content: text("content").notNull(),
+    contactEmail: text("contact_email").notNull().default(""),
+    published: boolean("published").notNull().default(true),
+    views: integer("views").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("published_pages_owner").on(t.ownerId, t.updatedAt),
+    check(
+      "published_pages_kind",
+      sql`${t.kind} in ('bio','booking','landing')`,
+    ),
+  ],
+);
+
+// طلب حجز تُرك على صفحة منشورة. يُحفظ أولاً ثم يُرسل بالبريد، فلا يضيع طلب
+// لأن البريد لم يكن مضبوطاً لحظة وصوله.
+export const pageBookings = pgTable(
+  "page_bookings",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    pageId: uuid("page_id")
+      .notNull()
+      .references(() => publishedPages.id, { onDelete: "cascade" }),
+    ownerId: text("owner_id").notNull(),
+    name: text("name").notNull(),
+    contact: text("contact").notNull(),
+    preferredAt: text("preferred_at").notNull().default(""),
+    message: text("message").notNull().default(""),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("page_bookings_owner").on(t.ownerId, t.createdAt)],
+);

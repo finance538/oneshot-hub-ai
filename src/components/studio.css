@@ -1,0 +1,85 @@
+/* القوالب والصفحات الفورية. */
+.studio-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.studio-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.studio-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--line, #30392b);
+  border-radius: 12px;
+  background: var(--panel, #171b17);
+  text-align: start;
+}
+.studio-card h4 {
+  margin: 0;
+  font-size: 15px;
+}
+.studio-card small {
+  opacity: 0.7;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.studio-card .studio-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.studio-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.studio-chip {
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line, #30392b);
+  opacity: 0.85;
+}
+.studio-form {
+  display: grid;
+  gap: 12px;
+}
+.studio-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+.studio-form input,
+.studio-form textarea,
+.studio-form select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line, #30392b);
+  background: var(--raised, #22271f);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+}
+.studio-form textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.studio-output {
+  white-space: pre-wrap;
+  border: 1px solid var(--line, #30392b);
+  border-radius: 10px;
+  padding: 14px;
+  background: var(--raised, #22271f);
+  max-height: 260px;
+  overflow: auto;
+  font-size: 13.5px;
+  line-height: 1.8;
+}
