@@ -1,81 +1,14 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { bladeOutlines, bladeColours, goldBlades, hub } from "./markShape";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
-/**
- * The mark, cut rather than downloaded: each blade outline is extruded with a
- * small bevel so its edges catch the light, and the hub is three plain discs.
- * Champagne and titanium are read as metal, which is what gives the aperture
- * its depth as the visitor turns it.
- */
-function buildMark(layer: number) {
-  const group = new THREE.Group();
-  const parts: THREE.Mesh[] = [];
-  const depth = 0.08;
-  const bevel = 0.012;
-  const cut = (shape: THREE.Shape, thickness: number) => {
-    const geometry = new THREE.ExtrudeGeometry(shape, {
-      depth: thickness,
-      bevelEnabled: true,
-      bevelThickness: bevel,
-      bevelSize: bevel,
-      bevelSegments: 2,
-      curveSegments: 72,
-      steps: 1,
-    });
-    geometry.translate(0, 0, -thickness / 2);
-    return geometry;
-  };
-  const add = (
-    geometry: THREE.BufferGeometry,
-    colour: number,
-    metalness: number,
-    roughness: number,
-    z = 0,
-  ) => {
-    const mesh = new THREE.Mesh(
-      geometry,
-      new THREE.MeshStandardMaterial({
-        color: colour,
-        metalness,
-        roughness,
-        envMapIntensity: 1.15,
-        transparent: true,
-        opacity: 0,
-      }),
-    );
-    mesh.position.z = z;
-    mesh.layers.set(layer);
-    mesh.frustumCulled = false;
-    group.add(mesh);
-    parts.push(mesh);
-  };
-  bladeOutlines.forEach((outline, i) => {
-    const shape = new THREE.Shape();
-    outline.forEach(([x, y], n) =>
-      n ? shape.lineTo(x, y) : shape.moveTo(x, y),
-    );
-    shape.closePath();
-    add(
-      cut(shape, depth),
-      bladeColours[i],
-      goldBlades[i] ? 0.88 : 0.82,
-      goldBlades[i] ? 0.3 : 0.24,
-    );
-  });
-  const disc = new THREE.Shape();
-  disc.absarc(0, 0, hub.disc, 0, Math.PI * 2, false);
-  add(cut(disc, depth * 1.45), hub.charcoal, 0.55, 0.42);
-  const ring = new THREE.Shape();
-  ring.absarc(0, 0, hub.ringOuter, 0, Math.PI * 2, false);
-  const hole = new THREE.Path();
-  hole.absarc(0, 0, hub.ringInner, 0, Math.PI * 2, true);
-  ring.holes.push(hole);
-  add(cut(ring, depth * 0.5), hub.champagne, 0.9, 0.26, depth * 0.78);
-  const dot = new THREE.Shape();
-  dot.absarc(0, 0, hub.dot, 0, Math.PI * 2, false);
-  add(cut(dot, depth * 0.5), hub.champagne, 0.9, 0.26, depth * 0.78);
-  return { group, parts };
+/** The carved mark, fetched per mount so every object it owns can be released. */
+const markUrl = "/models/oneshot-stone.glb";
+function loadMark() {
+  const loader = new GLTFLoader();
+  loader.setMeshoptDecoder(MeshoptDecoder);
+  return loader.loadAsync(markUrl).then((gltf) => gltf.scene);
 }
 
 /**
@@ -173,11 +106,11 @@ export function createSpatialScene(
   scene.add(back);
   // The decorative orbit is lit warm; the mark needs neutral light to keep its
   // own colours, so it sits on its own layer with its own rig and a second pass.
-  const markKey = new THREE.DirectionalLight(0xffffff, 0.82);
+  const markKey = new THREE.DirectionalLight(0xffffff, 1.1);
   markKey.position.set(2.6, 3.4, 5.2);
-  const markFill = new THREE.DirectionalLight(0xcfbc97, 0.3);
+  const markFill = new THREE.DirectionalLight(0xcfbc97, 0.35);
   markFill.position.set(-3.6, -1.2, 3.4);
-  const markAmbient = new THREE.AmbientLight(0xffffff, 0.1);
+  const markAmbient = new THREE.AmbientLight(0xffffff, 0.25);
   for (const lamp of [markKey, markFill, markAmbient]) {
     lamp.layers.set(markLayer);
     scene.add(lamp);
@@ -203,6 +136,7 @@ export function createSpatialScene(
     tiltSpeed = 0,
     entrance = 0,
     markSize = 1,
+    markLift = 0,
     loaded = false,
     dragging = false,
     activePointer = -1,
@@ -212,6 +146,7 @@ export function createSpatialScene(
     idle = 0;
   const markMaterials: THREE.Material[] = [];
   const markGeometries: THREE.BufferGeometry[] = [];
+  const markTextures: THREE.Texture[] = [];
   const move = (e: PointerEvent) => {
     if (dragging) return;
     const rect = host.getBoundingClientRect();
@@ -223,15 +158,42 @@ export function createSpatialScene(
     pointerX = 0;
     pointerY = 0;
   };
-  const mark = buildMark(markLayer);
-  // The outlines are unit-radius, so one number sets how large the mark reads.
-  mark.group.scale.setScalar(1.02);
-  markPivot.add(mark.group);
-  for (const part of mark.parts) {
-    markMaterials.push(part.material as THREE.Material);
-    markGeometries.push(part.geometry);
-  }
-  loaded = true;
+  loadMark()
+    .then((mark) => {
+      if (disposed) return;
+      const box = new THREE.Box3().setFromObject(mark);
+      const size = box.getSize(new THREE.Vector3());
+      const centre = box.getCenter(new THREE.Vector3());
+      const fit = 1.82 / Math.max(size.y, 0.001);
+      mark.scale.setScalar(fit);
+      mark.position.copy(centre).multiplyScalar(-fit);
+      mark.traverse((object) => {
+        const mesh = object as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        mesh.frustumCulled = false;
+        mesh.layers.set(markLayer);
+        const material = mesh.material as THREE.MeshStandardMaterial;
+        material.envMapIntensity = 0.9;
+        material.transparent = true;
+        material.opacity = 0;
+        markMaterials.push(material);
+        markGeometries.push(mesh.geometry);
+        for (const slot of [
+          material.map,
+          material.normalMap,
+          material.metalnessMap,
+          material.roughnessMap,
+        ]) {
+          if (slot && !markTextures.includes(slot)) markTextures.push(slot);
+        }
+      });
+      markPivot.add(mark);
+      loaded = true;
+      start();
+    })
+    .catch(() => {
+      // No mark: the orbit alone still carries the hero, and the poster stays.
+    });
   const turn = (dx: number, dy: number) => {
     spin += dx;
     tilt = Math.max(-0.58, Math.min(0.58, tilt + dy));
@@ -331,7 +293,7 @@ export function createSpatialScene(
         tile.position.z = Math.sin(elapsed * 0.3 + i) * 0.3;
       });
       sculpture.position.y = Math.sin(elapsed * 0.4) * 0.07;
-      markPivot.position.y = Math.sin(elapsed * 0.4) * 0.05;
+      markPivot.position.y = markLift + Math.sin(elapsed * 0.4) * 0.05;
     }
     if (loaded) {
       if (entrance < 1) {
@@ -387,8 +349,12 @@ export function createSpatialScene(
     const w = host.clientWidth,
       h = host.clientHeight;
     if (!w || !h) return;
-    // On a phone the destination cards crowd the stage, so the mark gives way.
-    markSize = w < 520 ? 0.88 : 1;
+    // On a phone the destination cards crowd the stage, so the mark gives way
+    // and rides a little higher, where the wordmark clears them.
+    const compact = w < 520;
+    markSize = compact ? 0.84 : 1;
+    markLift = compact ? 0.36 : 0;
+    markPivot.position.y = markLift;
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
@@ -454,6 +420,7 @@ export function createSpatialScene(
     });
     markMaterials.forEach((material) => material.dispose());
     markGeometries.forEach((geometry) => geometry.dispose());
+    markTextures.forEach((texture) => texture.dispose());
     markPivot.clear();
     gold.dispose();
     titanium.dispose();
