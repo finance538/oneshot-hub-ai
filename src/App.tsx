@@ -12,6 +12,7 @@ import {
   X,
   ReceiptText,
   RefreshCw,
+  LayoutTemplate,
 } from "lucide-react";
 import type { Module, Product, Health, Order } from "../shared/contracts";
 import { endpoints } from "../shared/contracts";
@@ -30,6 +31,8 @@ import { Gateway, Vault } from "./components/gateway";
 import { appearanceLink, useAppearance } from "./storefront/i18n";
 import { Executive } from "./components/executive";
 import { AccessGate, Modal, Notice } from "./components/common";
+import { BetaLayer } from "./components/beta";
+import { Studio } from "./components/studio";
 const navigation = [
   {
     id: "store" as Module,
@@ -54,6 +57,12 @@ const navigation = [
     title: "غرفة المدير التنفيذي",
     subtitle: "AI CEO & TEAM",
     icon: BriefcaseBusiness,
+  },
+  {
+    id: "studio" as Module,
+    title: "القوالب والصفحات",
+    subtitle: "TEMPLATES & PAGES",
+    icon: LayoutTemplate,
   },
 ];
 function initialModule(): Module {
@@ -110,6 +119,7 @@ export default function App() {
       />
       {auth.dialog}
       {auth.lock}
+      <BetaLayer />
     </>
   );
 }
@@ -448,6 +458,8 @@ function Workspace({
                   ) : (
                     <AccessGate admin onLogin={onLogin} />
                   ))}
+                {active === "studio" &&
+                  (user ? <Studio /> : <AccessGate onLogin={onLogin} />)}
               </main>
               <Inspector
                 health={health}
