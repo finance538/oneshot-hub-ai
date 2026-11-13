@@ -34,7 +34,16 @@ import ValueStudio from "./ValueStudio";
 import InstallStudio from "./InstallStudio";
 import "./experience.css";
 const Concierge = lazy(() => import("./Concierge"));
-const allIcons = [Layers3, Workflow, Bot, CreditCard, Palette, Zap, Clapperboard, BookOpen];
+const allIcons = [
+  Layers3,
+  Workflow,
+  Bot,
+  CreditCard,
+  Palette,
+  Zap,
+  Clapperboard,
+  BookOpen,
+];
 const allLabelsAr = [
   "مركز أعمالك",
   "فريقك ومسارات عملك",
@@ -212,14 +221,16 @@ export default function Experience({
             <span>THE ONESHOT UNIVERSE</span>
             <span>01 — 08</span>
           </div>
-          <SpatialScene energy={ambience.energy} calm={zen} paused={paused} />
-          <div className="lux-scene-center" aria-hidden="true">
-            <img src="/oneshot.svg" width="38" height="38" alt="" />
-            <span>
-              one<b>Shot</b>
-            </span>
-            <small>ECOSYSTEM</small>
-          </div>
+          <SpatialScene
+            energy={ambience.energy}
+            calm={zen}
+            paused={paused}
+            markLabel={tr(
+              "شعار OneShot بثلاثة أبعاد: اسحبه ليدور، أو حرّكه بأسهم لوحة المفاتيح",
+              "The OneShot mark in 3D: drag to turn it, or use the arrow keys",
+            )}
+            markHint={tr("اسحب الشعار", "DRAG THE MARK")}
+          />
           <nav
             className="lux-scene-links"
             aria-label={tr("وجهات المنظومة", "Ecosystem destinations")}
@@ -414,7 +425,9 @@ export default function Experience({
                         ? 0
                         : e.key === "End"
                           ? visibleApps.length - 1
-                          : (active + (e.key === "ArrowDown" ? 1 : -1) + visibleApps.length) %
+                          : (active +
+                              (e.key === "ArrowDown" ? 1 : -1) +
+                              visibleApps.length) %
                             visibleApps.length;
                     setActive(next);
                     document.getElementById(`destination-${next}`)?.focus();

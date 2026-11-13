@@ -1,12 +1,26 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
-/** A decorative scene. Navigation remains native DOM links above the canvas. */
+/** The brand mark, loaded per mount so every object it owns can be released again. */
+const logoUrl = "/models/oneshot-logo.glb";
+function loadLogo() {
+  const loader = new GLTFLoader();
+  loader.setMeshoptDecoder(MeshoptDecoder);
+  return loader.loadAsync(logoUrl).then((gltf) => gltf.scene);
+}
+
+/**
+ * The hero scene: the OneShot mark in three dimensions, turned by the visitor,
+ * inside a decorative orbit. Navigation remains native DOM links above the canvas.
+ */
 export function createSpatialScene(
   host: HTMLElement,
   energy: { current: number },
   calm: boolean,
   onLost: () => void,
+  grab?: HTMLElement | null,
 ) {
   const renderer = new THREE.WebGLRenderer({
     alpha: true,
@@ -56,32 +70,15 @@ export function createSpatialScene(
     clearcoat: 1,
     envMapIntensity: 1.4,
   });
-  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(1.22, 0), glass);
-  core.rotation.set(0.3, 0.6, 0.1);
-  sculpture.add(core);
-  const inner = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(0.68, 0),
-    titanium,
-  );
-  sculpture.add(inner);
-  const wire = new THREE.LineSegments(
-    new THREE.EdgesGeometry(core.geometry),
-    new THREE.LineBasicMaterial({
-      color: 0xcfc2a3,
-      transparent: true,
-      opacity: 0.45,
-    }),
-  );
-  core.add(wire);
+  // The mark sits at the centre of the orbit and is what the visitor turns.
+  const markLayer = 1;
+  const markPivot = new THREE.Group();
+  markPivot.position.z = 3.3;
+  scene.add(markPivot);
   const rings: THREE.Mesh[] = [];
   for (let i = 0; i < 3; i++) {
     const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(
-        1.64 + i * 0.36,
-        i === 0 ? 0.035 : 0.012,
-        10,
-        150,
-      ),
+      new THREE.TorusGeometry(2.16 + i * 0.4, i === 0 ? 0.035 : 0.012, 10, 150),
       i === 1 ? titanium : gold,
     );
     ring.rotation.set(0.7 + i * 0.5, 0.4 + i * 0.65, i * 0.6);
@@ -90,11 +87,11 @@ export function createSpatialScene(
   }
   const satellites: THREE.Mesh[] = [];
   for (let i = 0; i < 5; i++) {
-    const tile = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.34, 0.34), glass);
+    const tile = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), glass);
     const angle = (i / 5) * Math.PI * 2;
     tile.position.set(
-      Math.cos(angle) * 2.5,
-      Math.sin(angle) * 2.1,
+      Math.cos(angle) * 2.9,
+      Math.sin(angle) * 2.45,
       Math.sin(angle * 2) * 0.4,
     );
     tile.rotation.set(i * 0.4, 0.8, 0.2);
@@ -107,6 +104,19 @@ export function createSpatialScene(
   const back = new THREE.PointLight(0x719b84, 18, 15);
   back.position.set(-3, -1, 2);
   scene.add(back);
+  // The decorative orbit is lit warm; the mark needs neutral light to keep its
+  // own colours, so it sits on its own layer with its own rig and a second pass.
+  const markKey = new THREE.DirectionalLight(0xffffff, 0.82);
+  markKey.position.set(2.6, 3.4, 5.2);
+  const markFill = new THREE.DirectionalLight(0x8fdcd0, 0.16);
+  markFill.position.set(-3.6, -1.2, 3.4);
+  const markAmbient = new THREE.AmbientLight(0xffffff, 0.1);
+  for (const lamp of [markKey, markFill, markAmbient]) {
+    lamp.layers.set(markLayer);
+    scene.add(lamp);
+  }
+  camera.layers.enable(markLayer);
+  renderer.autoClear = false;
   let frame = 0,
     visible = true,
     disposed = false,
@@ -117,14 +127,152 @@ export function createSpatialScene(
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
   let pointerX = 0,
     pointerY = 0;
+  // Resting pose: a slight turn, so the mark reads as an object and not a picture.
+  const restSpin = -0.26,
+    restTilt = 0.07;
+  let spin = restSpin,
+    tilt = restTilt,
+    spinSpeed = 0,
+    tiltSpeed = 0,
+    entrance = 0,
+    markSize = 1,
+    markLift = 0,
+    loaded = false,
+    dragging = false,
+    activePointer = -1,
+    lastX = 0,
+    lastY = 0,
+    lastAt = 0,
+    idle = 0;
+  const markMaterials: THREE.Material[] = [];
+  const markTextures: THREE.Texture[] = [];
   const move = (e: PointerEvent) => {
+    if (dragging) return;
     const rect = host.getBoundingClientRect();
     pointerX = ((e.clientX - rect.left) / rect.width - 0.5) * 0.4;
     pointerY = ((e.clientY - rect.top) / rect.height - 0.5) * 0.3;
   };
   const reset = () => {
+    if (dragging) return;
     pointerX = 0;
     pointerY = 0;
+  };
+  loadLogo()
+    .then((mark) => {
+      if (disposed) return;
+      const box = new THREE.Box3().setFromObject(mark);
+      const size = box.getSize(new THREE.Vector3());
+      const centre = box.getCenter(new THREE.Vector3());
+      const fit = 1.87 / Math.max(size.y, 0.001);
+      mark.scale.setScalar(fit);
+      mark.position.copy(centre).multiplyScalar(-fit);
+      mark.traverse((object) => {
+        const mesh = object as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        mesh.frustumCulled = false;
+        mesh.layers.set(markLayer);
+        const material = mesh.material as THREE.MeshStandardMaterial;
+        // Brand colours, not a lit surface: the filmic curve and the bright room
+        // environment are both held back so the teal and charcoal stay true.
+        material.toneMapped = false;
+        material.envMapIntensity = 0.1;
+        // The generated relief map is coarse; softened, it reads as a clean emboss.
+        if (material.normalScale) material.normalScale.setScalar(0.5);
+        material.roughness = 0.7;
+        material.metalness = 0.04;
+        material.transparent = true;
+        material.opacity = 0;
+        markMaterials.push(material);
+        for (const slot of [
+          material.map,
+          material.normalMap,
+          material.metalnessMap,
+          material.roughnessMap,
+        ]) {
+          if (slot && !markTextures.includes(slot)) markTextures.push(slot);
+        }
+      });
+      markPivot.add(mark);
+      loaded = true;
+      start();
+    })
+    .catch(() => {
+      // No mark: the orbit alone still carries the hero, and the poster stays visible.
+    });
+  const turn = (dx: number, dy: number) => {
+    spin += dx;
+    tilt = Math.max(-0.58, Math.min(0.58, tilt + dy));
+    idle = 0;
+  };
+  const down = (e: PointerEvent) => {
+    if (!loaded || activePointer !== -1) return;
+    dragging = true;
+    activePointer = e.pointerId;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastAt = performance.now();
+    spinSpeed = 0;
+    tiltSpeed = 0;
+    grab?.classList.add("is-turning");
+    grab?.setPointerCapture?.(e.pointerId);
+    start();
+  };
+  const drag = (e: PointerEvent) => {
+    if (!dragging || e.pointerId !== activePointer) return;
+    const now = performance.now();
+    const dx = (e.clientX - lastX) * 0.0085;
+    const dy = (e.clientY - lastY) * 0.0055;
+    const dt = Math.max((now - lastAt) / 1000, 0.008);
+    turn(dx, dy);
+    spinSpeed = dx / dt;
+    tiltSpeed = dy / dt;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastAt = now;
+    start();
+  };
+  const up = (e: PointerEvent) => {
+    if (e.pointerId !== activePointer) return;
+    dragging = false;
+    activePointer = -1;
+    grab?.classList.remove("is-turning");
+    if (performance.now() - lastAt > 90) {
+      spinSpeed = 0;
+      tiltSpeed = 0;
+    }
+    spinSpeed = Math.max(-6, Math.min(6, spinSpeed));
+    tiltSpeed = Math.max(-3, Math.min(3, tiltSpeed));
+    start();
+  };
+  const keys: Record<string, [number, number]> = {
+    ArrowLeft: [-0.24, 0],
+    ArrowRight: [0.24, 0],
+    ArrowUp: [0, -0.12],
+    ArrowDown: [0, 0.12],
+  };
+  const press = (e: KeyboardEvent) => {
+    const step = keys[e.key];
+    if (step) {
+      e.preventDefault();
+      turn(step[0], step[1]);
+      start();
+      return;
+    }
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      spin = restSpin;
+      tilt = restTilt;
+      spinSpeed = 0;
+      tiltSpeed = 0;
+      start();
+    }
+  };
+  const recentre = () => {
+    spin = restSpin;
+    tilt = restTilt;
+    spinSpeed = 0;
+    tiltSpeed = 0;
+    start();
   };
   const draw = (now: number) => {
     frame = 0;
@@ -137,25 +285,64 @@ export function createSpatialScene(
       slowFrames = 0;
     }
     last = now;
-    if (!motion.matches) {
+    const still = motion.matches;
+    if (!still) {
       elapsed += dt * (calm ? 0.3 : 1);
       sculpture.rotation.y +=
         (pointerX - sculpture.rotation.y) * Math.min(1, dt * 3);
       sculpture.rotation.x +=
         (pointerY - sculpture.rotation.x) * Math.min(1, dt * 3);
-      core.rotation.y += dt * 0.1;
-      inner.rotation.y -= dt * 0.12;
       rings[0].rotation.z = elapsed * 0.06;
       satellites.forEach((tile, i) => {
         tile.rotation.y += dt * 0.12;
         tile.position.z = Math.sin(elapsed * 0.3 + i) * 0.3;
       });
       sculpture.position.y = Math.sin(elapsed * 0.4) * 0.07;
-      const scale = 1 + Math.min(energy.current, 0.5) * 0.12;
-      core.scale.setScalar(scale);
+      markPivot.position.y = markLift + Math.sin(elapsed * 0.4) * 0.05;
     }
+    if (loaded) {
+      if (entrance < 1) {
+        entrance = Math.min(1, entrance + dt * 1.8);
+        const eased = 1 - Math.pow(1 - entrance, 3);
+        for (const material of markMaterials) {
+          material.opacity = eased;
+          if (entrance >= 1) material.transparent = false;
+        }
+      }
+      if (!dragging) {
+        spin += spinSpeed * dt;
+        tilt = Math.max(-0.58, Math.min(0.58, tilt + tiltSpeed * dt));
+        const decay = Math.pow(0.0023, dt);
+        spinSpeed *= decay;
+        tiltSpeed *= decay;
+        if (Math.abs(spinSpeed) < 0.02) spinSpeed = 0;
+        if (Math.abs(tiltSpeed) < 0.02) tiltSpeed = 0;
+        idle += dt;
+        // Once it is left alone the mark drifts back and keeps a slow turn.
+        if (!spinSpeed && !tiltSpeed) {
+          tilt += (restTilt - tilt) * Math.min(1, dt * 1.1);
+          if (!still && idle > 1.6)
+            spin += dt * (calm ? 0.16 : 0.3) * Math.min(1, (idle - 1.6) / 1.2);
+        }
+      }
+      markPivot.rotation.y = spin;
+      markPivot.rotation.x = tilt;
+      const eased = 1 - Math.pow(1 - entrance, 3);
+      const pulse = still ? 1 : 1 + Math.min(energy.current, 0.5) * 0.08;
+      markPivot.scale.setScalar((0.82 + eased * 0.18) * pulse * markSize);
+    }
+    renderer.clear();
+    camera.layers.set(0);
     renderer.render(scene, camera);
-    if (!motion.matches) frame = requestAnimationFrame(draw);
+    camera.layers.set(markLayer);
+    renderer.render(scene, camera);
+    const busy =
+      dragging ||
+      entrance < 1 ||
+      Math.abs(spinSpeed) > 0 ||
+      Math.abs(tiltSpeed) > 0 ||
+      (loaded && Math.abs(tilt - restTilt) > 0.001);
+    if (!still || busy) frame = requestAnimationFrame(draw);
   };
   const start = () => {
     if (!frame && !disposed && !lost) {
@@ -167,6 +354,12 @@ export function createSpatialScene(
     const w = host.clientWidth,
       h = host.clientHeight;
     if (!w || !h) return;
+    // On a phone the destination cards crowd the stage, so the mark gives way
+    // and rides a little higher, where the wordmark clears them.
+    const compact = w < 520;
+    markSize = compact ? 0.7 : 1;
+    markLift = compact ? 0.28 : 0;
+    markPivot.position.y = markLift;
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
@@ -199,6 +392,12 @@ export function createSpatialScene(
   const surface = host.closest(".lux-spatial") || host;
   surface.addEventListener("pointermove", move as EventListener);
   surface.addEventListener("pointerleave", reset);
+  grab?.addEventListener("pointerdown", down as EventListener);
+  grab?.addEventListener("pointermove", drag as EventListener);
+  grab?.addEventListener("pointerup", up as EventListener);
+  grab?.addEventListener("pointercancel", up as EventListener);
+  grab?.addEventListener("keydown", press as EventListener);
+  grab?.addEventListener("dblclick", recentre);
   renderer.domElement.addEventListener("webglcontextlost", contextLost);
   document.addEventListener("visibilitychange", visibility);
   motion.addEventListener("change", start);
@@ -212,15 +411,24 @@ export function createSpatialScene(
     motion.removeEventListener("change", start);
     surface.removeEventListener("pointermove", move as EventListener);
     surface.removeEventListener("pointerleave", reset);
+    grab?.removeEventListener("pointerdown", down as EventListener);
+    grab?.removeEventListener("pointermove", drag as EventListener);
+    grab?.removeEventListener("pointerup", up as EventListener);
+    grab?.removeEventListener("pointercancel", up as EventListener);
+    grab?.removeEventListener("keydown", press as EventListener);
+    grab?.removeEventListener("dblclick", recentre);
+    grab?.classList.remove("is-turning");
     renderer.domElement.removeEventListener("webglcontextlost", contextLost);
     scene.traverse((object) => {
       if (object instanceof THREE.Mesh || object instanceof THREE.LineSegments)
         object.geometry.dispose();
     });
+    markMaterials.forEach((material) => material.dispose());
+    markTextures.forEach((texture) => texture.dispose());
+    markPivot.clear();
     gold.dispose();
     titanium.dispose();
     glass.dispose();
-    (wire.material as THREE.Material).dispose();
     environment.dispose();
     renderer.dispose();
     renderer.forceContextLoss();
