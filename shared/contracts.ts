@@ -34,7 +34,7 @@ export const regions = [
   ["GB-GBP", "بريطانيا · GBP"],
   ["EU-EUR", "الاتحاد الأوروبي · EUR"],
 ] as const;
-export type Module = "store" | "gateway" | "vault" | "ceo";
+export type Module = "store" | "gateway" | "vault" | "ceo" | "studio";
 export interface Product {
   catalogDetails?: OriginalProduct | null;
   id: string;

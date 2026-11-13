@@ -59,6 +59,7 @@ import { seoGuides } from "../../shared/growth.js";
 import { growthRoute } from "../lib/growth.js";
 import { toolsRoute } from "../lib/tools.js";
 import { supportRoute } from "../lib/support.js";
+import { studioRoute } from "../lib/studio.js";
 import { executiveChat, overview } from "../lib/ai.js";
 import { gateways, endpoints } from "../../shared/contracts.js";
 
@@ -253,6 +254,8 @@ export default async (req: Request) => {
       return json(result, upstream.status);
     }
     // بلاغات البيتا: مفتوحة للزائر وللمشترك، ومحدودة المعدل داخل الوحدة نفسها.
+    if (path.startsWith("/api/studio/"))
+      return json(await studioRoute(req, path));
     if (path === "/api/support/report")
       return json(await supportRoute(req, path));
     if (path === "/api/diagnostics/client" || path === "/api/admin/diagnostics")
