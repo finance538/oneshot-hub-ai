@@ -4,6 +4,7 @@ import {
   ExternalLink,
   FileText,
   Globe,
+  BellRing,
   Inbox,
   Plus,
   RefreshCw,
@@ -19,6 +20,7 @@ import {
   templateVariables,
 } from "../../shared/templates";
 import { PAGE_KINDS, pageSlug, type PageKind } from "../../shared/page-html";
+import { FollowUps } from "./follow-ups";
 import "./studio.css";
 
 /**
@@ -62,7 +64,9 @@ interface Booking {
 
 export function Studio() {
   const { tr } = useAppearance();
-  const [tab, setTab] = useState<"templates" | "pages">("templates");
+  const [tab, setTab] = useState<"templates" | "pages" | "follow">(
+    "templates",
+  );
   return (
     <section className="panel">
       <div className="studio-tabs">
@@ -78,8 +82,20 @@ export function Studio() {
         >
           <Globe size={15} /> {tr("الصفحات الفورية", "Instant pages")}
         </button>
+        <button
+          className={`button ${tab === "follow" ? "primary" : "subtle"} small`}
+          onClick={() => setTab("follow")}
+        >
+          <BellRing size={15} /> {tr("متابعة العروض", "Follow-ups")}
+        </button>
       </div>
-      {tab === "templates" ? <Templates /> : <Pages />}
+      {tab === "templates" ? (
+        <Templates />
+      ) : tab === "pages" ? (
+        <Pages />
+      ) : (
+        <FollowUps />
+      )}
     </section>
   );
 }

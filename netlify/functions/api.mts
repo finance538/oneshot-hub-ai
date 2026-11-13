@@ -60,6 +60,8 @@ import { growthRoute } from "../lib/growth.js";
 import { toolsRoute } from "../lib/tools.js";
 import { supportRoute } from "../lib/support.js";
 import { studioRoute } from "../lib/studio.js";
+import { followUpsRoute } from "../lib/follow-ups.js";
+import { pulseRoute } from "../lib/pulse.js";
 import { executiveChat, overview } from "../lib/ai.js";
 import { gateways, endpoints } from "../../shared/contracts.js";
 
@@ -254,6 +256,9 @@ export default async (req: Request) => {
       return json(result, upstream.status);
     }
     // بلاغات البيتا: مفتوحة للزائر وللمشترك، ومحدودة المعدل داخل الوحدة نفسها.
+    if (path === "/api/pulse") return json(await pulseRoute(req));
+    if (path === "/api/follow-ups" || path.startsWith("/api/follow-ups/"))
+      return json(await followUpsRoute(req, path));
     if (path.startsWith("/api/studio/"))
       return json(await studioRoute(req, path));
     if (path === "/api/support/report")
