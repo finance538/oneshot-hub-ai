@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import { BellRing, Check, Copy, Plus, RefreshCw, Trash2, X } from "lucide-react";
+import {
+  BellRing,
+  Check,
+  Copy,
+  Mail,
+  MessageSquare,
+  Plus,
+  RefreshCw,
+  Send,
+  Trash2,
+  X,
+} from "lucide-react";
 import { Busy, Modal, Notice } from "./common";
 import { api } from "../lib/api";
 import { useAppearance } from "../storefront/i18n";
@@ -14,12 +25,22 @@ import "./studio.css";
 interface FollowUp {
   id: string;
   contact: string;
+  contactEmail: string;
   subject: string;
   sentAt: string;
   remindAfterDays: number;
   status: string;
   draft: string;
+  autoSend: boolean;
+  autoReply: boolean;
+  messagesSent: number;
   due?: boolean;
+}
+interface MailLink {
+  enabled: boolean;
+  connected: boolean;
+  mail: boolean;
+  email?: string;
 }
 
 export function FollowUps() {
@@ -29,6 +50,7 @@ export function FollowUps() {
   const [error, setError] = useState("");
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState<FollowUp | null>(null);
+  const [link, setLink] = useState<MailLink | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,7 +66,39 @@ export function FollowUps() {
   }, []);
   useEffect(() => {
     void load();
+    void api<MailLink>("/api/google/workspace")
+      .then(setLink)
+      .catch(() => setLink(null));
   }, [load]);
+
+  async function connectMail() {
+    try {
+      const result = await api<{ authorization: string }>(
+        "/api/google/workspace/connect",
+        { purpose: "gmail", return_to: location.href },
+      );
+      location.assign(result.authorization);
+    } catch (failure) {
+      setError((failure as Error).message);
+    }
+  }
+
+  async function toggle(row: FollowUp, field: "autoSend" | "autoReply") {
+    try {
+      const result = await api<{ followUp: FollowUp }>(
+        `/api/follow-ups/${row.id}`,
+        { [field]: !row[field] },
+        { method: "PATCH" },
+      );
+      setRows((current) =>
+        current.map((item) =>
+          item.id === row.id ? { ...item, ...result.followUp } : item,
+        ),
+      );
+    } catch (failure) {
+      setError((failure as Error).message);
+    }
+  }
 
   async function mark(row: FollowUp, status: string) {
     try {
@@ -75,12 +129,43 @@ export function FollowUps() {
           {tr("تحديث", "Refresh")}
         </button>
       </div>
-      <p className="beta-micro">
-        {tr(
-          "المنصة تُنبّهك فقط ولا ترسل شيئاً، ولا تقرأ بريدك لتعرف أن العميل ردّ — علّمها بنفسك.",
-          "This reminds you; it never sends and never reads your mail.",
-        )}
-      </p>
+      {link?.mail ? (
+        <p className="beta-micro">
+          {tr("البريد مربوط:", "Mail connected:")} <span dir="ltr">{link.email}</span>{" "}
+          ·{" "}
+          {tr(
+            "المنصة تقرأ ردود العملاء في هذه المحادثات فقط، وترسل باسمك حين تُفعّل المتابعة أو الردّ على العرض نفسه.",
+            "Replies are read for these threads only; sending happens where you enable it.",
+          )}
+        </p>
+      ) : (
+        <div className="studio-card" style={{ marginBottom: 14 }}>
+          <h4>{tr("اربط بريدك لتتولّى المنصة المتابعة", "Connect your mail")}</h4>
+          <small>
+            {tr(
+              "بدون ربط: المنصة تُنبّهك وتجهّز المسودة فقط. مع الربط: تلتقط ردّ العميل، وترسل المتابعة وتردّ عنك حين تسمح بذلك لكل عرض.",
+              "Without it you get reminders and drafts only.",
+            )}
+          </small>
+          <div className="studio-actions">
+            <button
+              className="button primary small"
+              onClick={() => void connectMail()}
+              disabled={link ? !link.enabled : true}
+            >
+              <Mail size={14} /> {tr("ربط Gmail", "Connect Gmail")}
+            </button>
+          </div>
+          {link && !link.enabled && (
+            <small>
+              {tr(
+                "ربط Google بانتظار الإعداد لدى مسؤول المشروع.",
+                "Google is not configured yet.",
+              )}
+            </small>
+          )}
+        </div>
+      )}
       {error && <Notice>{error}</Notice>}
       {loading ? (
         <Busy />
@@ -104,7 +189,34 @@ export function FollowUps() {
                   {tr("التذكير بعد", "Remind after")}: {row.remindAfterDays}{" "}
                   {tr("يوم", "d")}
                 </span>
+                {row.messagesSent > 0 && (
+                  <span className="studio-chip">
+                    {tr("رسائل أُرسلت", "Sent by platform")}: {row.messagesSent}
+                  </span>
+                )}
               </div>
+              {link?.mail && row.contactEmail && (
+                <div className="studio-actions">
+                  <button
+                    className={`button ${row.autoSend ? "primary" : "subtle"} small`}
+                    onClick={() => void toggle(row, "autoSend")}
+                  >
+                    <Send size={14} />{" "}
+                    {row.autoSend
+                      ? tr("المتابعة تلقائية", "Auto follow-up on")
+                      : tr("تابع عني", "Follow up for me")}
+                  </button>
+                  <button
+                    className={`button ${row.autoReply ? "primary" : "subtle"} small`}
+                    onClick={() => void toggle(row, "autoReply")}
+                  >
+                    <MessageSquare size={14} />{" "}
+                    {row.autoReply
+                      ? tr("الردّ تلقائي", "Auto reply on")
+                      : tr("ردّ عني", "Reply for me")}
+                  </button>
+                </div>
+              )}
               <div className="studio-actions">
                 <button
                   className="button primary small"
@@ -181,6 +293,7 @@ function AddFollowUp({
 }) {
   const { tr } = useAppearance();
   const [contact, setContact] = useState("");
+  const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [days, setDays] = useState(DEFAULT_REMINDER_DAYS);
   const [busy, setBusy] = useState(false);
@@ -196,6 +309,7 @@ function AddFollowUp({
     try {
       await api("/api/follow-ups", {
         contact: contact.trim(),
+        contactEmail: email.trim() || undefined,
         subject: subject.trim(),
         remindAfterDays: days,
       });
@@ -224,6 +338,17 @@ function AddFollowUp({
             maxLength={200}
             value={subject}
             onChange={(event) => setSubject(event.target.value)}
+          />
+        </label>
+        <label>
+          {tr("بريد العميل (لالتقاط ردّه والإرسال إليه)", "Client email")}
+          <input
+            dir="ltr"
+            type="email"
+            maxLength={200}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="client@example.com"
           />
         </label>
         <label>
