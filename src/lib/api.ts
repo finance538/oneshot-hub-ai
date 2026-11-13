@@ -150,7 +150,8 @@ export async function callBackendApi<T = Record<string, any>>(
     session = generation;
   for (const path of endpoints) {
     const publicRequest =
-      (method === "POST" && path === "/api/quotes") ||
+      (method === "POST" &&
+        (path === "/api/quotes" || path === "/api/support/report")) ||
       (method === "GET" &&
         /^\/api\/(commerce\/contact|quotes\/offers\/[^/?]+|products|health|payments\/capabilities|ecosystem\/(status|handshake)|experience\/config|workforce\/catalog|tools\/pro|growth\/(guides|seo))(?:\?|$)/.test(
           path,
