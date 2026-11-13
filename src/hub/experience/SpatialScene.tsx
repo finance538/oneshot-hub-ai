@@ -59,7 +59,7 @@ export default function SpatialScene({
           <i />
           <img
             className="lux-mark-poster"
-            src="/models/oneshot-logo-poster.webp"
+            src="/models/oneshot-mark-poster.webp"
             width="700"
             height="700"
             alt=""
