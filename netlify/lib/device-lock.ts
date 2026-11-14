@@ -3,18 +3,22 @@ import {
   createPublicKey,
   createVerify,
   randomBytes,
+  randomInt,
+  randomUUID,
   scrypt as scryptCallback,
   timingSafeEqual,
   verify as verifySignature,
 } from "node:crypto";
 import { promisify } from "node:util";
-import { and, eq, gt, lt } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, lt } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import {
+  authCodes,
   deviceLocks,
   devicePasskeys,
   passkeyChallenges,
 } from "../../db/schema.js";
+import { deliverCode, maskDestination, normaliseEmail } from "./otp-delivery.js";
 import { ApiError, authenticate, limit, payload } from "./security.js";
 import { digest } from "./shared-session.js";
 
@@ -27,6 +31,16 @@ const scrypt = promisify(scryptCallback) as (
 const MAX_PIN_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
 const CHALLENGE_MINUTES = 5;
+
+// Forgot-PIN recovery. The code goes to the account's verified email, so a
+// forgotten PIN is never a permanent lockout — while the lockout itself stays
+// enforced, because resetting needs the inbox, not a guess.
+const RESET_MINUTES = 10;
+const RESET_MAX_ATTEMPTS = 5;
+// Codes live in the shared auth_codes table under a namespaced destination, so
+// no migration is needed and a reset code can never be redeemed as a sign-in.
+const RESET_PREFIX = "lock-reset:";
+const newResetCode = () => String(randomInt(0, 1_000_000)).padStart(6, "0");
 
 // Six digits is what people will actually use on a phone. The brute-force
 // ceiling is not the digit count — it is the attempt limit and the lockout
@@ -159,6 +173,136 @@ async function unlock(req: Request, ownerId: string): Promise<Response> {
     .set({ failedAttempts: 0, lockedUntil: null })
     .where(eq(deviceLocks.ownerId, ownerId));
   return Response.json({ unlocked: true });
+}
+
+// ---------------------------------------------------------------------------
+// Forgot PIN — reset over the verified email
+// ---------------------------------------------------------------------------
+
+// "Forgot PIN" is not a hole in the lock: the code goes to the address on the
+// account, so recovering needs the inbox. It also cannot be used to *enter* an
+// account — every route here still requires the existing session, and the code
+// is namespaced so the sign-in verifier never sees it.
+
+type LockUser = { id: string; email?: string | null };
+
+async function requestPinReset(req: Request, user: LockUser): Promise<Response> {
+  await limit(user.id, "pin_reset_request", 5);
+  const email = normaliseEmail(String(user.email ?? ""));
+  if (!email)
+    throw new ApiError(
+      409,
+      "لا يوجد بريد موثّق على هذا الحساب. أضف بريداً موثّقاً ثم أعد المحاولة.",
+      "EMAIL_MISSING",
+    );
+
+  const db = database();
+  const destination = RESET_PREFIX + user.id;
+  // A fresh request retires every earlier code, so an old email cannot be
+  // replayed after the owner asks for a new one.
+  await db
+    .update(authCodes)
+    .set({ consumedAt: new Date() })
+    .where(
+      and(eq(authCodes.destination, destination), isNull(authCodes.consumedAt)),
+    );
+  await db.delete(authCodes).where(lt(authCodes.expiresAt, new Date()));
+
+  const id = randomUUID();
+  const code = newResetCode();
+  await db.insert(authCodes).values({
+    id,
+    channel: "email",
+    destination,
+    // The row id doubles as the per-code salt, the same way the sign-in codes
+    // are salted per row: a database read yields no working reset code.
+    codeHash: await hashPin(code, id),
+    browserHash: "pin-reset",
+    expiresAt: new Date(Date.now() + RESET_MINUTES * 60_000),
+  });
+
+  await deliverCode("email", email, code, RESET_MINUTES);
+  return Response.json({
+    sent: true,
+    destination: maskDestination("email", email),
+    expiresInSeconds: RESET_MINUTES * 60,
+  });
+}
+
+async function confirmPinReset(
+  req: Request,
+  user: LockUser,
+): Promise<Response> {
+  const body = await payload(req, 2000);
+  const code = String(body.code ?? "").trim();
+  const pin = readPin(body.pin);
+  await limit(user.id, "pin_reset_confirm", 10);
+  if (!PIN_PATTERN.test(code))
+    throw new ApiError(400, "الرمز المرسل إلى بريدك غير صالح.", "CODE_FORMAT");
+
+  const db = database();
+  const destination = RESET_PREFIX + user.id;
+  const [row] = await db
+    .select()
+    .from(authCodes)
+    .where(
+      and(
+        eq(authCodes.destination, destination),
+        isNull(authCodes.consumedAt),
+        gt(authCodes.expiresAt, new Date()),
+      ),
+    )
+    .orderBy(desc(authCodes.createdAt))
+    .limit(1);
+  if (!row)
+    throw new ApiError(
+      401,
+      "انتهت صلاحية الرمز. اطلب رمزاً جديداً.",
+      "CODE_EXPIRED",
+    );
+
+  if (row.attempts >= RESET_MAX_ATTEMPTS) {
+    await db
+      .update(authCodes)
+      .set({ consumedAt: new Date() })
+      .where(eq(authCodes.id, row.id));
+    throw new ApiError(
+      429,
+      "أُلغي هذا الرمز بعد محاولات كثيرة. اطلب رمزاً جديداً.",
+      "CODE_LOCKED",
+    );
+  }
+
+  if (!sameSecret(await hashPin(code, row.id), row.codeHash)) {
+    await db
+      .update(authCodes)
+      .set({ attempts: row.attempts + 1 })
+      .where(eq(authCodes.id, row.id));
+    throw new ApiError(401, "الرمز غير صحيح.", "CODE_INVALID");
+  }
+
+  // Consume first: the same code can never set a second PIN.
+  await db
+    .update(authCodes)
+    .set({ consumedAt: new Date() })
+    .where(eq(authCodes.id, row.id));
+
+  // New PIN and cleared lockout in one write, so a reset always ends the
+  // 15-minute wait it was asked for in the middle of.
+  const salt = randomBytes(16).toString("base64url");
+  const values = {
+    ownerId: user.id,
+    pinHash: await hashPin(pin, salt),
+    pinSalt: salt,
+    failedAttempts: 0,
+    lockedUntil: null,
+    updatedAt: new Date(),
+  };
+  await db
+    .insert(deviceLocks)
+    .values(values)
+    .onConflictDoUpdate({ target: deviceLocks.ownerId, set: values });
+  return Response.json({ configured: true, reset: true });
 }
 
 // ---------------------------------------------------------------------------
@@ -442,6 +586,10 @@ export async function deviceLockRoute(
     return setPin(req, user.id);
   if (path === "/api/auth/lock/unlock" && req.method === "POST")
     return unlock(req, user.id);
+  if (path === "/api/auth/lock/pin/reset/request" && req.method === "POST")
+    return requestPinReset(req, user);
+  if (path === "/api/auth/lock/pin/reset/confirm" && req.method === "POST")
+    return confirmPinReset(req, user);
   if (path === "/api/auth/lock/pin" && req.method === "DELETE") {
     await limit(user.id, "pin_clear", 10);
     // Biometric alone would leave no way back in after a failed sensor, so it
