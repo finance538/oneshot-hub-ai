@@ -1,6 +1,6 @@
 import { ecosystemApps } from "./ecosystem.ts";
 
-export const OWNER_EMAIL = "finance@1shotcam.com";
+export const OWNER_EMAIL = "support@1shotcam.com";
 export const SESSION_COOKIE = "__Secure-oneshot_session";
 
 export function productionOrigin(origin: string) {
