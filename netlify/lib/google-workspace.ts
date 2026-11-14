@@ -20,6 +20,10 @@ import { persistOwnerRole } from "./identity-owner.js";
 
 const driveScope = "https://www.googleapis.com/auth/drive.metadata.readonly";
 const baseScopes = ["openid", "email", "profile"];
+// البريد للمتابعات: قراءة الرد، وإرسال رسالة واحدة في نفس المحادثة. لا حذف
+// ولا تعديل ولا وصول كامل للصندوق.
+export const gmailReadScope = "https://www.googleapis.com/auth/gmail.readonly";
+export const gmailSendScope = "https://www.googleapis.com/auth/gmail.send";
 function tokenKey() {
   const value = env("GOOGLE_TOKEN_KEY");
   if (!value || !/^[a-f0-9]{64}$/i.test(value))
@@ -102,7 +106,7 @@ function redirect(location: string, cookies: string[] = []) {
 }
 async function start(
   req: Request,
-  purpose: "login" | "workspace",
+  purpose: "login" | "workspace" | "gmail",
   returnTo: unknown,
   ownerId?: string,
 ) {
@@ -136,9 +140,16 @@ async function start(
   const authorization = client.generateAuthUrl({
     state,
     nonce,
-    scope: purpose === "workspace" ? [...baseScopes, driveScope] : baseScopes,
-    access_type: purpose === "workspace" ? "offline" : "online",
-    prompt: purpose === "workspace" ? "consent" : "select_account",
+    scope:
+      purpose === "gmail"
+        ? [...baseScopes, driveScope, gmailReadScope, gmailSendScope]
+        : purpose === "workspace"
+          ? [...baseScopes, driveScope]
+          : baseScopes,
+    // الموافقة تراكمية: ما مُنح سابقاً لا يُفقد عند طلب نطاق جديد.
+    include_granted_scopes: purpose === "login" ? undefined : true,
+    access_type: purpose === "login" ? "online" : "offline",
+    prompt: purpose === "login" ? "select_account" : "consent",
     code_challenge: digest(verifier),
     code_challenge_method:
       "S256" as import("google-auth-library").CodeChallengeMethod,
@@ -234,7 +245,7 @@ export async function googleRoute(
       throw new ApiError(401, "انتهت محاولة الدخول أو استُخدمت سابقاً.");
     // A sign-in grant minted before Google login was retired must not still
     // be redeemable for a session.
-    if (pending.purpose !== "workspace")
+    if (pending.purpose !== "workspace" && pending.purpose !== "gmail")
       throw new ApiError(
         410,
         "الدخول عبر Google لم يعد مستخدماً. استخدم رمز التحقق.",
@@ -245,10 +256,11 @@ export async function googleRoute(
     try {
       if (params.has("error") || !params.get("code"))
         throw new Error("consent");
-      if (pending.purpose === "workspace") {
-        const user = await authenticate(req);
-        if (user.id !== pending.ownerId) throw new Error("account changed");
-      }
+      // كل غرض باقٍ هنا مملوك لصاحبه: نتأكد أن الجلسة لنفس المالك.
+      const owner = pending.ownerId || "";
+      if (!owner) throw new Error("owner missing");
+      const session = await authenticate(req);
+      if (session.id !== owner) throw new Error("account changed");
       const client = google(req);
       const { verifier } = open<{ verifier: string }>(
         pending.encryptedVerifier,
@@ -273,20 +285,23 @@ export async function googleRoute(
         ) !== pending.nonceHash
       )
         throw new Error("identity invalid");
-      if (pending.purpose === "workspace") {
-        if (
-          !tokens.scope?.split(" ").includes(driveScope) ||
-          !tokens.refresh_token
-        )
+      {
+        const scopes = tokens.scope || "";
+        const granted = scopes.split(" ");
+        const enough =
+          pending.purpose === "gmail"
+            ? granted.includes(gmailSendScope) &&
+              granted.includes(gmailReadScope)
+            : granted.includes(driveScope);
+        if (!enough || !tokens.refresh_token)
           throw new Error("consent incomplete");
-        const owner = pending.ownerId!;
         await database()
           .insert(googleWorkspaceConnections)
           .values({
             ownerId: owner,
             googleSubject: claims.sub,
             email: claims.email,
-            scopes: tokens.scope,
+            scopes,
             encryptedTokens: seal(
               tokens,
               `google-workspace:${owner}:${claims.sub}`,
@@ -297,7 +312,7 @@ export async function googleRoute(
             set: {
               googleSubject: claims.sub,
               email: claims.email,
-              scopes: tokens.scope,
+              scopes,
               encryptedTokens: seal(
                 tokens,
                 `google-workspace:${owner}:${claims.sub}`,
@@ -307,17 +322,7 @@ export async function googleRoute(
           });
         return redirect(destination, [clear]);
       }
-      const user = await googleIdentity(
-        claims.email.toLowerCase(),
-        claims.sub,
-        claims.name,
-      );
-      return redirect(destination, [
-        clear,
-        await createSharedSession(req, user.id),
-        "nf_jwt=; Path=/; Secure; SameSite=Lax; Max-Age=0",
-        "nf_refresh=; Path=/; Secure; SameSite=Lax; Max-Age=0",
-      ]);
+      // لا فرع دخول هنا: الدخول عبر Google متقاعد، والمنح الباقية للربط فقط.
     } catch {
       // No provider error, authorization code or credential enters the browser/logs.
       const failed = new URL(destination);
@@ -328,7 +333,13 @@ export async function googleRoute(
   const user = await authenticate(req);
   if (path === "/api/google/workspace/connect" && req.method === "POST") {
     const body = await payload(req, 5000);
-    return start(req, "workspace", body.return_to, user.id);
+    // الطلب نفسه يحدّد ما يُطلب: Drive وحده، أو Drive والبريد للمتابعات.
+    return start(
+      req,
+      body.purpose === "gmail" ? "gmail" : "workspace",
+      body.return_to,
+      user.id,
+    );
   }
   const [connection] = await database()
     .select()
@@ -339,6 +350,9 @@ export async function googleRoute(
       enabled: googleReady(),
       connected: !!connection,
       email: connection?.email,
+      mail: !!connection?.scopes
+        ?.split(" ")
+        .includes(gmailSendScope),
       updatedAt: connection?.updatedAt,
     });
   if (path === "/api/google/workspace" && req.method === "DELETE") {
@@ -411,4 +425,41 @@ export async function googleRoute(
     }
   }
   throw new ApiError(404, "مسار Google غير متاح.");
+}
+
+/**
+ * عميل Google جاهز لمالك محدّد، للعمل في الخلفية حيث لا طلب وارد.
+ *
+ * يُعيد null بهدوء حين لا يوجد ربط أو حين لم يُمنح نطاق البريد: الدفعة
+ * المجدولة تمرّ على مالكين كثيرين، وغياب الربط حالة طبيعية لا خطأ.
+ * التوكنات تُعاد إلى الحفظ مختومة بعد أي تحديث، فلا يسقط الربط بانتهاء مهلة.
+ */
+export async function ownerMailClient(ownerId: string) {
+  if (!googleReady()) return null;
+  const [connection] = await database()
+    .select()
+    .from(googleWorkspaceConnections)
+    .where(eq(googleWorkspaceConnections.ownerId, ownerId));
+  if (!connection) return null;
+  const granted = connection.scopes.split(" ");
+  if (!granted.includes(gmailSendScope) || !granted.includes(gmailReadScope))
+    return null;
+  const aad = `google-workspace:${ownerId}:${connection.googleSubject}`;
+  const saved = open<Credentials>(connection.encryptedTokens, aad);
+  const client = new OAuth2Client({
+    clientId: env("GOOGLE_CLIENT_ID"),
+    clientSecret: env("GOOGLE_CLIENT_SECRET"),
+    redirectUri: `${hubOrigin}/api/auth/google/callback`,
+  });
+  client.setCredentials(saved);
+  const persist = async () => {
+    await database()
+      .update(googleWorkspaceConnections)
+      .set({
+        encryptedTokens: seal({ ...saved, ...client.credentials }, aad),
+        updatedAt: new Date(),
+      })
+      .where(eq(googleWorkspaceConnections.ownerId, ownerId));
+  };
+  return { client, email: connection.email, persist };
 }
