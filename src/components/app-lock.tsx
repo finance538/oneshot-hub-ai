@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { Fingerprint, Lock, ShieldCheck } from "lucide-react";
+import { Fingerprint, KeyRound, Lock, MailCheck, ShieldCheck } from "lucide-react";
 import { Notice, Busy } from "./common";
 import { useAppearance } from "../storefront/i18n";
 import type { SessionUser } from "./auth";
 import {
   AuthRequestError,
   biometricAvailable,
+  confirmPinReset,
   lockStatus,
   registerBiometric,
+  requestPinReset,
   savePin,
   unlockWithBiometric,
   unlockWithPin,
@@ -48,8 +50,13 @@ export function AppLock({ user }: { user: SessionUser }) {
   const { tr } = useAppearance();
   const alive = useRef(true);
   const [state, setState] = useState<
-    "checking" | "open" | "locked" | "setup"
+    "checking" | "open" | "locked" | "setup" | "reset"
   >("checking");
+  // "reset" has two steps: ask for the email code, then take code + new PIN.
+  const [resetStage, setResetStage] = useState<"request" | "confirm">(
+    "request",
+  );
+  const [resetDestination, setResetDestination] = useState("");
   const [hasBiometric, setHasBiometric] = useState(false),
     [canUseBiometric, setCanUseBiometric] = useState(false),
     [error, setError] = useState(""),
@@ -143,6 +150,59 @@ export function AppLock({ user }: { user: SessionUser }) {
     try {
       await unlockWithBiometric();
       if (!alive.current) return;
+      markUnlocked(user.id);
+      setState("open");
+    } catch (cause) {
+      if (alive.current) setError(failure(cause));
+    } finally {
+      if (alive.current) setBusy(false);
+    }
+  }
+
+  async function sendResetCode() {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const result = await requestPinReset();
+      if (!alive.current) return;
+      setResetDestination(result.destination);
+      setResetStage("confirm");
+      setNotice(
+        tr(
+          `أُرسل رمز إلى ${result.destination}. صالح ${Math.round(
+            result.expiresInSeconds / 60,
+          )} دقيقة.`,
+          `Code sent to ${result.destination}. Valid for ${Math.round(
+            result.expiresInSeconds / 60,
+          )} minutes.`,
+        ),
+      );
+    } catch (cause) {
+      if (alive.current) setError(failure(cause));
+    } finally {
+      if (alive.current) setBusy(false);
+    }
+  }
+
+  async function submitReset(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const data = new FormData(event.currentTarget);
+    const code = String(data.get("code") || ""),
+      pin = String(data.get("pin") || ""),
+      confirmation = String(data.get("confirm") || "");
+    if (pin !== confirmation) {
+      setError(tr("الرمزان غير متطابقين.", "The two codes do not match."));
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      await confirmPinReset(code, pin);
+      if (!alive.current) return;
+      // A successful reset also ends any lockout, so open straight away.
       markUnlocked(user.id);
       setState("open");
     } catch (cause) {
@@ -285,6 +345,107 @@ export function AppLock({ user }: { user: SessionUser }) {
               </button>
             </form>
           </>
+        ) : state === "reset" ? (
+          <>
+            <p className="muted" style={{ marginTop: 0 }}>
+              {resetStage === "request"
+                ? tr(
+                    "سنرسل رمزاً من ٦ أرقام إلى بريد حسابك الموثّق، ثم تختار رمزاً جديداً.",
+                    "We will email a 6-digit code to your verified address, then you choose a new PIN.",
+                  )
+                : tr(
+                    `أدخل الرمز المرسل إلى ${resetDestination} واختر رمزاً جديداً.`,
+                    `Enter the code sent to ${resetDestination} and choose a new PIN.`,
+                  )}
+            </p>
+            {resetStage === "request" ? (
+              <>
+                {error && <Notice>{error}</Notice>}
+                {notice && <Notice success>{notice}</Notice>}
+                <button
+                  type="button"
+                  className="button primary"
+                  style={{ width: "100%" }}
+                  disabled={busy}
+                  onClick={() => void sendResetCode()}
+                >
+                  {busy ? <Busy /> : <MailCheck size={17} />}
+                  {tr("أرسل الرمز إلى بريدي", "Email me a code")}
+                </button>
+              </>
+            ) : (
+              <form
+                onSubmit={submitReset}
+                className="form-stack"
+                aria-busy={busy}
+              >
+                <label>
+                  {tr("الرمز المرسل بالبريد", "Email code")}
+                  <input
+                    name="code"
+                    type="password"
+                    dir="ltr"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    autoComplete="one-time-code"
+                    required
+                    disabled={busy}
+                    autoFocus
+                    style={{ letterSpacing: ".4em", textAlign: "center" }}
+                  />
+                </label>
+                <label>
+                  {tr("الرمز الجديد", "New PIN")}
+                  <input
+                    name="pin"
+                    type="password"
+                    dir="ltr"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    autoComplete="new-password"
+                    required
+                    disabled={busy}
+                  />
+                </label>
+                <label>
+                  {tr("تأكيد الرمز الجديد", "Confirm new PIN")}
+                  <input
+                    name="confirm"
+                    type="password"
+                    dir="ltr"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    autoComplete="new-password"
+                    required
+                    disabled={busy}
+                  />
+                </label>
+                {error && <Notice>{error}</Notice>}
+                {notice && <Notice success>{notice}</Notice>}
+                <button type="submit" className="button primary" disabled={busy}>
+                  {busy ? <Busy /> : <ShieldCheck size={17} />}
+                  {tr("احفظ الرمز الجديد", "Save new PIN")}
+                </button>
+              </form>
+            )}
+            <button
+              type="button"
+              className="button subtle"
+              style={{ width: "100%", marginTop: 10 }}
+              disabled={busy}
+              onClick={() => {
+                setState("locked");
+                setResetStage("request");
+                setError("");
+                setNotice("");
+              }}
+            >
+              {tr("رجوع", "Back")}
+            </button>
+          </>
         ) : (
           <>
             {hasBiometric && canUseBiometric && (
@@ -320,6 +481,21 @@ export function AppLock({ user }: { user: SessionUser }) {
               <button type="submit" className="button primary" disabled={busy}>
                 {busy ? <Busy /> : <Lock size={17} />}
                 {tr("فتح", "Unlock")}
+              </button>
+              <button
+                type="button"
+                className="button subtle"
+                style={{ width: "100%", marginTop: 10 }}
+                disabled={busy}
+                onClick={() => {
+                  setState("reset");
+                  setResetStage("request");
+                  setError("");
+                  setNotice("");
+                }}
+              >
+                <KeyRound size={17} />
+                {tr("نسيت الرمز؟ أعد تعيينه بالبريد", "Forgot your PIN? Reset it by email")}
               </button>
             </form>
           </>
