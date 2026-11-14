@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 /** The carved mark, fetched per mount so every object it owns can be released. */
-const markUrl = "/models/oneshot-stone.glb";
+const markUrl = "/models/oneshot-medallion.glb";
 function loadMark() {
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
@@ -164,7 +164,7 @@ export function createSpatialScene(
       const box = new THREE.Box3().setFromObject(mark);
       const size = box.getSize(new THREE.Vector3());
       const centre = box.getCenter(new THREE.Vector3());
-      const fit = 1.82 / Math.max(size.y, 0.001);
+      const fit = 1.66 / Math.max(size.y, 0.001);
       mark.scale.setScalar(fit);
       mark.position.copy(centre).multiplyScalar(-fit);
       mark.traverse((object) => {
