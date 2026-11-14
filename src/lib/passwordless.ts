@@ -63,6 +63,21 @@ export const savePin = (pin: string, currentPin?: string) =>
 export const unlockWithPin = (pin: string) =>
   post<{ unlocked: true }>("/api/auth/lock/unlock", { pin });
 
+// Forgot PIN: a six-digit code goes to the account's verified email, then the
+// same call sets the new PIN. Resetting also clears a 15-minute lockout, which
+// is the one case where waiting for the timer helps nobody.
+export const requestPinReset = () =>
+  post<{ sent: true; destination: string; expiresInSeconds: number }>(
+    "/api/auth/lock/pin/reset/request",
+    {},
+  );
+
+export const confirmPinReset = (code: string, pin: string) =>
+  post<{ configured: true; reset: true }>("/api/auth/lock/pin/reset/confirm", {
+    code,
+    pin,
+  });
+
 // ---------------------------------------------------------------------------
 // Biometric — Face ID, Touch ID, fingerprint
 // ---------------------------------------------------------------------------
