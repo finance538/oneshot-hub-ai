@@ -138,28 +138,46 @@ export function ParticleType() {
     const ro = new ResizeObserver(fit);
     ro.observe(cv);
 
-    // Sample the word once into a target cloud.
+    // Sample the word once into a target cloud. A webfont measured before it loads would
+    // sample the fallback face, so wait for the brand font specifically.
     const word = tr("جودة", "CRAFT");
-    const off = document.createElement("canvas");
-    off.width = Math.max(2, Math.round(W));
-    off.height = Math.max(2, Math.round(H));
-    const oc = off.getContext("2d");
     const targets: { x: number; y: number }[] = [];
-    if (oc) {
+    const sampleWord = () => {
+      const off = document.createElement("canvas");
+      off.width = Math.max(2, Math.round(W));
+      off.height = Math.max(2, Math.round(H));
+      const oc = off.getContext("2d");
+      if (!oc) return;
       oc.fillStyle = "#000";
       oc.fillRect(0, 0, off.width, off.height);
       oc.fillStyle = "#fff";
       oc.textAlign = "center";
       oc.textBaseline = "middle";
-      oc.font = `800 ${Math.round(Math.min(W / 4.2, H * 0.62))}px Cairo, 'Noto Kufi Arabic', sans-serif`;
+      oc.font = `700 ${Math.round(Math.min(W / 4.2, H * 0.62))}px "IBM Plex Sans Arabic", sans-serif`;
       oc.fillText(word, off.width / 2, off.height / 2);
       const data = oc.getImageData(0, 0, off.width, off.height).data;
       const gap = Math.max(3, Math.round(Math.min(W, H) / 120));
+      targets.length = 0;
       for (let y = 0; y < off.height; y += gap) {
         for (let x = 0; x < off.width; x += gap) {
           if (data[(y * off.width + x) * 4] > 128) targets.push({ x, y });
         }
       }
+      pts.forEach((p, i) => {
+        const t = targets[i];
+        if (t) {
+          p.tx = t.x;
+          p.ty = t.y;
+        }
+      });
+    };
+    if (document.fonts?.load) {
+      void document.fonts
+        .load(`700 120px "IBM Plex Sans Arabic"`)
+        .then(sampleWord)
+        .catch(sampleWord);
+    } else {
+      sampleWord();
     }
 
     const N = Math.min(targets.length, matchMedia("(pointer: coarse)").matches ? 1400 : 3200);

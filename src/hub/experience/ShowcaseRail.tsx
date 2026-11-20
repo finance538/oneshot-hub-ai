@@ -433,7 +433,7 @@ function buildType(ctx: Ctx, word: string) {
         const k = active ? 1 : 0.34;
         const wob =
           Math.sin(t * 2.2 + i * 0.9) * (active ? 7 : 2.4);
-        c.font = `${active ? 800 : 600} ${size}px Cairo, 'Plus Jakarta Sans', sans-serif`;
+        c.font = `${active ? 800 : 600} ${size}px 'IBM Plex Sans Arabic', sans-serif`;
         c.fillStyle = active
           ? `rgba(${GOLD2[0]},${GOLD2[1]},${GOLD2[2]},0.95)`
           : `rgba(243,240,233,${k * 0.5})`;
