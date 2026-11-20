@@ -163,12 +163,11 @@ export function ParticleType() {
           if (data[(y * off.width + x) * 4] > 128) targets.push({ x, y });
         }
       }
+      if (!targets.length) return;
       pts.forEach((p, i) => {
-        const t = targets[i];
-        if (t) {
-          p.tx = t.x;
-          p.ty = t.y;
-        }
+        const t = targets[i % targets.length];
+        p.tx = t.x;
+        p.ty = t.y;
       });
     };
     if (document.fonts?.load) {
@@ -180,19 +179,18 @@ export function ParticleType() {
       sampleWord();
     }
 
-    const N = Math.min(targets.length, matchMedia("(pointer: coarse)").matches ? 1400 : 3200);
-    const pts = Array.from({ length: N }, (_, i) => {
-      const t = targets[i] ?? { x: Math.random() * W, y: Math.random() * H };
-      return {
-        x: Math.random() * W,
-        y: Math.random() * H,
-        vx: 0,
-        vy: 0,
-        tx: t.x,
-        ty: t.y,
-        s: 0.5 + Math.random() * 1.4,
-      };
-    });
+    // The cloud is sized independently of the glyph sample: the sample only arrives once the
+    // webfont resolves, and a cloud sized from an empty sample would render nothing at all.
+    const N = matchMedia("(pointer: coarse)").matches ? 1400 : 3200;
+    const pts = Array.from({ length: N }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: 0,
+      vy: 0,
+      tx: Math.random() * W,
+      ty: Math.random() * H,
+      s: 0.5 + Math.random() * 1.4,
+    }));
 
     const pointer = { x: -999, y: -999 };
     const onMove = (e: PointerEvent) => {
