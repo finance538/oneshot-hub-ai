@@ -1,0 +1,170 @@
+/* ShowcaseRail — "try it yourself" gallery on the Hub homepage.
+   Royal Titanium & Gold tokens only. Panels are canvas surfaces; the chrome stays quiet so
+   the motion is what reads, never the frame. */
+
+.show-section {
+  padding: clamp(64px, 9vw, 118px) 0 clamp(56px, 8vw, 96px);
+  position: relative;
+}
+.show-head {
+  max-width: 760px;
+  margin: 0 auto clamp(30px, 4.5vw, 52px);
+  padding: 0 clamp(18px, 5vw, 54px);
+  text-align: center;
+}
+.show-head h2 {
+  font-size: clamp(1.6rem, 3.6vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  margin: 14px 0 12px;
+  color: var(--hub-text, #f3f0e9);
+}
+.show-head p {
+  color: var(--hub-muted, #a5a6a5);
+  font-size: clamp(13px, 1.5vw, 14.5px);
+  line-height: 1.95;
+  margin: 0;
+}
+
+.show-rail {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px clamp(18px, 5vw, 54px) 22px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 174, 120, 0.35) transparent;
+  cursor: grab;
+  -webkit-overflow-scrolling: touch;
+}
+.show-rail::-webkit-scrollbar {
+  height: 6px;
+}
+.show-rail::-webkit-scrollbar-thumb {
+  background: rgba(201, 174, 120, 0.32);
+  border-radius: 999px;
+}
+.show-rail::-webkit-scrollbar-track {
+  background: transparent;
+}
+.show-rail:active {
+  cursor: grabbing;
+}
+
+.show-panel {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(76vw, 420px);
+  height: clamp(300px, 40vw, 380px);
+  border-radius: 20px;
+  overflow: hidden;
+  scroll-snap-align: center;
+  background: linear-gradient(158deg, #15181b, #0e1012);
+  border: 1px solid var(--hub-line, #282b2e);
+  transition: border-color 0.45s ease, transform 0.45s ease;
+  isolation: isolate;
+}
+.show-panel:hover {
+  border-color: rgba(201, 174, 120, 0.4);
+  transform: translateY(-3px);
+}
+.show-panel canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+}
+/* Readability scrim: the text must stay legible over any frame of the animation. */
+.show-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(11, 12, 14, 0) 34%,
+    rgba(11, 12, 14, 0.62) 68%,
+    rgba(11, 12, 14, 0.94) 100%
+  );
+}
+.show-panel-text {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 2;
+  padding: 20px 22px 22px;
+  direction: rtl;
+  text-align: right;
+}
+.show-panel-mark {
+  font-family: "Plus Jakarta Sans", "Outfit", system-ui, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  color: rgba(201, 174, 120, 0.85);
+  display: block;
+}
+.show-panel-tag {
+  display: inline-block;
+  margin: 8px 0 10px;
+  font-family: "Plus Jakarta Sans", "Outfit", system-ui, sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 174, 120, 0.28);
+  color: var(--hub-gold, #c9ae78);
+  direction: ltr;
+}
+.show-panel-text h3 {
+  font-size: 16.5px;
+  font-weight: 700;
+  margin: 0 0 7px;
+  color: var(--hub-text, #f3f0e9);
+}
+.show-panel-text p {
+  font-size: 12.4px;
+  line-height: 1.85;
+  color: var(--hub-muted, #a5a6a5);
+  margin: 0;
+}
+
+.show-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+  font-family: "Plus Jakarta Sans", "Outfit", system-ui, sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.3em;
+  color: rgba(165, 166, 165, 0.75);
+  direction: ltr;
+}
+.show-hint i {
+  width: 46px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(201, 174, 120, 0.6),
+    transparent
+  );
+}
+
+@media (max-width: 760px) {
+  .show-rail.is-narrow .show-panel {
+    width: 84vw;
+    height: 300px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .show-panel {
+    transition: none;
+  }
+  .show-panel:hover {
+    transform: none;
+  }
+}
