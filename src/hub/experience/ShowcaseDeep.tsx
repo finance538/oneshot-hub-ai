@@ -35,6 +35,11 @@ function useOnScreen<T extends HTMLElement>(margin = "140px") {
       { rootMargin: margin },
     );
     io.observe(el);
+    // A section already inside the viewport at mount may never receive an entry, so read
+    // the first state directly instead of waiting for the observer.
+    const r = el.getBoundingClientRect();
+    const vh = window.innerHeight || 800;
+    if (r.top < vh + 140 && r.bottom > -140) setOn(true);
     return () => io.disconnect();
   }, [margin]);
   return [ref, on] as const;
@@ -491,8 +496,16 @@ export function Systems() {
   useEffect(() => {
     if (!on) return;
     // counters
-    const ids = STATS.map((s, i) => {
-      if (s.v === 0) return 0;
+    const ids: number[] = [];
+    STATS.forEach((s, i) => {
+      if (s.v === 0) {
+        setCounts((prev) => {
+          const next = [...prev];
+          next[i] = 0;
+          return next;
+        });
+        return;
+      }
       let n = 0;
       const step = () => {
         n = Math.min(s.v, n + Math.max(1, Math.ceil(s.v / 26)));
@@ -504,7 +517,6 @@ export function Systems() {
         if (n < s.v) ids[i] = window.setTimeout(step, 34);
       };
       step();
-      return 0;
     });
 
     // terminal typing
