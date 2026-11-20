@@ -1,0 +1,464 @@
+/* ShowcaseDeep — the long-form second movement.
+   Royal Titanium & Gold only. No surface here invents a colour. */
+
+.deep-manifesto {
+  position: relative;
+  padding: clamp(90px, 15vw, 190px) clamp(18px, 6vw, 90px);
+  border-top: 1px solid rgba(201, 174, 120, 0.10);
+}
+.deep-manifesto-inner {
+  max-width: 1020px;
+  margin: 0 auto;
+}
+.deep-manifesto h2 {
+  margin: 22px 0 0;
+  font-size: clamp(1.5rem, 4.1vw, 3.15rem);
+  line-height: 1.42;
+  font-weight: 800;
+  letter-spacing: -0.016em;
+}
+.deep-line {
+  display: block;
+  overflow: hidden;
+}
+.deep-line em {
+  display: block;
+  font-style: normal;
+  color: var(--hub-text, #f3f0e9);
+  transition: opacity 0.12s linear, transform 0.12s linear;
+  will-change: opacity, transform;
+}
+.deep-line em::after {
+  content: "";
+}
+.deep-manifesto-rule {
+  height: 1px;
+  margin-top: 42px;
+  background: linear-gradient(
+    90deg,
+    rgba(201, 174, 120, 0.9),
+    rgba(201, 174, 120, 0.05)
+  );
+  transform-origin: left center;
+  transition: transform 0.15s linear;
+}
+
+/* ---------------- particle type ---------------- */
+.deep-type {
+  padding: clamp(70px, 11vw, 140px) clamp(18px, 6vw, 90px);
+  border-top: 1px solid rgba(201, 174, 120, 0.10);
+}
+.deep-type-head {
+  max-width: 720px;
+  margin: 0 auto clamp(26px, 4vw, 44px);
+  text-align: center;
+}
+.deep-type-head h2,
+.deep-pipe-head h2,
+.deep-systems-head h2 {
+  font-size: clamp(1.5rem, 3.6vw, 2.5rem);
+  font-weight: 800;
+  margin: 14px 0 12px;
+  letter-spacing: -0.015em;
+}
+.deep-type-head p,
+.deep-pipe-head p {
+  color: var(--hub-muted, #a5a6a5);
+  font-size: clamp(13px, 1.5vw, 14.5px);
+  line-height: 1.95;
+  margin: 0;
+}
+.deep-type-stage {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  height: clamp(280px, 42vw, 460px);
+  border-radius: 22px;
+  border: 1px solid var(--hub-line, #282b2e);
+  background: radial-gradient(
+    120% 90% at 50% 20%,
+    rgba(32, 47, 64, 0.22),
+    #0d0f11 70%
+  );
+  overflow: hidden;
+}
+.deep-type-stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
+/* ---------------- pipeline ---------------- */
+.deep-pipe {
+  padding: clamp(80px, 12vw, 150px) clamp(18px, 6vw, 90px);
+  border-top: 1px solid rgba(201, 174, 120, 0.10);
+}
+.deep-pipe-head {
+  max-width: 720px;
+  margin: 0 auto clamp(34px, 5vw, 62px);
+  text-align: center;
+}
+.deep-pipe-track {
+  max-width: 1180px;
+  margin: 0 auto;
+  position: relative;
+}
+.deep-pipe-rail {
+  position: relative;
+  height: 1px;
+  background: rgba(201, 174, 120, 0.16);
+  margin: 0 0 46px;
+}
+.deep-pipe-rail i {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  background: linear-gradient(90deg, #e7c569, #c9ae78);
+  box-shadow: 0 0 16px rgba(201, 174, 120, 0.5);
+  transition: transform 0.15s linear;
+}
+.deep-pipe-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+}
+.deep-pipe-step {
+  position: relative;
+  padding-top: 22px;
+  opacity: 0.34;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.deep-pipe-step.is-on {
+  opacity: 1;
+}
+.deep-pipe-step.is-now {
+  transform: translateY(-4px);
+}
+.deep-pipe-dot {
+  position: absolute;
+  top: -50px;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #282b2e;
+  border: 1px solid rgba(201, 174, 120, 0.5);
+}
+.deep-pipe-step.is-on .deep-pipe-dot {
+  background: #e7c569;
+  box-shadow: 0 0 16px rgba(231, 197, 105, 0.7);
+}
+.deep-pipe-tag {
+  font-family: "Outfit", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--hub-gold, #c9ae78);
+  direction: ltr;
+  display: block;
+  margin-bottom: 8px;
+}
+.deep-pipe-step h3 {
+  font-size: 15.5px;
+  margin: 0 0 7px;
+  font-weight: 700;
+}
+.deep-pipe-step p {
+  margin: 0;
+  font-size: 12.2px;
+  line-height: 1.85;
+  color: var(--hub-muted, #a5a6a5);
+}
+
+/* ---------------- splat ---------------- */
+.deep-splat {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(24px, 5vw, 70px);
+  align-items: center;
+  padding: clamp(80px, 12vw, 150px) clamp(18px, 6vw, 90px);
+  border-top: 1px solid rgba(201, 174, 120, 0.10);
+}
+.deep-splat-stage {
+  position: relative;
+  border-radius: 22px;
+  border: 1px solid var(--hub-line, #282b2e);
+  background: radial-gradient(
+    90% 80% at 50% 45%,
+    rgba(43, 60, 80, 0.28),
+    #0b0c0e 72%
+  );
+  aspect-ratio: 1 / 0.92;
+  overflow: hidden;
+}
+.deep-splat-stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+.deep-splat-stage canvas:active {
+  cursor: grabbing;
+}
+.deep-splat-hint {
+  position: absolute;
+  inset: auto 0 14px 0;
+  text-align: center;
+  font-family: "Outfit", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  color: rgba(165, 166, 165, 0.8);
+  direction: ltr;
+  pointer-events: none;
+}
+.deep-splat-copy h2 {
+  font-size: clamp(1.45rem, 3.3vw, 2.35rem);
+  font-weight: 800;
+  margin: 14px 0 14px;
+  letter-spacing: -0.015em;
+}
+.deep-splat-copy p {
+  color: var(--hub-muted, #a5a6a5);
+  font-size: 13.6px;
+  line-height: 1.98;
+  margin: 0 0 20px;
+}
+.deep-splat-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 11px;
+}
+.deep-splat-list li {
+  position: relative;
+  padding-inline-start: 20px;
+  font-size: 13px;
+  color: var(--hub-text, #f3f0e9);
+}
+.deep-splat-list li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #e7c569, #c9ae78);
+}
+
+/* ---------------- systems ---------------- */
+.deep-systems {
+  padding: clamp(80px, 12vw, 150px) clamp(18px, 6vw, 90px);
+  border-top: 1px solid rgba(201, 174, 120, 0.10);
+}
+.deep-systems-head {
+  max-width: 720px;
+  margin: 0 auto clamp(30px, 4.5vw, 54px);
+  text-align: center;
+}
+.deep-systems-grid {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: clamp(20px, 4vw, 48px);
+  align-items: stretch;
+}
+.deep-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--hub-line, #282b2e);
+  border: 1px solid var(--hub-line, #282b2e);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.deep-stat {
+  background: var(--hub-panel, #111315);
+  padding: 26px 20px;
+  text-align: center;
+}
+.deep-stat b {
+  display: block;
+  font-family: "Outfit", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 800;
+  color: var(--hub-gold, #c9ae78);
+  letter-spacing: -0.02em;
+}
+.deep-stat span {
+  display: block;
+  margin-top: 7px;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  color: var(--hub-muted, #a5a6a5);
+  line-height: 1.6;
+}
+
+.deep-term {
+  border: 1px solid var(--hub-line, #282b2e);
+  border-radius: 16px;
+  background: #0a0b0d;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.deep-term-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--hub-line, #282b2e);
+  background: #0e1012;
+}
+.deep-term-bar i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2a2d31;
+}
+.deep-term-bar i:first-child {
+  background: rgba(201, 174, 120, 0.55);
+}
+.deep-term-bar span {
+  margin-inline-start: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  color: rgba(165, 166, 165, 0.7);
+  direction: ltr;
+}
+.deep-term pre {
+  margin: 0;
+  padding: 16px 18px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.4px;
+  line-height: 1.95;
+  direction: ltr;
+  text-align: left;
+  flex: 1;
+  min-height: 176px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.deep-term-line {
+  color: #c3c6ce;
+}
+.deep-term-line.k-req {
+  color: #e7c569;
+  font-weight: 600;
+}
+.deep-term-line.k-dim {
+  color: #7b7f88;
+}
+.deep-term-line.k-ok {
+  color: #a8c6b6;
+}
+.deep-term-line.k-done {
+  color: #9bcbb9;
+  font-weight: 600;
+}
+.deep-caret {
+  display: inline-block;
+  width: 7px;
+  height: 12px;
+  margin-inline-start: 2px;
+  background: #e7c569;
+  vertical-align: -1px;
+  animation: deep-blink 1s steps(2) infinite;
+}
+@keyframes deep-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.deep-term-foot {
+  border-top: 1px solid var(--hub-line, #282b2e);
+  padding: 10px 16px;
+  font-size: 10.5px;
+  color: rgba(165, 166, 165, 0.8);
+  direction: rtl;
+  text-align: right;
+}
+
+/* ---------------- close ---------------- */
+.deep-close {
+  position: relative;
+  min-height: clamp(430px, 62vh, 620px);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  overflow: hidden;
+  border-top: 1px solid rgba(201, 174, 120, 0.10);
+}
+.deep-close canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.deep-close-copy {
+  position: relative;
+  z-index: 2;
+  padding: 40px 22px;
+  max-width: 780px;
+}
+.deep-close h2 {
+  font-size: clamp(1.5rem, 3.9vw, 2.9rem);
+  font-weight: 800;
+  line-height: 1.34;
+  margin: 18px 0 28px;
+  letter-spacing: -0.017em;
+}
+.deep-close h2 em {
+  font-style: normal;
+  background: linear-gradient(96deg, #e7c569, #c9ae78 50%, #fff5dc 82%, #c9ae78);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.deep-close-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ---------------- responsive ---------------- */
+@media (max-width: 900px) {
+  .deep-pipe-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 18px;
+  }
+  .deep-pipe-rail {
+    display: none;
+  }
+  .deep-pipe-dot {
+    top: 0;
+    inset-inline-start: -16px;
+  }
+  .deep-pipe-step {
+    padding-top: 0;
+    padding-inline-start: 0;
+  }
+  .deep-splat {
+    grid-template-columns: 1fr;
+  }
+  .deep-splat-stage {
+    order: -1;
+  }
+  .deep-systems-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .deep-line em,
+  .deep-manifesto-rule,
+  .deep-pipe-rail i {
+    transition: none;
+  }
+  .deep-caret {
+    animation: none;
+  }
+}

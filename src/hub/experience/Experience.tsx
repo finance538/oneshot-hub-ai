@@ -30,6 +30,15 @@ import { hubCopy } from "../copy";
 import { useAmbience } from "./useAmbience";
 import { usePublicCatalog } from "./usePublicCatalog";
 import SpatialScene from "./SpatialScene";
+import ShowcaseRail from "./ShowcaseRail";
+import {
+  Manifesto,
+  ParticleType,
+  Pipeline,
+  SplatCloud,
+  Systems,
+  HorizonClose,
+} from "./ShowcaseDeep";
 import ValueStudio from "./ValueStudio";
 import InstallStudio from "./InstallStudio";
 import "./experience.css";
@@ -281,6 +290,13 @@ export default function Experience({
       <div className="lux-wrap">
         <CustomerJourney />
       </div>
+      <ShowcaseRail />
+      <Manifesto />
+      <ParticleType />
+      <Pipeline />
+      <SplatCloud />
+      <Systems />
+      <HorizonClose onEnter={onEnter} />
       <div className="lux-sensory lux-wrap">
         <div>
           <Leaf size={18} />
