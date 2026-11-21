@@ -9,8 +9,8 @@
   background: var(--hub-bg);
   color: var(--hub-text);
   font:
-    14px/1.8 "IBM Plex Sans Arabic",
-    "Outfit",
+    14px/1.8 "Cairo",
+    "Plus Jakarta Sans",
     sans-serif;
   min-height: 100svh;
   overflow-x: clip;
@@ -101,7 +101,7 @@
 }
 .hub-logo > span {
   font:
-    500 23px "Outfit",
+    500 23px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: -1px;
   display: flex;
@@ -114,7 +114,7 @@
 .hub-logo small {
   color: var(--hub-orange);
   font:
-    500 9px "Outfit",
+    500 9px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 1.5px;
   margin-inline-start: 7px;
@@ -387,7 +387,7 @@
   gap: 9px;
   color: #858987;
   font:
-    9px "Outfit",
+    9px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 0.5px;
   flex-wrap: wrap;
@@ -414,7 +414,7 @@
   justify-content: space-between;
   color: #7e8587;
   font:
-    9px "Outfit",
+    9px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 1.8px;
 }
@@ -473,14 +473,14 @@
 }
 .hub-orbit-core strong {
   font:
-    500 clamp(20px, 3vw, 34px) "Outfit",
+    500 clamp(20px, 3vw, 34px) "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: -1.2px;
   margin-top: 5px;
 }
 .hub-orbit-core small {
   font:
-    7px "Outfit",
+    7px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 1.2px;
   margin-top: 8px;
@@ -503,12 +503,12 @@
 }
 .hub-orbit-node strong {
   font:
-    500 13px "Outfit",
+    500 13px "Plus Jakarta Sans",
     sans-serif;
 }
 .hub-orbit-node span {
   font:
-    9px "Outfit",
+    9px "Plus Jakarta Sans",
     sans-serif;
   color: var(--season);
   border-right: 1px solid #3a3c3b;
@@ -546,7 +546,7 @@
   gap: 8px;
   color: #7f8583;
   font:
-    8px "Outfit",
+    8px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 1px;
 }
@@ -580,7 +580,7 @@
 }
 .hub-kicker {
   font:
-    10px "Outfit",
+    10px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 2px;
   color: #c28e65;
@@ -598,7 +598,7 @@
   align-items: center;
   gap: 7px;
   font:
-    9px "Outfit",
+    9px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 1px;
   padding: 7px 10px;
@@ -633,7 +633,7 @@
   align-items: center;
   gap: 12px;
   font:
-    14px "Outfit",
+    14px "Plus Jakarta Sans",
     sans-serif;
 }
 .hub-command-outline small {
@@ -711,7 +711,7 @@
 }
 .hub-pillar-tabs button > span {
   font:
-    11px "Outfit",
+    11px "Plus Jakarta Sans",
     sans-serif;
   color: #8f745d;
 }
@@ -775,7 +775,7 @@
   position: absolute;
   bottom: 0;
   font:
-    8px "Outfit",
+    8px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 2px;
   color: #95968c;
@@ -880,7 +880,7 @@
 }
 .hub-deep-art small {
   font:
-    9px "Outfit",
+    9px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 2px;
   z-index: 1;
@@ -940,13 +940,13 @@
 }
 .hub-phone strong {
   font:
-    23px "Outfit",
+    23px "Plus Jakarta Sans",
     sans-serif;
   margin-block: 4px 18px;
 }
 .hub-phone small {
   font:
-    8px/1.8 "Outfit",
+    8px/1.8 "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 2px;
   text-align: center;
@@ -964,7 +964,7 @@
 }
 .hub-giant-number {
   font:
-    400 100px/0.9 "Outfit",
+    400 100px/0.9 "Plus Jakarta Sans",
     sans-serif;
   color: #2b2e2b;
   letter-spacing: -5px;
@@ -1009,7 +1009,7 @@
 }
 .hub-season {
   font:
-    10px "Outfit",
+    10px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 0.6px;
   color: var(--season);
@@ -1017,13 +1017,13 @@
 .hub-app-number {
   margin-inline-start: auto;
   font:
-    12px "Outfit",
+    12px "Plus Jakarta Sans",
     sans-serif;
   color: #727b77;
 }
 .hub-app-card h3 {
   font:
-    500 26px "Outfit",
+    500 26px "Plus Jakarta Sans",
     sans-serif;
   text-align: start;
   letter-spacing: -0.5px;
@@ -1072,7 +1072,7 @@
 }
 .hub-app-bottom small {
   font:
-    9px "Outfit",
+    9px "Plus Jakarta Sans",
     sans-serif;
   color: #818a83;
   overflow-wrap: anywhere;
