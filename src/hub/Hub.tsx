@@ -63,6 +63,13 @@ function HubPage() {
   const [status, setStatus] = useState<EcosystemStatus | null>(null);
   const switchRef = useRef<HTMLButtonElement>(null);
   const navIds = ["overview", "power", "command", "comparison", "ecosystem"];
+
+  // Count only the current page section; the server strips unknown paths and query strings.
+  const visitPath = location.pathname;
+  useEffect(() => {
+    void api("/api/activity/visit", { path: visitPath }, { quiet: true }).catch(() => undefined);
+  }, [visitPath]);
+
   useEffect(() => {
     let alive = true;
     const checkConnections = () => {
