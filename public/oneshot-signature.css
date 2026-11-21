@@ -1,0 +1,18 @@
+/* OneShot Signature Motion v1 — shared behavior, product-owned palette. */
+/* Decorative only: never hides text, changes layout, or intercepts input. */
+:root{--os-motion-accent:var(--hub-orange,#cfbc97);--os-motion-duration:520ms;--os-motion-ease:cubic-bezier(.22,1,.36,1)}
+@keyframes os-signature-breathe{0%,100%{filter:drop-shadow(0 0 0 transparent)}50%{filter:drop-shadow(0 0 5px color-mix(in srgb,var(--os-motion-accent) 30%,transparent))}}
+@keyframes os-signature-entrance{from{transform:translate3d(0,7px,0)}to{transform:translate3d(0,0,0)}}
+@keyframes os-signature-sheen{0%{opacity:.12}50%{opacity:.65}100%{opacity:.12}}
+:where(.lux-hero,.deep-type-stage,.deep-splat-stage,.show-panel,.deep-pipe-step){transition-property:transform,filter,box-shadow,border-color;transition-duration:var(--os-motion-duration);transition-timing-function:var(--os-motion-ease)}
+:where(.lux-hero,.deep-type-stage,.deep-splat-stage,.show-panel,.deep-pipe-step):where(:hover,:focus-within){transition-duration:350ms}
+:where(.hub-logo img,.brand-mark img,.brand-home svg,.brand-link svg,.brand-mark svg,.pqn-brand svg,.brand img){animation:os-signature-breathe 6s ease-in-out infinite}
+:where(.hub-logo img,.brand-mark img,.brand-home svg,.brand-link svg,.brand-mark svg,.pqn-brand svg,.brand img):hover{animation-play-state:paused}
+:where(.lux-hero,.deep-type-stage,.deep-splat-stage,.show-panel,.toolCard,.identity-bar,.office-panel,.gateway-details){animation:os-signature-entrance .8s var(--os-motion-ease) both}
+@supports(animation-timeline:view()){
+ :where(.lux-hero,.deep-type-stage,.deep-splat-stage,.show-panel,.toolCard,.identity-bar,.office-panel,.gateway-details){animation:os-signature-entrance linear both;animation-timeline:view();animation-range:entry 0% entry 30%}
+}
+@media(hover:none){:where(.lux-hero,.deep-type-stage,.deep-splat-stage,.show-panel,.deep-pipe-step){transition-duration:200ms}}
+@media(prefers-reduced-motion:reduce){
+ :where(.lux-hero,.deep-type-stage,.deep-splat-stage,.show-panel,.deep-pipe-step),:where(.hub-logo img,.brand-mark img,.brand-home svg,.brand-link svg,.brand-mark svg,.pqn-brand svg,.brand img),:where(.lux-hero,.deep-type-stage,.deep-splat-stage,.show-panel,.toolCard,.identity-bar,.office-panel,.gateway-details){animation:none!important;transition-duration:0.01ms!important;transform:none!important}
+}
