@@ -126,7 +126,7 @@
 .deep-pipe-step {
   position: relative;
   padding-top: 22px;
-  opacity: 0.34;
+  opacity: 0.72;
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 .deep-pipe-step.is-on {

@@ -96,7 +96,7 @@ export function Manifesto() {
             const local = Math.min(1, Math.max(0, (p - start) * lines.length * 1.9));
             return (
               <span key={i} className="deep-line">
-                <em style={{ opacity: 0.06 + local * 0.94, transform: `translateY(${(1 - local) * 22}px)` }}>
+                <em style={{ opacity: 0.66 + local * 0.34, transform: `translateY(${(1 - local) * 22}px)` }}>
                   {line}
                 </em>
               </span>
