@@ -153,7 +153,7 @@ export function ParticleType() {
       oc.fillStyle = "#fff";
       oc.textAlign = "center";
       oc.textBaseline = "middle";
-      oc.font = `700 ${Math.round(Math.min(W / 4.2, H * 0.62))}px "IBM Plex Sans Arabic", sans-serif`;
+      oc.font = `700 ${Math.round(Math.min(W / 4.2, H * 0.62))}px "Cairo", sans-serif`;
       oc.fillText(word, off.width / 2, off.height / 2);
       const data = oc.getImageData(0, 0, off.width, off.height).data;
       const gap = Math.max(3, Math.round(Math.min(W, H) / 120));
@@ -172,7 +172,7 @@ export function ParticleType() {
     };
     if (document.fonts?.load) {
       void document.fonts
-        .load(`700 120px "IBM Plex Sans Arabic"`)
+        .load(`700 120px "Cairo"`)
         .then(sampleWord)
         .catch(sampleWord);
     } else {
