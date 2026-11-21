@@ -281,6 +281,11 @@ export const requestLimits = pgTable("request_limits", {
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 });
 
+export const payActivityReceipts = pgTable("pay_activity_receipts", {
+  key: text("key").primaryKey(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 // Workforce is isolated from the existing administrator staff and payment tables.
 export const organizations = pgTable("workforce_organizations", {
   id: uuid("id").primaryKey().defaultRandom(),

@@ -1,3 +1,5 @@
+import type { Context } from "@netlify/functions";
+import { handlePayActivity } from "../lib/pay-activity-notices.js";
 import { googleRoute } from "../lib/google-workspace.js";
 import { otpRoute } from "../lib/otp-auth.js";
 import { deviceLockRoute } from "../lib/device-lock.js";
@@ -103,7 +105,7 @@ async function healRoute(req: Request): Promise<Response> {
   }
 }
 
-export default async (req: Request) => {
+export default async (req: Request, context: Context) => {
   const requestId = crypto.randomUUID();
   const cors = corsHeaders(req);
   const json = (value: unknown, status = 200) =>
@@ -123,6 +125,7 @@ export default async (req: Request) => {
       route ? `/api/${route.replace(/^\/+/, "")}` : url.pathname
     ).replace(/\/+$/, "");
     const method = req.method;
+    if (path === "/api/internal/pay-activity") return handlePayActivity(req);
     if (path === "/api/auth/heal") return healRoute(req);
     if (method === "OPTIONS") {
       assertOrigin(req);
@@ -155,7 +158,7 @@ export default async (req: Request) => {
     if (method !== "GET") assertOrigin(req);
     // Passwordless sign-in and the device lock that guards every later entry.
     if (path.startsWith("/api/auth/otp/")) {
-      const response = await otpRoute(req, path);
+      const response = await otpRoute(req, path, context?.waitUntil?.bind(context));
       Object.entries(cors).forEach(([key, value]) =>
         response.headers.set(key, value),
       );
