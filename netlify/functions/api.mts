@@ -108,7 +108,7 @@ async function healRoute(req: Request): Promise<Response> {
 
 export default async (req: Request, context: Context) => {
   const activity = (event: Parameters<typeof queueHubActivity>[1]) =>
-    queueHubActivity(req, event, task => context.waitUntil(task));
+    queueHubActivity(req, event, task => context?.waitUntil?.(task));
   const requestId = crypto.randomUUID();
   const cors = corsHeaders(req);
   const json = (value: unknown, status = 200) =>
@@ -134,6 +134,7 @@ export default async (req: Request, context: Context) => {
       if (method !== "POST" || url.origin !== "https://www.1shotcam.com" ||
         req.headers.get("origin") !== url.origin || req.headers.get("sec-fetch-site") === "cross-site" ||
         Number(req.headers.get("content-length") || 0) > 500) return json({ recorded: false }, 403);
+      await limit(`hub-page-view:${context?.ip || 'unknown'}`, 'visit', 120);
       const body = await payload(req, 500);
       const page = safeHubPage(body.path);
       const user = await resolveUser(req).catch(() => null);
