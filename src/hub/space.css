@@ -62,7 +62,7 @@
 }
 .space-steps > span {
   font:
-    10px "Outfit",
+    10px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 2px;
   color: #c28e65;
@@ -94,7 +94,7 @@
   background: var(--hub-orange);
   color: #141717;
   font:
-    700 13px "Outfit",
+    700 13px "Plus Jakarta Sans",
     sans-serif;
 }
 .space-steps-foot {
@@ -141,7 +141,7 @@
 }
 .space-brand span {
   font:
-    600 20px "Outfit",
+    600 20px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: -0.6px;
   line-height: 1;
@@ -183,7 +183,7 @@
 }
 .space-num {
   font:
-    11px "Outfit",
+    11px "Plus Jakarta Sans",
     sans-serif;
   color: #7d8582;
   width: 18px;
@@ -195,7 +195,7 @@
 .space-tab-text strong {
   display: block;
   font:
-    500 14px "Outfit",
+    500 14px "Plus Jakarta Sans",
     sans-serif;
   text-align: start;
 }
@@ -255,7 +255,7 @@
 }
 .space-panel-head h3 {
   font:
-    500 26px "Outfit",
+    500 26px "Plus Jakarta Sans",
     sans-serif;
   text-align: start;
   letter-spacing: -0.5px;
@@ -303,7 +303,7 @@
 }
 .space-panel-actions small {
   font:
-    9px "Outfit",
+    9px "Plus Jakarta Sans",
     sans-serif;
   color: #818a83;
   letter-spacing: 0.5px;
@@ -386,7 +386,7 @@
   background: #0b0c0ecc;
   border: 1px solid #ffffff1f;
   font:
-    9px "Outfit",
+    9px "Plus Jakarta Sans",
     sans-serif;
   letter-spacing: 1px;
   color: #e4e1d8;
@@ -440,7 +440,7 @@
 .space-card-bottom strong {
   display: block;
   font:
-    600 16px "Outfit",
+    600 16px "Plus Jakarta Sans",
     sans-serif;
   color: var(--hub-orange);
   margin-top: 2px;
