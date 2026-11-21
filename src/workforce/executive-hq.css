@@ -19,7 +19,7 @@
   background: var(--ui-panel);
   color: var(--ui-text);
   border-bottom: 1px solid #ffffff0c;
-  font-family: Outfit, "IBM Plex Sans Arabic", sans-serif;
+  font-family: Plus Jakarta Sans, "Cairo", sans-serif;
 }
 .hq-stage-header > span:first-child {
   font-size: 17px;
