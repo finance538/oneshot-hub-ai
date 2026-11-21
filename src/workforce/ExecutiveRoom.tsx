@@ -101,7 +101,7 @@ export function ExecutiveRoom() {
         textAnchor="middle"
         fill="#d29a5b"
         fontSize="65"
-        fontFamily="Outfit, sans-serif"
+        fontFamily="Plus Jakarta Sans, sans-serif"
         fontWeight="600"
         letterSpacing="-3"
       >
@@ -115,7 +115,7 @@ export function ExecutiveRoom() {
         opacity=".32"
         filter={paint("glow")}
         fontSize="65"
-        fontFamily="Outfit, sans-serif"
+        fontFamily="Plus Jakarta Sans, sans-serif"
       >
         oneShot
       </text>

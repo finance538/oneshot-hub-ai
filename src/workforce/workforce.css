@@ -10,8 +10,8 @@
   color: var(--wf-text);
   color-scheme: dark;
   font:
-    var(--ui-body-size)/1.8 "IBM Plex Sans Arabic",
-    "Outfit",
+    var(--ui-body-size)/1.8 "Cairo",
+    "Plus Jakarta Sans",
     sans-serif;
 }
 [data-theme="light"] .wf-shell {
@@ -89,7 +89,7 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 24px;
 }
 .wf-brand small {
@@ -129,7 +129,7 @@
 }
 .wf-eyebrow {
   font:
-    11px Outfit,
+    11px Plus Jakarta Sans,
     sans-serif;
   letter-spacing: 2px;
   color: var(--wf-text);
@@ -195,7 +195,7 @@
 }
 .wf-art-desk span {
   font:
-    12px Outfit,
+    12px Plus Jakarta Sans,
     sans-serif;
   letter-spacing: 2px;
 }
@@ -203,7 +203,7 @@
   grid-column: span 2;
   text-align: center;
   font:
-    9px Outfit,
+    9px Plus Jakarta Sans,
     sans-serif;
   letter-spacing: 3px;
   color: var(--wf-muted);
@@ -229,7 +229,7 @@
   border-radius: 30px;
   color: var(--wf-text);
   font:
-    12px Outfit,
+    12px Plus Jakarta Sans,
     sans-serif;
 }
 .wf-filters {
@@ -303,7 +303,7 @@
 }
 .wf-card-number {
   font:
-    12px Outfit,
+    12px Plus Jakarta Sans,
     sans-serif;
   color: var(--wf-muted);
 }
@@ -654,8 +654,8 @@
   overflow: auto;
   padding: 24px;
   font:
-    14px/1.8 "IBM Plex Sans Arabic",
-    "Outfit",
+    14px/1.8 "Cairo",
+    "Plus Jakarta Sans",
     sans-serif;
   box-shadow: 0 24px 80px #05070966;
 }
@@ -892,7 +892,7 @@ html.wf-hidden .wf-dialog * {
 }
 .wf-progress li:before {
   content: counter(phase) " · ";
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
 }
 .wf-progress li[aria-current="step"] {
   color: var(--wf-muted);
@@ -946,7 +946,7 @@ html.wf-hidden .wf-dialog * {
   background: #f77d43;
 }
 [dir="ltr"] .wf-shell {
-  font-family: "Outfit", "IBM Plex Sans Arabic", sans-serif;
+  font-family: "Plus Jakarta Sans", "Cairo", sans-serif;
 }
 
 .wf-desk.selected {

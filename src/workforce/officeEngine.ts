@@ -260,10 +260,10 @@ export function createOffice(
     ctx.fillRect(0, 0, 768, 256);
     ctx.textAlign = "center";
     ctx.fillStyle = "#e0a266";
-    ctx.font = "600 88px Outfit, sans-serif";
+    ctx.font = "600 88px Plus Jakarta Sans, sans-serif";
     ctx.fillText(text, 384, 118);
     ctx.fillStyle = "#afada5";
-    ctx.font = "24px Outfit, sans-serif";
+    ctx.font = "24px Plus Jakarta Sans, sans-serif";
     ctx.fillText(sub, 384, 185);
     const texture = new THREE.CanvasTexture(source);
     texture.colorSpace = THREE.SRGBColorSpace;
@@ -770,17 +770,17 @@ export function createOffice(
       ctx.fillStyle = "#293639";
       ctx.fillRect(0, 0, 512, 48);
       ctx.fillStyle = "#d9a36d";
-      ctx.font = "18px Outfit, sans-serif";
+      ctx.font = "18px Plus Jakarta Sans, sans-serif";
       ctx.textAlign = "left";
       ctx.fillText(`ONESHOT / ${employee.toUpperCase()}`, 20, 31);
       ctx.fillStyle = busy ? "#d3a16c" : "#abd0b3";
       ctx.fillRect(20, 67, 7, 7);
-      ctx.font = "16px Outfit, sans-serif";
+      ctx.font = "16px Plus Jakarta Sans, sans-serif";
       ctx.fillText(status, 38, 80);
       const content = state.text[employee] || "لا توجد مهمة نشطة · متاح";
       ctx.textAlign = "right";
       ctx.direction = "rtl";
-      ctx.font = "18px IBM Plex Sans Arabic, sans-serif";
+      ctx.font = "18px Cairo, sans-serif";
       ctx.fillStyle = "#e0e2da";
       const words = content.slice(0, 500).split(/\s+/);
       let line = "",

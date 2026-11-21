@@ -40,7 +40,7 @@
   border-radius: 5px;
   padding: 6px 9px;
   font:
-    9px Outfit,
+    9px Plus Jakarta Sans,
     sans-serif;
   letter-spacing: 1px;
   white-space: nowrap;
@@ -102,7 +102,7 @@
 }
 .wf-pov-room small {
   font:
-    8px Outfit,
+    8px Plus Jakarta Sans,
     sans-serif;
   color: #a7a49b;
   margin-inline-start: 7px;
@@ -181,8 +181,8 @@
 .wf-world-label small {
   display: block;
   font:
-    8px Outfit,
-    "IBM Plex Sans Arabic",
+    8px Plus Jakarta Sans,
+    "Cairo",
     sans-serif;
   color: #b7b0a4;
   margin-top: 3px;
@@ -198,7 +198,7 @@
   border-radius: 50%;
   flex-shrink: 0;
   font:
-    12px Outfit,
+    12px Plus Jakarta Sans,
     sans-serif;
 }
 .wf-pov .wf-world-label[data-near="true"] {
@@ -289,7 +289,7 @@
   border: 1px solid #aa8358;
   border-radius: 3px;
   font:
-    11px Outfit,
+    11px Plus Jakarta Sans,
     sans-serif;
   padding: 3px 6px;
 }

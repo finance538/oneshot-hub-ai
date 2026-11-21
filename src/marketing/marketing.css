@@ -168,7 +168,7 @@
   margin-bottom: 14px;
   color: var(--mk-muted);
   font:
-    11px Outfit,
+    11px Plus Jakarta Sans,
     sans-serif;
 }
 .marketing-comparison .marketing-note {
@@ -231,7 +231,7 @@
   display: inline-block;
   color: var(--mk-muted);
   font:
-    10px Outfit,
+    10px Plus Jakarta Sans,
     sans-serif;
   letter-spacing: 1.4px;
 }
@@ -267,7 +267,7 @@
 .marketing-mode-number {
   color: var(--mk-muted);
   font:
-    10px Outfit,
+    10px Plus Jakarta Sans,
     sans-serif;
 }
 .marketing-mode h3 {

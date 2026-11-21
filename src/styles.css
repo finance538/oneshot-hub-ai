@@ -1,5 +1,5 @@
 :root {
-  font-family: "IBM Plex Sans Arabic", sans-serif;
+  font-family: "Cairo", sans-serif;
   color: var(--ui-text);
   background: var(--ui-bg);
   font-synthesis: none;
@@ -114,7 +114,7 @@ html {
   overflow-wrap: anywhere;
 }
 input[type="number"] {
-  font-family: "Outfit", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 label {
   display: flex;
@@ -129,7 +129,7 @@ label small {
   line-height: 1.7;
 }
 label > span[dir="ltr"] {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   color: var(--muted);
   font-size: 11px;
 }
@@ -253,7 +253,7 @@ strong {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: Outfit, "IBM Plex Sans Arabic", sans-serif;
+  font-family: Plus Jakarta Sans, "Cairo", sans-serif;
 }
 .orange-dot {
   display: inline-block;
@@ -297,7 +297,7 @@ strong {
   border-color: #10b98125;
 }
 .count-badge {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 12px;
   display: inline-flex;
   align-items: center;
@@ -333,7 +333,7 @@ strong {
   color: #8b939f;
 }
 .top-ribbon > span:first-child {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   letter-spacing: 1.4px;
   display: flex;
   align-items: center;
@@ -341,7 +341,7 @@ strong {
   color: #afb4be;
 }
 .top-ribbon > span:last-child {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 9px;
   letter-spacing: 1.7px;
   color: #626c79;
@@ -376,7 +376,7 @@ strong {
   gap: 5px;
 }
 .brand strong {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 29px;
   line-height: 1;
   letter-spacing: -1.3px;
@@ -417,7 +417,7 @@ strong {
   align-items: flex-start;
 }
 .backend-pill small {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 9px;
   letter-spacing: 0.5px;
   color: #777f8c;
@@ -525,13 +525,13 @@ strong {
   gap: 7px;
 }
 .module-name small {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 8px;
   letter-spacing: 0.7px;
   color: #656f7f;
 }
 .module-number {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 10px;
   color: #4c5562;
   margin-right: auto;
@@ -564,7 +564,7 @@ strong {
   color: #c3c8d0;
 }
 .workspace-label {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 8px;
   letter-spacing: 1.5px;
   display: flex;
@@ -614,7 +614,7 @@ strong {
   align-self: center;
 }
 .hero .eyebrow {
-  font-family: "IBM Plex Sans Arabic", sans-serif;
+  font-family: "Cairo", sans-serif;
   letter-spacing: 0.3px;
   font-size: 10px;
 }
@@ -696,7 +696,7 @@ strong {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   letter-spacing: 2px;
 }
 .hero-art-label span {
@@ -721,7 +721,7 @@ strong {
 }
 .camera-spec > span {
   font-size: 22px;
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   color: #e2e3e7;
   font-weight: 500;
   display: flex;
@@ -951,7 +951,7 @@ strong {
 }
 .product-type {
   color: #7f8a9a;
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   letter-spacing: 1.3px;
   font-size: 8px;
   margin-bottom: 8px;
@@ -979,7 +979,7 @@ strong {
   gap: 10px;
 }
 .price {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 25px;
   font-weight: 500;
   color: #f2f2f3;
@@ -1036,7 +1036,7 @@ strong {
   color: #c9a78d;
 }
 .digital-art > span {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   letter-spacing: 3px;
   font-size: 8px;
   color: #717f90;
@@ -1051,7 +1051,7 @@ strong {
 }
 .store-bottom-note > span {
   margin-right: auto;
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 7px;
   letter-spacing: 1.1px;
   color: #596575;
@@ -1127,7 +1127,7 @@ strong {
   font-weight: 500;
 }
 .inspector-heading > div > span {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 7px;
   letter-spacing: 1.6px;
   color: #768291;
@@ -1164,7 +1164,7 @@ strong {
   justify-content: flex-start;
   gap: 7px;
   color: #627183;
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 11px;
 }
 .server-address > .icon-button {
@@ -1252,7 +1252,7 @@ strong {
   display: flex;
   justify-content: space-between;
   padding: 9px 15px;
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 8px;
   background: #101319;
   color: #5e6f81;
@@ -1308,7 +1308,7 @@ strong {
 }
 .request-history summary > span {
   margin-right: auto;
-  font-family: Outfit;
+  font-family: Plus Jakarta Sans;
 }
 .request-history button {
   display: flex;
@@ -1351,7 +1351,7 @@ strong {
   color: #c8ced7;
 }
 .checkout-title > span {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 8px;
   margin-right: auto;
   border: 1px solid #344333;
@@ -1424,7 +1424,7 @@ strong {
   font-size: 11px;
 }
 .order-status small {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   color: #5e7185;
   font-size: 10px;
 }
@@ -1512,7 +1512,7 @@ strong {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 13px;
   color: #e5a784;
   background: #f2652208;
@@ -1607,7 +1607,7 @@ strong {
 }
 .security-toggle small {
   font:
-    8px Outfit,
+    8px Plus Jakarta Sans,
     sans-serif;
   color: #6a7b8e;
   letter-spacing: 0.2px;
@@ -1726,7 +1726,7 @@ strong {
   border: 0;
 }
 .saved-keys strong {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 15px;
   color: #d5dce7;
   min-width: 75px;
@@ -1827,13 +1827,13 @@ strong {
   color: #f2ad86;
 }
 .ai-provider > span {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 14px;
   padding: 3px;
   color: #dbe1ea;
 }
 .ai-toolbar > select {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 11px;
   padding: 7px 8px;
   border-color: #313b49;
@@ -2102,7 +2102,7 @@ strong {
   color: #d3dbe7;
   display: block;
   margin-bottom: 5px;
-  font-family: Outfit, "IBM Plex Sans Arabic", sans-serif;
+  font-family: Plus Jakarta Sans, "Cairo", sans-serif;
 }
 .message-content > div {
   white-space: pre-wrap;
@@ -2177,13 +2177,13 @@ strong {
 .metric-card select {
   padding: 3px;
   font:
-    9px Outfit,
+    9px Plus Jakarta Sans,
     sans-serif;
   margin-right: auto;
   border-color: #313a47;
 }
 .metric-card > strong {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 34px;
   font-weight: 500;
   line-height: 1.2;
@@ -2276,13 +2276,13 @@ td {
 }
 td small {
   display: block;
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 9px;
   color: #60748c;
   margin-top: 5px;
 }
 td[dir="ltr"] {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   text-align: right;
 }
 tr:last-child td {
@@ -2304,7 +2304,7 @@ tr:last-child td {
   align-items: center;
 }
 .site-footer > div > span {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 21px;
   font-weight: 600;
   letter-spacing: -0.8px;
@@ -2314,7 +2314,7 @@ tr:last-child td {
   font-size: 9px;
 }
 .site-footer p {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 9px;
   letter-spacing: 0.3px;
 }
@@ -2404,7 +2404,7 @@ tr:last-child td {
 }
 .modal-purchase > strong {
   font:
-    500 30px Outfit,
+    500 30px Plus Jakarta Sans,
     sans-serif;
 }
 .my-orders {
@@ -2442,7 +2442,7 @@ tr:last-child td {
   color: #8d9eb5;
 }
 .my-orders > button > span {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 15px;
 }
 @media (min-width: 1550px) {

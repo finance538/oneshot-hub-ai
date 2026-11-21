@@ -9,8 +9,8 @@
   background: var(--ui-panel);
   color: var(--ui-text);
   font:
-    var(--ui-body-size) / 1.8 "IBM Plex Sans Arabic",
-    "Outfit",
+    var(--ui-body-size) / 1.8 "Cairo",
+    "Plus Jakarta Sans",
     sans-serif;
   box-shadow: 0 24px 80px #05070966;
   overflow: auto;

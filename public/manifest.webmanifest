@@ -8,29 +8,57 @@
   "start_url": "/hub",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#101211",
   "theme_color": "#101211",
-  "categories": ["business", "productivity", "photography"],
+  "categories": [
+    "business",
+    "productivity",
+    "photography"
+  ],
   "shortcuts": [
     {
       "name": "مساحة عملي",
       "short_name": "مساحتي",
       "url": "/hub#command",
-      "icons": [{ "src": "/hub-icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/hub-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "الكتالوج",
       "url": "/products",
-      "icons": [{ "src": "/hub-icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/hub-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "حاسبة التوفير",
       "url": "/#roi",
-      "icons": [{ "src": "/hub-icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/hub-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "icons": [
+    {
+      "src": "/brand-kit-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "/hub-icon-192.png",
       "sizes": "192x192",
