@@ -1,4 +1,5 @@
 import { installDiagnostics, reportClientDiagnostic } from "./lib/diagnostics";
+import { installHubActivityVisit } from "./lib/activity-visit";
 import React, { Component, type ReactNode } from "react";
 import ReactDOM from "react-dom/client";
 import Root from "./Root";
@@ -16,6 +17,7 @@ if (
     .catch(() => {});
 }
 installDiagnostics();
+installHubActivityVisit();
 class ErrorBoundary extends Component<
   { children: ReactNode },
   { failed: boolean }
