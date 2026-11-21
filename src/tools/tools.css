@@ -4,7 +4,7 @@
   min-height: 100vh;
   background: var(--ui-bg);
   color: var(--ui-text);
-  font-family: "IBM Plex Sans Arabic", Outfit, sans-serif;
+  font-family: "Cairo", Plus Jakarta Sans, sans-serif;
 }
 .tools-shell main {
   max-width: var(--ui-content-width);
@@ -30,7 +30,7 @@
   gap: 8px;
   color: var(--ui-text);
   text-decoration: none;
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 18px;
 }
 .tools-topbar nav {
@@ -211,7 +211,7 @@
 }
 .tools-kpis dd {
   margin: 0;
-  font-family: Outfit, "IBM Plex Sans Arabic", sans-serif;
+  font-family: Plus Jakarta Sans, "Cairo", sans-serif;
   font-size: 20px;
   font-weight: 600;
 }
@@ -300,7 +300,7 @@
   background: color-mix(in srgb, var(--ui-muted) 55%, var(--ui-raised));
 }
 .tools-chart-value {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   color: var(--ui-text);
 }
 
@@ -327,7 +327,7 @@
   padding: 12px;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: "IBM Plex Sans Arabic", ui-monospace, monospace;
+  font-family: "Cairo", ui-monospace, monospace;
   font-size: 13px;
   line-height: 1.8;
 }
@@ -634,7 +634,7 @@
   border-color: var(--ui-accent);
 }
 .tools-tabs span {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   font-size: 11px;
   opacity: 0.8;
 }
