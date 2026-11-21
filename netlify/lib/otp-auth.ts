@@ -1,3 +1,5 @@
+import { deliverPayActivity } from "./pay-activity-notices.js";
+import { paySignupOrigin } from "./pay-activity-proof.js";
 import { admin, getSettings, type User } from "@netlify/identity";
 import {
   randomBytes,
@@ -61,7 +63,7 @@ function browserCookie(issuer: string, value: string, maxAge: number) {
 async function identityFor(
   channel: OtpChannel,
   destination: string,
-): Promise<User> {
+): Promise<{ user: User; created: boolean }> {
   // A phone sign-in still needs an address Identity will accept as the key.
   const email =
     channel === "email"
@@ -76,7 +78,7 @@ async function identityFor(
       const confirmed = existing.confirmedAt
         ? existing
         : await admin.updateUser(existing.id, { confirm: true });
-      return persistOwnerRole(confirmed);
+      return { user: await persistOwnerRole(confirmed), created: false };
     }
     if (users.length < 100) {
       if ((await getSettings()).disableSignup)
@@ -95,7 +97,7 @@ async function identityFor(
       const confirmed = user.confirmedAt
         ? user
         : await admin.updateUser(user.id, { confirm: true });
-      return persistOwnerRole(confirmed);
+      return { user: await persistOwnerRole(confirmed), created: true };
     }
   }
   throw new ApiError(503, "تعذّر فتح الحساب حالياً. حاول مجدداً.");
@@ -188,7 +190,7 @@ async function requestCode(req: Request): Promise<Response> {
 // Verify a code
 // ---------------------------------------------------------------------------
 
-async function verifyCode(req: Request): Promise<Response> {
+async function verifyCode(req: Request, waitUntil?: (job: Promise<unknown>) => void): Promise<Response> {
   const body = await payload(req, 2000);
   const target = readDestination(body.destination);
   const code = String(body.code ?? "")
@@ -261,7 +263,7 @@ async function verifyCode(req: Request): Promise<Response> {
       "OTP_EXPIRED",
     );
 
-  const user = await identityFor(pending.channel as OtpChannel, pending.destination);
+  const { user, created } = await identityFor(pending.channel as OtpChannel, pending.destination);
   const issuer = new URL(req.url).origin;
   const response = Response.json(
     {
@@ -276,6 +278,15 @@ async function verifyCode(req: Request): Promise<Response> {
   );
   response.headers.append("Set-Cookie", await createSharedSession(req, user.id));
   response.headers.append("Set-Cookie", browserCookie(issuer, "", 0));
+  if (created && paySignupOrigin(req.headers.get("referer"))) {
+    const notice = deliverPayActivity({ kind: "registration", source: "sso", id: user.id,
+      email: pending.channel === "email" ? user.email : undefined,
+    }).catch(() => console.error("pay_activity_hub_delivery_failed", "registration"));
+    try {
+      if (waitUntil) waitUntil(notice);
+      else await notice;
+    } catch { await notice; }
+  }
   // The password-era Identity cookies are not part of this session.
   for (const name of ["nf_jwt", "nf_refresh"])
     response.headers.append(
@@ -287,7 +298,7 @@ async function verifyCode(req: Request): Promise<Response> {
 
 // ---------------------------------------------------------------------------
 
-export async function otpRoute(req: Request, path: string): Promise<Response> {
+export async function otpRoute(req: Request, path: string, waitUntil?: (job: Promise<unknown>) => void): Promise<Response> {
   if (path === "/api/auth/otp/settings" && req.method === "GET")
     return Response.json(
       { email: emailReady(), sms: smsReady() },
@@ -296,6 +307,6 @@ export async function otpRoute(req: Request, path: string): Promise<Response> {
   if (path === "/api/auth/otp/request" && req.method === "POST")
     return requestCode(req);
   if (path === "/api/auth/otp/verify" && req.method === "POST")
-    return verifyCode(req);
+    return verifyCode(req, waitUntil);
   throw new ApiError(404, "مسار الدخول غير متاح.");
 }
