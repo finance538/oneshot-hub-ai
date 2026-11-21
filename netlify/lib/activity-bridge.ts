@@ -27,17 +27,33 @@ export function queueHubActivity(req: Request, event: Event, waitUntil?: (task: 
     ...event,
   };
   const body = JSON.stringify(envelope);
-  const task = fetch(ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-oneshot-activity-source": "hub",
-      "x-oneshot-activity-signature": createHmac("sha256", secret).update(body).digest("hex"),
-    },
-    body, redirect: "error", signal: AbortSignal.timeout(3500),
-  }).then(response => {
-    if (!response.ok) console.error("hub_activity_delivery_failed", response.status);
-  }).catch(() => { console.error("hub_activity_transport_failed"); });
+  // Reuse the same event ID and signed body on retry; the receiver is idempotent.
+  const task = (async () => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const response = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-oneshot-activity-source": "hub",
+            "x-oneshot-activity-signature": createHmac("sha256", secret).update(body).digest("hex"),
+          },
+          body, redirect: "error", signal: AbortSignal.timeout(attempt === 0 ? 3500 : 6000),
+        });
+        if (response.ok) return;
+        const retryable = [408, 425, 429, 499].includes(response.status) || response.status >= 500;
+        if (!retryable || attempt === 1) {
+          console.error("hub_activity_delivery_failed", response.status);
+          return;
+        }
+      } catch {
+        if (attempt === 1) {
+          console.error("hub_activity_transport_failed");
+          return;
+        }
+      }
+    }
+  })();
   if (waitUntil) waitUntil(task);
   else void task;
 }
