@@ -16,7 +16,7 @@
   padding: 8px;
 }
 .customer-journey li > span {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   color: #df9e64;
   font-size: 24px;
 }
@@ -61,7 +61,7 @@
 }
 .commerce-eyebrow {
   font:
-    12px Outfit,
+    12px Plus Jakarta Sans,
     sans-serif;
   letter-spacing: 0.12em;
   color: var(--ui-muted, #a7abb4);
@@ -133,7 +133,7 @@
   color: #74c4a7;
 }
 .quote-success strong {
-  font-family: Outfit, sans-serif;
+  font-family: Plus Jakarta Sans, sans-serif;
   overflow-wrap: anywhere;
 }
 .quote-notes {
@@ -185,7 +185,7 @@
 }
 .revenue-verified strong {
   font:
-    clamp(24px, 4vw, 40px) Outfit,
+    clamp(24px, 4vw, 40px) Plus Jakarta Sans,
     sans-serif;
 }
 .quote-list {
