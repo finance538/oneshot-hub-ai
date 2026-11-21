@@ -17,7 +17,7 @@
 }
 .wf-view-switch small {
   font:
-    10px Outfit,
+    10px Plus Jakarta Sans,
     sans-serif;
   padding: 4px 6px;
   border: 1px solid var(--wf-border);
@@ -27,7 +27,7 @@
   margin-inline-start: auto;
   padding-inline: 15px;
   font:
-    11px Outfit,
+    11px Plus Jakarta Sans,
     sans-serif;
   letter-spacing: 1px;
 }
@@ -352,7 +352,7 @@
   content: "+";
   margin-inline-start: auto;
   font:
-    24px Outfit,
+    24px Plus Jakarta Sans,
     sans-serif;
 }
 .wf-operations[open] > summary:after {
