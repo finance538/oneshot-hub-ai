@@ -1,3 +1,4 @@
+import { queueHubActivity } from "./activity-bridge.js";
 import { deliverPayActivity } from "./pay-activity-notices.js";
 import { paySignupOrigin } from "./pay-activity-proof.js";
 import { admin, getSettings, type User } from "@netlify/identity";
@@ -277,6 +278,8 @@ async function verifyCode(req: Request, waitUntil?: (job: Promise<unknown>) => v
     { headers: { "Cache-Control": "no-store" } },
   );
   response.headers.append("Set-Cookie", await createSharedSession(req, user.id));
+  queueHubActivity(req, { actor: user.id, email: user.email,
+    action: created ? "account_signup" : "account_login", metadata: { method: "otp" } }, waitUntil);
   response.headers.append("Set-Cookie", browserCookie(issuer, "", 0));
   if (created && paySignupOrigin(req.headers.get("referer"))) {
     const notice = deliverPayActivity({ kind: "registration", source: "sso", id: user.id,

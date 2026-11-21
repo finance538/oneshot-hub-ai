@@ -1,4 +1,5 @@
 import { instantCheckout } from "../../shared/commerce.js";
+import { queueHubActivity } from "./activity-bridge.js";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { and, eq, ne } from "drizzle-orm";
 import { database } from "../../db/index.js";
@@ -445,6 +446,7 @@ export async function paymentWebhook(req: Request) {
       .where(and(eq(orders.id, orderId), ne(orders.status, "paid")));
   });
   await audit("payment-core", "payment.callback", orderId);
+  queueHubActivity(req, { actor: "payment-core", action: "payment_status_checked", resource: orderId });
   return { received: true };
 }
 

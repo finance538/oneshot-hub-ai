@@ -1,5 +1,6 @@
 import type { Context } from "@netlify/functions";
 import { handlePayActivity } from "../lib/pay-activity-notices.js";
+import { queueHubActivity, safeHubPage } from "../lib/activity-bridge.js";
 import { googleRoute } from "../lib/google-workspace.js";
 import { otpRoute } from "../lib/otp-auth.js";
 import { deviceLockRoute } from "../lib/device-lock.js";
@@ -106,6 +107,8 @@ async function healRoute(req: Request): Promise<Response> {
 }
 
 export default async (req: Request, context: Context) => {
+  const activity = (event: Parameters<typeof queueHubActivity>[1]) =>
+    queueHubActivity(req, event, task => context.waitUntil(task));
   const requestId = crypto.randomUUID();
   const cors = corsHeaders(req);
   const json = (value: unknown, status = 200) =>
@@ -127,6 +130,17 @@ export default async (req: Request, context: Context) => {
     const method = req.method;
     if (path === "/api/internal/pay-activity") return handlePayActivity(req);
     if (path === "/api/auth/heal") return healRoute(req);
+    if (path === "/api/activity/visit") {
+      if (method !== "POST" || url.origin !== "https://www.1shotcam.com" ||
+        req.headers.get("origin") !== url.origin || req.headers.get("sec-fetch-site") === "cross-site" ||
+        Number(req.headers.get("content-length") || 0) > 500) return json({ recorded: false }, 403);
+      const body = await payload(req, 500);
+      const page = safeHubPage(body.path);
+      const user = await resolveUser(req).catch(() => null);
+      if (user) activity({ actor: user.id, email: user.email, action: "page_view", resource: page });
+      else activity({ anonymous: true, action: "page_view", resource: page });
+      return json({ recorded: true });
+    }
     if (method === "OPTIONS") {
       assertOrigin(req);
       return new Response(null, {
@@ -158,7 +172,7 @@ export default async (req: Request, context: Context) => {
     if (method !== "GET") assertOrigin(req);
     // Passwordless sign-in and the device lock that guards every later entry.
     if (path.startsWith("/api/auth/otp/")) {
-      const response = await otpRoute(req, path, context?.waitUntil?.bind(context));
+      const response = await otpRoute(req, path, task => context.waitUntil(task));
       Object.entries(cors).forEach(([key, value]) =>
         response.headers.set(key, value),
       );
@@ -219,10 +233,13 @@ export default async (req: Request, context: Context) => {
         "Set-Cookie",
         await createSharedSession(req, user.id),
       );
+      activity({ actor: user.id, email: user.email, action: "account_login", metadata: { method: "identity" } });
       return response;
     }
     if (path === "/api/auth/logout" && method === "POST") {
+      const signingOut = await resolveUser(req).catch(() => null);
       const response = json({ signedOut: true });
+      if (signingOut) activity({ actor: signingOut.id, email: signingOut.email, action: "account_logout" });
       response.headers.append("Set-Cookie", await revokeSharedSession(req));
       for (const name of ["nf_jwt", "nf_refresh"])
         response.headers.append(
@@ -262,8 +279,14 @@ export default async (req: Request, context: Context) => {
     if (path === "/api/pulse") return json(await pulseRoute(req));
     if (path === "/api/follow-ups" || path.startsWith("/api/follow-ups/"))
       return json(await followUpsRoute(req, path));
-    if (path.startsWith("/api/studio/"))
-      return json(await studioRoute(req, path));
+    if (path.startsWith("/api/studio/")) {
+      const result = await studioRoute(req, path);
+      if (method === "POST") {
+        const actor = await resolveUser(req).catch(() => null);
+        if (actor) activity({ actor: actor.id, email: actor.email, action: "ai_generation", metadata: { model: "hub-studio", mode: "studio" } });
+      }
+      return json(result);
+    }
     if (path === "/api/support/report")
       return json(await supportRoute(req, path));
     if (path === "/api/diagnostics/client" || path === "/api/admin/diagnostics")
@@ -292,8 +315,14 @@ export default async (req: Request, context: Context) => {
       return json(result);
     }
     if (isLegacyCorePath(path)) return json(await legacyCoreRoute(req, path));
-    if (path.startsWith("/api/workforce/"))
-      return json(await workforceRoute(req, path));
+    if (path.startsWith("/api/workforce/")) {
+      const result = await workforceRoute(req, path);
+      if (method === "POST" && ["/api/workforce/chat", "/api/workforce/tasks", "/api/workforce/research"].includes(path)) {
+        const actor = await resolveUser(req).catch(() => null);
+        if (actor) activity({ actor: actor.id, email: actor.email, action: "ai_generation", metadata: { model: "hub-workforce", mode: "chat" } });
+      }
+      return json(result);
+    }
     if (path.startsWith("/api/tools/"))
       return json(await toolsRoute(req, path));
     if (path === "/api/growth/guides" && method === "GET")
@@ -351,13 +380,12 @@ export default async (req: Request, context: Context) => {
     if (endpoints.payment.includes(path) && method === "POST") {
       const user = await authenticate(req);
       await limit(user.id, "payment", 8);
-      return json(
-        await executePayment(
-          await payload(req),
-          user,
-          req.headers.get("Idempotency-Key"),
-        ),
-      );
+      const result = await executePayment(await payload(req), user, req.headers.get("Idempotency-Key"));
+      if (result && "order" in result && result.order) {
+        activity({ actor: user.id, email: user.email, action: "payment_created",
+          resource: result.order.id, metadata: { transactionStatus: result.order.status } });
+      }
+      return json(result);
     }
     if (path === "/api/orders" && method === "GET") {
       const user = await authenticate(req);
@@ -376,7 +404,9 @@ export default async (req: Request, context: Context) => {
     if (reconcileMatch && method === "POST") {
       const user = await authenticate(req);
       await limit(user.id, "payment_reconciliation", 12);
-      return json(await reconcilePayment(uuid(reconcileMatch[1]), user.id));
+      const result = await reconcilePayment(uuid(reconcileMatch[1]), user.id);
+      activity({ actor: user.id, email: user.email, action: "payment_status_checked", resource: reconcileMatch[1] });
+      return json(result);
     }
     if (/^\/api\/orders\/[^/]+$/.test(path) && method === "GET") {
       const user = await authenticate(req),
@@ -429,6 +459,7 @@ export default async (req: Request, context: Context) => {
             set: { encrypted, updatedBy: user.id, updatedAt: new Date() },
           });
         await audit(user.id, "vault.updated", `${gateway}:${environment}`);
+        activity({ actor: user.id, email: user.email, action: "vault_updated", resource: gateway });
         return json({
           saved: true,
           gateway,
@@ -503,6 +534,7 @@ export default async (req: Request, context: Context) => {
           })
           .returning();
         await audit(user.id, "staff.created", employee.id);
+        activity({ actor: user.id, email: user.email, action: "staff_created", resource: employee.id });
         return json({ employee }, 201);
       }
     }
@@ -519,12 +551,15 @@ export default async (req: Request, context: Context) => {
         .returning();
       if (!employee) throw new ApiError(404, "الموظف غير موجود.");
       await audit(user.id, "staff.updated", id);
+      activity({ actor: user.id, email: user.email, action: "staff_updated", resource: id });
       return json({ employee });
     }
     if (endpoints.ceo.includes(path) && method === "POST") {
       const user = await authenticate(req, true);
       await limit(user.id, "ai", 10);
-      return json(await executiveChat(await payload(req), user.id));
+      const reply = await executiveChat(await payload(req), user.id);
+      activity({ actor: user.id, email: user.email, action: "ai_generation", metadata: { model: "hub-ceo", mode: "chat" } });
+      return json(reply);
     }
     if (path === "/api/conversations" && method === "GET") {
       const user = await authenticate(req, true);
@@ -568,6 +603,7 @@ export default async (req: Request, context: Context) => {
         });
       if (method === "DELETE") {
         await db.delete(conversations).where(eq(conversations.id, id));
+        activity({ actor: user.id, email: user.email, action: "conversation_deleted", resource: id });
         return json({ deleted: true });
       }
     }
