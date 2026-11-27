@@ -799,3 +799,22 @@ export const followUps = pgTable(
     ),
   ],
 );
+
+// Shared OneShot sign-in sessions. The table is created by the ai project's migrations on the
+// shared Neon database; this definition only types the reads and writes made by netlify/lib/identity.ts.
+export const identitySessions = pgTable(
+  "oneshot_identity_sessions",
+  {
+    tokenHash: text("token_hash").primaryKey(),
+    sessionId: text("session_id").notNull(),
+    accountId: text("account_id").notNull(),
+    email: text("email").notNull(),
+    name: text("name").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index("oneshot_identity_sessions_account").on(t.accountId),
+    index("oneshot_identity_sessions_expiry").on(t.expiresAt),
+  ],
+);
