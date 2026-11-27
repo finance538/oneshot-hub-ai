@@ -68,8 +68,8 @@ export async function workforceConversation(
     const body = await payload(req);
     if (!isLanguage(body.language)) throw new ApiError(400, "لغة غير مدعومة.");
     const text = stringField(body.text, "النص", 4000);
-    const region = Netlify.env.get("AZURE_SPEECH_REGION");
-    const key = Netlify.env.get("AZURE_SPEECH_KEY");
+    const region = process.env["AZURE_SPEECH_REGION"];
+    const key = process.env["AZURE_SPEECH_KEY"];
     if (!region || !key || !/^[a-z0-9-]+$/.test(region))
       throw new ApiError(
         503,

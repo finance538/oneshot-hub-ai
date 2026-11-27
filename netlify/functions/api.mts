@@ -79,7 +79,7 @@ const reply = (value: unknown, status = 200) =>
 
 async function healRoute(req: Request): Promise<Response> {
   try {
-    const expected = Netlify.env.get("AUTH_HEAL_KEY") || "";
+    const expected = process.env["AUTH_HEAL_KEY"] || "";
     const supplied = req.headers.get("x-heal-key") || "";
     if (!expected || expected.length < 16 || supplied !== expected)
       return reply({ ok: false, error: "غير مصرح." }, 401);

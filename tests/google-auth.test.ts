@@ -293,7 +293,7 @@ test("Gemini resolves runtime aliases without routing a direct Google key throug
         },
       },
     },
-    { Netlify: { env: { get: (name: string) => values[name] } } },
+    { process: { env: values } },
   );
   assert.equal(Object.keys(module.geminiClient().options).length, 0);
   values.GEMINI_API_KEY = "synthetic-gateway";

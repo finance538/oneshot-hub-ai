@@ -4,7 +4,7 @@ import { database } from "../../db/index.js";
 import { conversations, messages, orders, staff } from "../../db/schema.js";
 import { ApiError, stringField, uuid } from "./security.js";
 const OLLAMA_BASE_URL =
-  Netlify.env.get("OLLAMA_BASE_URL") || "http://187.7.65.45:32772/v1";
+  process.env["OLLAMA_BASE_URL"] || "http://187.7.65.45:32772/v1";
 async function ollamaChat(opts: {
   system: string;
   history: { role: string; content: string }[];

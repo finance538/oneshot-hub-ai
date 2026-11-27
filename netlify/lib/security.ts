@@ -29,7 +29,7 @@ export class ApiError extends Error {
     super(message);
   }
 }
-export const env = (key: string) => Netlify.env.get(key);
+export const env = (key: string) => process.env[key];
 
 const tokenUserCache = new Map<string, { user: User; expires: number }>();
 
