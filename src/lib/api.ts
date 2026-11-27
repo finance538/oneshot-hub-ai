@@ -299,5 +299,6 @@ export const orderLabel = (status: Order["status"]) =>
           unconfirmed: "Unconfirmed",
         } as Record<string, string>
       )[status] || status;
-export const imageUrl = (name: string, width = 640) =>
-  `/.netlify/images?url=${encodeURIComponent(`/img/${name}.png`)}&w=${width}&fm=webp`;
+// Images are served as the original files; the platform no longer resizes them on the fly.
+// `width` stays in the signature so callers do not change.
+export const imageUrl = (name: string, _width = 640) => `/img/${name}.png`;

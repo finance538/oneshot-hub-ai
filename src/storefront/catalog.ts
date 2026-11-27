@@ -7,7 +7,7 @@ export function useCatalog() {
   return useContext(CatalogContext);
 }
 export function cdnImage(path: string, width = 800) {
-  return `/.netlify/images?url=${encodeURIComponent(path)}&w=${width}&fit=contain`;
+  return path;
 }
 export function cdnImageSet(path: string) {
   return [320, 480, 640, 800]
