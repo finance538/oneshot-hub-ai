@@ -92,5 +92,5 @@ export function captureServerFailure(req: Request, status: number) {
       recordDiagnostic("server", "API_SERVER", diagnosticArea(path), status),
     )
     .catch(() => {});
-  Netlify.context?.waitUntil(task);
+  void task;
 }

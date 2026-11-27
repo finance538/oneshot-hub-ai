@@ -26,8 +26,10 @@ import { auditEvents } from "../../db/schema.js";
 import { verifiedRevenue } from "./revenue.js";
 
 const digest = (s: string) => createHash("sha256").update(s).digest("hex");
+// The caller's address as the platform reports it: Vercel and Netlify both forward it in these headers.
 export const clientAddress = (req: Request) =>
-  Netlify.context?.ip ||
+  req.headers.get("x-real-ip") ||
+  req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
   req.headers.get("x-nf-client-connection-ip") ||
   "anonymous";
 export function quoteInput(body: Record<string, unknown>) {

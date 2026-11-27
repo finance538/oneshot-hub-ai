@@ -1,3 +1,4 @@
+import { clientAddress } from "./commerce.js";
 import { resolveIdentityUser } from "./identity.js";
 import { cookieValue } from "./shared-session.js";
 import {
@@ -61,7 +62,7 @@ export async function ecosystemRoute(req: Request, path: string) {
     };
   }
   if (path === "/api/ecosystem/status" && req.method === "GET") {
-    await limit(`ecosystem:${Netlify.context?.ip || "unknown"}`, "status", 20);
+    await limit(`ecosystem:${clientAddress(req)}`, "status", 20);
     const apps = await Promise.all(
       ecosystemApps.map(async (app) => {
         let available = false,
@@ -225,7 +226,7 @@ export async function ecosystemRoute(req: Request, path: string) {
       throw new ApiError(403, "Invalid application origin.");
     if (!validChallenge(body.code) || !validChallenge(body.verifier))
       throw new ApiError(400, "Invalid authorization code.");
-    await limit(`sso:${Netlify.context?.ip || "unknown"}`, "redeem", 20);
+    await limit(`sso:${clientAddress(req)}`, "redeem", 20);
     const sessionToken = `osh_${randomBytes(32).toString("base64url")}`;
     // The ecosystem session must outlive a working day: ten minutes signed users out
     // of every app while they were still using it. Codes stay at 60s (below).

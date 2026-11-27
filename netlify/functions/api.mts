@@ -311,9 +311,7 @@ export default async (req: Request, context: Context) => {
             ? "SSO_REDEEM"
             : null;
       if (code)
-        Netlify.context?.waitUntil(
-          recordDiagnostic("server", code, "sso", 200),
-        );
+        void recordDiagnostic("server", code, "sso", 200);
       return json(result);
     }
     if (isLegacyCorePath(path)) return json(await legacyCoreRoute(req, path));

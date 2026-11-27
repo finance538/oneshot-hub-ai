@@ -1,3 +1,4 @@
+import { clientAddress } from "./commerce.js";
 import { queueHubActivity } from "./activity-bridge.js";
 import { deliverPayActivity } from "./pay-activity-notices.js";
 import { paySignupOrigin } from "./pay-activity-proof.js";
@@ -96,7 +97,7 @@ async function requestCode(req: Request): Promise<Response> {
       "OTP_CHANNEL_UNAVAILABLE",
     );
 
-  const ip = Netlify.context?.ip || "unknown";
+  const ip = clientAddress(req);
   // Two independent ceilings: one stops a flood from a single network, the
   // other stops one address being used to mail-bomb a person.
   await limit(`otp:ip:${ip}`, "otp_request", 10);
@@ -169,7 +170,7 @@ async function verifyCode(req: Request, waitUntil?: (job: Promise<unknown>) => v
   if (!target || !/^\d{6}$/.test(code))
     throw new ApiError(400, "الرمز غير صحيح.", "OTP_INVALID");
 
-  const ip = Netlify.context?.ip || "unknown";
+  const ip = clientAddress(req);
   await limit(`otp:ip:${ip}`, "otp_verify", 20);
 
   const browser = cookieValue(req, BROWSER_COOKIE);

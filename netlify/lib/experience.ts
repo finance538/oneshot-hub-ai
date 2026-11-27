@@ -1,3 +1,4 @@
+import { clientAddress } from "./commerce.js";
 import { geminiClient } from "./gemini.js";
 import { createHash } from "node:crypto";
 import { Type, type GenerateContentResponse } from "@google/genai";
@@ -113,7 +114,7 @@ export async function experienceRoute(req: Request, path: string) {
     };
   if (path === "/api/experience/recommend" && req.method === "POST") {
     await limit(
-      `concierge:${Netlify.context?.ip || "unknown"}`,
+      `concierge:${clientAddress(req)}`,
       "recommend",
       5,
     );

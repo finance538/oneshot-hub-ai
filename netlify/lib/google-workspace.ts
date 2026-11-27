@@ -1,3 +1,4 @@
+import { clientAddress } from "./commerce.js";
 import { OAuth2Client, type Credentials } from "google-auth-library";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { and, eq, gt, lt } from "drizzle-orm";
@@ -111,7 +112,7 @@ async function start(
   const destination = checkedReturn(req, returnTo),
     client = google(req);
   await limit(
-    ownerId || `google:${Netlify.context?.ip || "unknown"}`,
+    ownerId || `google:${clientAddress(req)}`,
     "google_start",
     12,
   );

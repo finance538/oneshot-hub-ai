@@ -199,6 +199,7 @@ function oauthHarness() {
             ONESHOT_SSO_CLIENTS: "ai,pay,workflow,brand,loader",
           })[name],
       },
+      "./commerce.js": { clientAddress: () => "test-client" },
       "./identity-owner.js": {
         persistOwnerRole: async (user: unknown) => user,
       },
