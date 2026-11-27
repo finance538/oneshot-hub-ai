@@ -4,12 +4,14 @@ import { queueHubActivity, safeHubPage } from "../lib/activity-bridge.js";
 import { googleRoute } from "../lib/google-workspace.js";
 import { otpRoute } from "../lib/otp-auth.js";
 import { deviceLockRoute } from "../lib/device-lock.js";
+import { cookieValue } from "../lib/shared-session.js";
 import {
-  createSharedSession,
-  revokeSharedSession,
-  cookieValue,
-} from "../lib/shared-session.js";
-import { SESSION_COOKIE } from "../../shared/auth-policy.js";
+  clearIdentityCookieHeader,
+  issueIdentitySession,
+  readIdentityCookie,
+  revokeIdentitySession,
+} from "../lib/identity.js";
+
 import { commerceRoute } from "../lib/commerce.js";
 import {
   diagnosticsRoute,
@@ -230,10 +232,8 @@ export default async (req: Request, context: Context) => {
           roles: user.roles || [],
         },
       });
-      response.headers.append(
-        "Set-Cookie",
-        await createSharedSession(req, user.id),
-      );
+      const session = await issueIdentitySession({ id: user.id, email: user.email ?? "", name: user.name ?? "" });
+      response.headers.append("Set-Cookie", session.cookie);
       activity({ actor: user.id, email: user.email, action: "account_login", metadata: { method: "identity" } });
       return response;
     }
@@ -241,7 +241,8 @@ export default async (req: Request, context: Context) => {
       const signingOut = await resolveUser(req).catch(() => null);
       const response = json({ signedOut: true });
       if (signingOut) activity({ actor: signingOut.id, email: signingOut.email, action: "account_logout" });
-      response.headers.append("Set-Cookie", await revokeSharedSession(req));
+      await revokeIdentitySession(req);
+      response.headers.append("Set-Cookie", clearIdentityCookieHeader());
       for (const name of ["nf_jwt", "nf_refresh"])
         response.headers.append(
           "Set-Cookie",
@@ -367,7 +368,7 @@ export default async (req: Request, context: Context) => {
     if (path === "/api/session" && method === "GET") {
       const user = await resolveUser(req);
       return json({
-        shared: !!cookieValue(req, SESSION_COOKIE),
+        shared: !!readIdentityCookie(req),
         user: user
           ? {
               id: user.id,

@@ -320,7 +320,10 @@ test("an expired shared session and explicit bearer never fall back to a differe
     "./identity-owner.js": { persistOwnerRole: async (user: unknown) => user },
     "./shared-session.js": {
       cookieValue: (req: Request) => req.headers.get("cookie"),
-      sharedSessionUser: async () => {
+    },
+    "./identity.js": {
+      readIdentityCookie: (req: Request) => req.headers.get("cookie") ?? "",
+      resolveIdentityUser: async () => {
         sharedReads++;
         return null;
       },

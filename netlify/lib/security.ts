@@ -1,3 +1,4 @@
+import { readIdentityCookie, resolveIdentityUser } from "./identity.js";
 import { persistOwnerRole } from "./identity-owner.js";
 import {
   cookieValue,
@@ -138,7 +139,7 @@ export async function resolveUserFromToken(req: Request): Promise<User | null> {
 export async function resolveUser(req?: Request): Promise<User | null> {
   // Explicit bearer credentials must never fall back to a different cookie account.
   if (req?.headers.has("authorization")) return resolveUserFromToken(req);
-  if (req && cookieValue(req, SESSION_COOKIE)) return sharedSessionUser(req);
+  if (req && readIdentityCookie(req)) return resolveIdentityUser(req) as Promise<User | null>;
   const cookieUser = await getUser();
   return cookieUser ? persistOwnerRole(cookieUser) : null;
 }

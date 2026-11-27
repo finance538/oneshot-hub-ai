@@ -1,4 +1,5 @@
-import { cookieValue, sharedSessionUser } from "./shared-session.js";
+import { resolveIdentityUser } from "./identity.js";
+import { cookieValue } from "./shared-session.js";
 import {
   registeredSsoClients,
   SESSION_COOKIE,
@@ -162,7 +163,7 @@ export async function ecosystemRoute(req: Request, path: string) {
     let credential: { ownerId: string } | { token: string };
     let user;
     if (cookieValue(req, SESSION_COOKIE)) {
-      user = await sharedSessionUser(req);
+      user = await resolveIdentityUser(req);
       if (!user) throw new ApiError(401, "Sign in to OneShot first.");
       credential = { ownerId: user.id };
     } else {

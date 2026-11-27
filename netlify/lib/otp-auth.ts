@@ -1,7 +1,6 @@
 import { queueHubActivity } from "./activity-bridge.js";
 import { deliverPayActivity } from "./pay-activity-notices.js";
 import { paySignupOrigin } from "./pay-activity-proof.js";
-import { admin, getSettings, type User } from "@netlify/identity";
 import {
   randomBytes,
   randomInt,
@@ -14,8 +13,9 @@ import { database } from "../../db/index.js";
 import { authCodes } from "../../db/schema.js";
 import { sharedCookieAttributes } from "../../shared/auth-policy.js";
 import { ApiError, limit, payload } from "./security.js";
-import { cookieValue, createSharedSession, digest } from "./shared-session.js";
-import { persistOwnerRole } from "./identity-owner.js";
+import { cookieValue, digest } from "./shared-session.js";
+import { issueIdentitySession } from "./identity.js";
+import { findOrCreateAccount, type AccountUser } from "./accounts.js";
 import {
   channelReady,
   deliverCode,
@@ -64,44 +64,13 @@ function browserCookie(issuer: string, value: string, maxAge: number) {
 async function identityFor(
   channel: OtpChannel,
   destination: string,
-): Promise<{ user: User; created: boolean }> {
-  // A phone sign-in still needs an address Identity will accept as the key.
+): Promise<{ user: AccountUser; created: boolean }> {
+  // A phone sign-in still needs an address as the account key.
   const email =
     channel === "email"
       ? destination
       : `${destination.replace(/^\+/, "")}@phone.1shotcam.com`;
-  for (let page = 1; page <= 100; page++) {
-    const users = await admin.listUsers({ page, perPage: 100 });
-    const existing = users.find((user) => user.email?.toLowerCase() === email);
-    if (existing) {
-      // The code proved control of the destination; that is the confirmation
-      // Identity's own email never delivered.
-      const confirmed = existing.confirmedAt
-        ? existing
-        : await admin.updateUser(existing.id, { confirm: true });
-      return { user: await persistOwnerRole(confirmed), created: false };
-    }
-    if (users.length < 100) {
-      if ((await getSettings()).disableSignup)
-        throw new ApiError(403, "التسجيل يتطلب دعوة.", "SIGNUP_DISABLED");
-      // The account never signs in by password: a long random one is set so no
-      // guessable credential exists, and it is never shown to anyone.
-      const user = await admin.createUser({
-        email,
-        password: randomBytes(48).toString("base64url"),
-        data: {
-          app_metadata: { provider: "otp", otp_channel: channel },
-          user_metadata:
-            channel === "sms" ? { phone: destination } : { full_name: "" },
-        },
-      });
-      const confirmed = user.confirmedAt
-        ? user
-        : await admin.updateUser(user.id, { confirm: true });
-      return { user: await persistOwnerRole(confirmed), created: true };
-    }
-  }
-  throw new ApiError(503, "تعذّر فتح الحساب حالياً. حاول مجدداً.");
+  return findOrCreateAccount(email, channel);
 }
 
 // ---------------------------------------------------------------------------
@@ -277,7 +246,8 @@ async function verifyCode(req: Request, waitUntil?: (job: Promise<unknown>) => v
     },
     { headers: { "Cache-Control": "no-store" } },
   );
-  response.headers.append("Set-Cookie", await createSharedSession(req, user.id));
+  const session = await issueIdentitySession({ id: user.id, email: user.email, name: user.name });
+  response.headers.append("Set-Cookie", session.cookie);
   queueHubActivity(req, { actor: user.id, email: user.email,
     action: created ? "account_signup" : "account_login", metadata: { method: "otp" } }, waitUntil);
   response.headers.append("Set-Cookie", browserCookie(issuer, "", 0));

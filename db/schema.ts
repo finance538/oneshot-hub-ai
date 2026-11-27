@@ -818,3 +818,14 @@ export const identitySessions = pgTable(
     index("oneshot_identity_sessions_expiry").on(t.expiresAt),
   ],
 );
+
+// Shared OneShot accounts for passwordless (email or phone code) sign-in. Accounts are created
+// by the first successful code; a later code for the same address signs the same account in.
+export const oneshotAccounts = pgTable("oneshot_accounts", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  name: text("name").notNull().default(""),
+  channel: text("channel").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+}, (t) => [uniqueIndex("oneshot_accounts_email").on(t.email)]);

@@ -423,6 +423,7 @@ test("credentialed CORS accepts exact ecosystem origins and rejects wildcard con
     {
       "./identity-owner.js": {},
       "./shared-session.js": {},
+      "./identity.js": {},
       "../../shared/auth-policy.js": {},
       "@netlify/identity": {},
       "drizzle-orm": {},

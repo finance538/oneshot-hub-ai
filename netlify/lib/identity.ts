@@ -22,6 +22,7 @@ import * as schema from '../../db/schema.js';
 
 const env = (key: string): string | undefined => process.env[key];
 import { ApiError } from './security.js';
+import { ownerRoles } from '../../shared/auth-policy.js';
 
 /** Parent-domain cookie: readable by every OneShot subdomain, by nobody else. */
 export const identityCookie = 'oneshot_sid';
@@ -176,4 +177,24 @@ export async function revokeIdentitySession(request: Request) {
 export async function revokeAllIdentitySessions(accountId: string) {
   await database().delete(schema.identitySessions).where(eq(schema.identitySessions.accountId, accountId));
   return { revoked: true };
+}
+
+/**
+ * The signed-in account for this request, shaped like the fields callers read from a user
+ * (id, email, name, roles, confirmedAt). Roles come from the same policy every app uses.
+ */
+export async function resolveIdentityUser(request: Request) {
+  const resolved = await resolveIdentitySession(request);
+  if (!resolved) return null;
+  const { session } = resolved;
+  const roles = ownerRoles({ email: session.email, confirmedAt: new Date(session.createdAt).toISOString(), roles: [] });
+  return {
+    id: session.accountId,
+    email: session.email,
+    name: session.name,
+    roles,
+    confirmedAt: new Date(session.createdAt).toISOString(),
+    user_metadata: { full_name: session.name },
+    app_metadata: { roles },
+  };
 }

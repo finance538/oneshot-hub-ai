@@ -1,6 +1,5 @@
 import { OAuth2Client, type Credentials } from "google-auth-library";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import { admin, getSettings, type User } from "@netlify/identity";
 import { and, eq, gt, lt } from "drizzle-orm";
 import { database } from "../../db/index.js";
 import {
@@ -15,8 +14,7 @@ import {
 } from "../../shared/auth-policy.js";
 import { ecosystemApps, hubOrigin } from "../../shared/ecosystem.js";
 import { ApiError, authenticate, env, limit, payload } from "./security.js";
-import { cookieValue, createSharedSession, digest } from "./shared-session.js";
-import { persistOwnerRole } from "./identity-owner.js";
+import { cookieValue, digest } from "./shared-session.js";
 
 const driveScope = "https://www.googleapis.com/auth/drive.metadata.readonly";
 const baseScopes = ["openid", "email", "profile"];
@@ -161,46 +159,6 @@ async function start(
         { authorization },
         { headers: { "Set-Cookie": cookie, "Cache-Control": "no-store" } },
       );
-}
-
-async function googleIdentity(
-  email: string,
-  subject: string,
-  name?: string,
-): Promise<User> {
-  // Identity owns account IDs and server-controlled roles for both sign-in methods.
-  for (let page = 1; page <= 100; page++) {
-    const users = await admin.listUsers({ page, perPage: 100 });
-    const existing = users.find((user) => user.email?.toLowerCase() === email);
-    if (existing) {
-      // Do not attach Google to an unverified password account created by someone else.
-      if (!existing.confirmedAt) {
-        // Google أثبت ملكية البريد (email_verified === true أعلاه)، وصاحب الحساب لم يستلم
-        // رسالة التأكيد لأن SMTP غير مضبوط على Identity. نتبنّى الحساب بدل قفله في وجه صاحبه.
-        const adopted = await admin.updateUser(existing.id, { confirm: true });
-        return persistOwnerRole(adopted);
-      }
-      return persistOwnerRole(existing);
-    }
-    if (users.length < 100) {
-      if ((await getSettings()).disableSignup)
-        throw new ApiError(403, "التسجيل يتطلب دعوة.");
-      const user = await admin.createUser({
-        email,
-        password: randomBytes(48).toString("base64url"),
-        data: {
-          app_metadata: { provider: "google", google_subject: subject },
-          user_metadata: { full_name: name || "" },
-        },
-      });
-      // Email confirmation is justified only by the verified Google ID token below.
-      const confirmed = user.confirmedAt
-        ? user
-        : await admin.updateUser(user.id, { confirm: true });
-      return persistOwnerRole(confirmed);
-    }
-  }
-  throw new ApiError(503, "تعذّر مطابقة حساب Google حالياً.");
 }
 
 export async function googleRoute(
