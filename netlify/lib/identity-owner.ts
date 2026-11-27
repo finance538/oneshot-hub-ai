@@ -1,10 +1,21 @@
-import { admin, type User } from "@netlify/identity";
 import { ownerRoles } from "../../shared/auth-policy.js";
 
-export async function persistOwnerRole(user: User): Promise<User> {
+// The minimal account shape the app reads from its own user store.
+export type AppUser = {
+  id: string;
+  email?: string;
+  name?: string;
+  roles?: string[];
+  userMetadata?: Record<string, unknown>;
+  appMetadata?: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
+  confirmedAt?: string;
+};
+
+// The owner's admin role is derived from the confirmed owner email on every read,
+// so nothing has to be written back to an identity provider.
+export async function persistOwnerRole<T extends AppUser>(user: T): Promise<T> {
   const roles = ownerRoles(user);
-  if (roles.length === (user.roles || []).length) return user;
-  return admin.updateUser(user.id, {
-    app_metadata: { ...user.appMetadata, roles },
-  });
+  return roles.length === (user.roles || []).length ? user : { ...user, roles };
 }
