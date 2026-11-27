@@ -20,7 +20,7 @@ function authorized(request: Request) {
     : ("denied" as const);
 }
 
-export default async function handler(request: Request): Promise<Response> {
+async function handler(request: Request): Promise<Response> {
   const state = authorized(request);
   if (state === "not_configured")
     return Response.json({ error: "cron_not_configured" }, { status: 503 });
@@ -37,3 +37,6 @@ export default async function handler(request: Request): Promise<Response> {
     return Response.json({ ok: false, job }, { status: 500 });
   }
 }
+
+// Vercel's Node runtime calls `fetch` with a standard Request (a bare function would get Node's IncomingMessage).
+export default { fetch: handler };

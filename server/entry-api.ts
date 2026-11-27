@@ -11,9 +11,12 @@ const context = {
   },
 };
 
-export default function handler(req: Request): Promise<Response> {
+function handler(req: Request): Promise<Response> {
   const pathname = new URL(req.url).pathname;
   if (/^\/(api\/)?p\/[^/]+(\/book)?$/.test(pathname))
     return page(req, context as never);
   return api(req, context as never);
 }
+
+// Vercel's Node runtime calls `fetch` with a standard Request (a bare function would get Node's IncomingMessage).
+export default { fetch: handler };
