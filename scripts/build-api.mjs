@@ -4,7 +4,7 @@
 import { build } from "esbuild";
 import { mkdirSync } from "node:fs";
 
-mkdirSync("api/cron", { recursive: true });
+mkdirSync("server-dist", { recursive: true });
 const shared = {
   bundle: true,
   platform: "node",
@@ -13,5 +13,5 @@ const shared = {
   packages: "external",
   logLevel: "info",
 };
-await build({ ...shared, entryPoints: ["server/entry-api.ts"], outfile: "api/[...route].mjs" });
-await build({ ...shared, entryPoints: ["server/entry-cron.ts"], outfile: "api/cron/[job].mjs" });
+await build({ ...shared, entryPoints: ["server/entry-api.ts"], outfile: "server-dist/api.mjs" });
+await build({ ...shared, entryPoints: ["server/entry-cron.ts"], outfile: "server-dist/cron.mjs" });

@@ -17,7 +17,7 @@
     "shared",
     "db",
     "netlify",
-    "api", "server",
+    "server",
     "vite.config.ts",
     "scripts/tools-prerender.ts",
     "tests",
