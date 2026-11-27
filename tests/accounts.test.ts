@@ -36,7 +36,7 @@ function fakeDatabase(initial: Row[]) {
         onConflictDoNothing: () => ({
           returning: async () => {
             if (rows.some((row) => row.email === value.email)) return [];
-            const row = { name: "", createdAt: new Date(), confirmedAt: null, ...value } as Row;
+            const row = { ...value, name: value.name ?? "", createdAt: value.createdAt ?? new Date(), confirmedAt: value.confirmedAt ?? null } as Row;
             rows.push(row);
             return [row];
           },
