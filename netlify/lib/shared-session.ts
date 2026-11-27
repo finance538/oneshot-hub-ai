@@ -1,16 +1,13 @@
-import { admin, AuthError, type User } from "@netlify/identity";
-import { createHash, randomBytes } from "node:crypto";
-import { and, eq, gt, lt } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { database } from "../../db/index.js";
-import { sharedSessions } from "../../db/schema.js";
-import {
-  SESSION_COOKIE,
-  sharedCookieAttributes,
-} from "../../shared/auth-policy.js";
-import { persistOwnerRole } from "./identity-owner.js";
+import { oneshotAccounts } from "../../db/schema.js";
+import { ownerRoles } from "../../shared/auth-policy.js";
+import type { User } from "./security.js";
 
 export const digest = (value: string) =>
   createHash("sha256").update(value).digest("base64url");
+
 export function cookieValue(req: Request, name: string) {
   return req.headers
     .get("cookie")
@@ -20,61 +17,27 @@ export function cookieValue(req: Request, name: string) {
     ?.slice(name.length + 1);
 }
 
-export async function sharedSessionUser(req: Request): Promise<User | null> {
-  const token = cookieValue(req, SESSION_COOKIE);
-  if (!token || !/^[A-Za-z0-9_-]{43}$/.test(token)) return null;
-  const [session] = await database()
+/**
+ * Loads a confirmed account by id from the shared accounts table. Ecosystem grants and
+ * signed-in sessions both name the account this way.
+ */
+export async function verifiedIdentityUser(ownerId: string): Promise<User | null> {
+  const [row] = await database()
     .select()
-    .from(sharedSessions)
-    .where(
-      and(
-        eq(sharedSessions.tokenHash, digest(token)),
-        gt(sharedSessions.expiresAt, new Date()),
-      ),
-    );
-  if (!session) return null;
-  return verifiedIdentityUser(session.ownerId);
-}
-
-export async function verifiedIdentityUser(
-  ownerId: string,
-): Promise<User | null> {
-  try {
-    const user = await admin.getUser(ownerId);
-    return user.confirmedAt ? await persistOwnerRole(user) : null;
-  } catch (error) {
-    if (error instanceof AuthError && error.status === 404) return null;
-    // An Identity outage is not evidence that this account signed out.
-    throw error;
-  }
-}
-
-export async function createSharedSession(req: Request, ownerId: string) {
-  const token = randomBytes(32).toString("base64url");
-  const age = 7 * 24 * 60 * 60;
-  await database().transaction(async (tx) => {
-    const oldToken = cookieValue(req, SESSION_COOKIE);
-    if (oldToken)
-      await tx
-        .delete(sharedSessions)
-        .where(eq(sharedSessions.tokenHash, digest(oldToken)));
-    await tx
-      .delete(sharedSessions)
-      .where(lt(sharedSessions.expiresAt, new Date()));
-    await tx.insert(sharedSessions).values({
-      tokenHash: digest(token),
-      ownerId,
-      expiresAt: new Date(Date.now() + age * 1000),
-    });
-  });
-  return `${SESSION_COOKIE}=${token}; ${sharedCookieAttributes(new URL(req.url).origin)}; Max-Age=${age}`;
-}
-
-export async function revokeSharedSession(req: Request) {
-  const token = cookieValue(req, SESSION_COOKIE);
-  if (token)
-    await database()
-      .delete(sharedSessions)
-      .where(eq(sharedSessions.tokenHash, digest(token)));
-  return `${SESSION_COOKIE}=; ${sharedCookieAttributes(new URL(req.url).origin)}; Max-Age=0`;
+    .from(oneshotAccounts)
+    .where(eq(oneshotAccounts.id, ownerId))
+    .limit(1);
+  if (!row || !row.confirmedAt) return null;
+  const confirmedAt = row.confirmedAt.toISOString();
+  const roles = ownerRoles({ email: row.email, confirmedAt, roles: [] });
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    roles,
+    confirmedAt,
+    createdAt: row.createdAt.toISOString(),
+    userMetadata: { full_name: row.name },
+    appMetadata: { roles },
+  };
 }

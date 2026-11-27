@@ -1,4 +1,17 @@
-import { getUser, refreshSession } from "@netlify/identity";
+// The signed-in account lives in an HttpOnly cookie shared by every OneShot app, so the browser
+// never holds a token it could refresh. The server answers who is signed in.
+export type SignedInUser = { id: string; name?: string; email?: string; roles: string[] } | null;
+
+export async function fetchCurrentUser(): Promise<SignedInUser> {
+  const response = await fetch("/api/session", {
+    credentials: "include",
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  const body = (await response.json()) as { user: SignedInUser };
+  return body.user ?? null;
+}
 
 export class AuthTimeoutError extends Error {
   constructor() {
@@ -26,21 +39,9 @@ export async function waitForAuth<T>(
   }
 }
 
-let refreshing: Promise<void> | undefined;
 export function prepareIdentitySession() {
-  // Coalesce requests after tab suspension so a refresh token is not exchanged
-  // concurrently by every data panel. Refresh before sending, never replay API mutations.
-  if (!refreshing) {
-    refreshing = waitForAuth(
-      (async () => {
-        const user = await getUser();
-        if (user) await refreshSession();
-      })(),
-    ).finally(() => {
-      refreshing = undefined;
-    });
-  }
-  return refreshing;
+  // Shared sessions last 30 days and need no client-side refresh; nothing to prepare.
+  return Promise.resolve();
 }
 
 const returnKey = "oneshot.auth.return";

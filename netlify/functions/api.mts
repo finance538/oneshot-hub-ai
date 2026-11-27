@@ -18,7 +18,6 @@ import {
   captureServerFailure,
   recordDiagnostic,
 } from "../lib/diagnostics.js";
-import { getUser } from "@netlify/identity";
 import { ecosystemRoute } from "../lib/ecosystem.js";
 import { experienceRoute } from "../lib/experience.js";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
@@ -77,35 +76,9 @@ const reply = (value: unknown, status = 200) =>
     headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
   });
 
-async function healRoute(req: Request): Promise<Response> {
-  try {
-    const expected = process.env["AUTH_HEAL_KEY"] || "";
-    const supplied = req.headers.get("x-heal-key") || "";
-    if (!expected || expected.length < 16 || supplied !== expected)
-      return reply({ ok: false, error: "غير مصرح." }, 401);
-    const dryRun = new URL(req.url).searchParams.get("dry") === "1";
-    const { admin } = await import("@netlify/identity");
-    const report: any = { total: 0, unconfirmed: 0, healed: [] as string[], failed: [] as string[] };
-    for (let page = 1; page <= 50; page++) {
-      const users = await admin.listUsers({ page, perPage: 100 });
-      report.total += users.length;
-      for (const user of users) {
-        if (user.confirmedAt) continue;
-        report.unconfirmed++;
-        if (dryRun) continue;
-        try {
-          await admin.updateUser(user.id, { confirm: true });
-          report.healed.push(user.email || user.id);
-        } catch (err) {
-          report.failed.push(`${user.email || user.id}: ${err instanceof Error ? err.message : "error"}`);
-        }
-      }
-      if (users.length < 100) break;
-    }
-    return reply({ ok: true, dryRun, ...report });
-  } catch (err: any) {
-    return reply({ ok: false, stage: "heal", name: err?.name, detail: err?.message || String(err) }, 200);
-  }
+// Netlify Identity account repair is retired: accounts live in the shared accounts table now.
+async function healRoute(_req: Request): Promise<Response> {
+  return reply({ ok: false, code: "IDENTITY_REPAIR_RETIRED" }, 410);
 }
 
 export default async (req: Request, context: Context) => {
@@ -204,39 +177,8 @@ export default async (req: Request, context: Context) => {
       response.headers.set("Referrer-Policy", "no-referrer");
       return response;
     }
-    if (path === "/api/auth/session" && method === "POST") {
-      const token = cookieValue(req, "nf_jwt");
-      const user = token
-        ? await resolveUserFromToken(
-            new Request(req.url, {
-              headers: { Authorization: `Bearer ${decodeURIComponent(token)}` },
-            }),
-          )
-        : null;
-      if (!user) throw new ApiError(401, "سجّل الدخول للمتابعة.");
-      if (!user.confirmedAt) {
-        // البريد التأكيدي لا يصل (SMTP غير مضبوط على Identity)، فنؤكّد الحساب عند أول دخول
-        // ناجح بكلمة المرور بدل حبس المستخدم خارج المنصة إلى الأبد.
-        try {
-          const { admin } = await import("@netlify/identity");
-          await admin.updateUser(user.id, { confirm: true });
-        } catch {
-          throw new ApiError(403, "أكد بريد الحساب أولاً.");
-        }
-      }
-      const response = json({
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          roles: user.roles || [],
-        },
-      });
-      const session = await issueIdentitySession({ id: user.id, email: user.email ?? "", name: user.name ?? "" });
-      response.headers.append("Set-Cookie", session.cookie);
-      activity({ actor: user.id, email: user.email, action: "account_login", metadata: { method: "identity" } });
-      return response;
-    }
+    if (path === "/api/auth/session" && method === "POST")
+      return reply({ ok: false, code: "PASSWORD_LOGIN_RETIRED" }, 410);
     if (path === "/api/auth/logout" && method === "POST") {
       const signingOut = await resolveUser(req).catch(() => null);
       const response = json({ signedOut: true });

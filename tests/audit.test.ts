@@ -162,28 +162,24 @@ test("auth waits finish on success and stop a hanging spinner on timeout", async
   );
 });
 
-test("simultaneous API callers share one Identity session refresh", async () => {
-  let refreshes = 0,
-    reads = 0;
-  const auth = isolated("src/lib/auth-session.ts", {
-    "@netlify/identity": {
-      getUser: async () => {
-        reads++;
-        return { id: "fixture" };
-      },
-      refreshSession: async () => {
-        refreshes++;
-        await new Promise((r) => setTimeout(r, 5));
+test("the shared session needs no client refresh, so preparing a request makes no network call", async () => {
+  let calls = 0;
+  const auth = isolated(
+    "src/lib/auth-session.ts",
+    {},
+    {
+      fetch: async () => {
+        calls++;
+        return new Response("{}");
       },
     },
-  });
+  );
   await Promise.all([
     auth.prepareIdentitySession(),
     auth.prepareIdentitySession(),
     auth.prepareIdentitySession(),
   ]);
-  assert.equal(reads, 1);
-  assert.equal(refreshes, 1);
+  assert.equal(calls, 0);
 });
 
 function apiModule(fetch: typeof globalThis.fetch, prepare = async () => {}) {

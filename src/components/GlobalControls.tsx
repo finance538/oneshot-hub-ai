@@ -1,6 +1,6 @@
 import { clearApiSession } from "../lib/api";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { getUser, onAuthChange } from "@netlify/identity";
+import { fetchCurrentUser, type SignedInUser } from "../lib/auth-session";
 import { FileText, Leaf, Megaphone, Search, Sparkles, Zap } from "lucide-react";
 import { Modal } from "./Modal";
 import { appearanceLink, useAppearance } from "../storefront/i18n";
@@ -26,7 +26,7 @@ export default function GlobalControls() {
     let alive = true,
       revision = 0;
     let current = "";
-    const update = (user: Awaited<ReturnType<typeof getUser>>) => {
+    const update = (user: SignedInUser) => {
       if (!alive) return;
       const next = `${user?.id || "guest"}:${user?.roles?.join(",") || ""}`;
       if (current && current !== next) clearApiSession();
@@ -34,18 +34,20 @@ export default function GlobalControls() {
       setSignature(next);
       setAdmin(!!user?.roles?.includes("admin"));
     };
-    void getUser()
-      .then((user) => {
-        if (!revision) update(user);
-      })
-      .catch(() => {});
-    const stop = onAuthChange((_event, user) => {
-      revision++;
-      update(user);
-    });
+    const refresh = () => {
+      const current = ++revision;
+      void fetchCurrentUser()
+        .then((user) => {
+          if (current === revision) update(user);
+        })
+        .catch(() => {});
+    };
+    refresh();
+    // Sign-in and sign-out happen in other screens; re-check when this tab regains focus.
+    window.addEventListener("focus", refresh);
     return () => {
       alive = false;
-      stop();
+      window.removeEventListener("focus", refresh);
     };
   }, []);
   useEffect(() => {

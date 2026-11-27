@@ -2,11 +2,21 @@ import { readIdentityCookie, resolveIdentityUser } from "./identity.js";
 import { persistOwnerRole } from "./identity-owner.js";
 import {
   cookieValue,
-  sharedSessionUser,
   verifiedIdentityUser,
 } from "./shared-session.js";
 import { SESSION_COOKIE, productionOrigin } from "../../shared/auth-policy.js";
-import { getUser, type User } from "@netlify/identity";
+// The signed-in account, as every handler reads it. Netlify Identity is no longer a source of users.
+export type User = {
+  id: string;
+  email?: string;
+  name?: string;
+  roles?: string[];
+  confirmedAt?: string;
+  userMetadata?: Record<string, unknown>;
+  appMetadata?: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
+};
 import {
   createCipheriv,
   createDecipheriv,
@@ -79,69 +89,15 @@ export async function resolveUserFromToken(req: Request): Promise<User | null> {
     return cached.user;
   }
 
-  try {
-    const origin = new URL(req.url).origin;
-    const identityUrl = `${origin}/.netlify/identity/user`;
-    const res = await fetch(identityUrl, {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      id?: string;
-      email?: string;
-      app_metadata?: { roles?: string[]; provider?: string };
-      user_metadata?: { full_name?: string; name?: string };
-      created_at?: string;
-      updated_at?: string;
-      confirmed_at?: string;
-    };
-    if (!data?.id) return null;
-
-    const appMeta = data.app_metadata || {};
-    const userMeta = data.user_metadata || {};
-    const roles = Array.isArray(appMeta.roles)
-      ? [...(appMeta.roles as string[])]
-      : typeof appMeta.roles === "string"
-        ? [appMeta.roles]
-        : [];
-    const name =
-      typeof userMeta.full_name === "string"
-        ? userMeta.full_name
-        : typeof userMeta.name === "string"
-          ? userMeta.name
-          : undefined;
-
-    const user: User = await persistOwnerRole({
-      id: data.id,
-      email: data.email,
-      name,
-      roles,
-      userMetadata: userMeta,
-      appMetadata: appMeta,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
-      confirmedAt: data.confirmed_at,
-    });
-
-    if (tokenUserCache.size > 200) {
-      for (const [k, v] of tokenUserCache.entries()) {
-        if (v.expires <= now) tokenUserCache.delete(k);
-      }
-    }
-    tokenUserCache.set(token, { user, expires: now + 45000 });
-    return user;
-  } catch {
-    return null;
-  }
+  // Bearer sign-in with Netlify Identity tokens is retired: the shared session is the only sign-in.
+  return null;
 }
 
 export async function resolveUser(req?: Request): Promise<User | null> {
   // Explicit bearer credentials must never fall back to a different cookie account.
   if (req?.headers.has("authorization")) return resolveUserFromToken(req);
   if (req && readIdentityCookie(req)) return resolveIdentityUser(req) as Promise<User | null>;
-  const cookieUser = await getUser();
-  return cookieUser ? persistOwnerRole(cookieUser) : null;
+  return null;
 }
 
 export async function authenticate(
