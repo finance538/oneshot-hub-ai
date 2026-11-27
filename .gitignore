@@ -23,3 +23,5 @@ ios/**/xcuserdata/
 google-services.json
 GoogleService-Info.plist
 DerivedData/
+api/*.mjs
+api/cron/*.mjs

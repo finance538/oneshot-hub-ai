@@ -2,14 +2,36 @@
   "framework": "vite",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/p/:path*", "destination": "/api/p/:path*" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/p/:path*",
+      "destination": "/api/p/:path*"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
   ],
   "crons": [
-    { "path": "/api/cron/experience-notifications", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/follow-ups", "schedule": "7 * * * *" },
-    { "path": "/api/cron/maintenance", "schedule": "0 0 * * *" },
-    { "path": "/api/cron/payment-reconcile", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/workforce-mail-sync", "schedule": "* * * * *" }
-  ]
+    {
+      "path": "/api/cron/experience-notifications",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/follow-ups",
+      "schedule": "7 * * * *"
+    },
+    {
+      "path": "/api/cron/maintenance",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/payment-reconcile",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/workforce-mail-sync",
+      "schedule": "* * * * *"
+    }
+  ],
+  "buildCommand": "vite build && node scripts/build-api.mjs"
 }

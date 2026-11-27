@@ -3,11 +3,11 @@
 import { timingSafeEqual } from "node:crypto";
 
 const jobs: Record<string, () => Promise<unknown>> = {
-  "experience-notifications": async () => (await import("../../netlify/functions/experience-notifications.mts")).default(),
-  "follow-ups": async () => (await import("../../netlify/functions/follow-ups-cron.mts")).default(),
-  maintenance: async () => (await import("../../netlify/functions/maintenance.mts")).default(),
-  "payment-reconcile": async () => (await import("../../netlify/functions/payment-reconcile.mts")).default(),
-  "workforce-mail-sync": async () => (await import("../../netlify/functions/workforce-mail-sync.mts")).default(),
+  "experience-notifications": async () => (await import("../netlify/functions/experience-notifications.mts")).default(),
+  "follow-ups": async () => (await import("../netlify/functions/follow-ups-cron.mts")).default(),
+  maintenance: async () => (await import("../netlify/functions/maintenance.mts")).default(),
+  "payment-reconcile": async () => (await import("../netlify/functions/payment-reconcile.mts")).default(),
+  "workforce-mail-sync": async () => (await import("../netlify/functions/workforce-mail-sync.mts")).default(),
 };
 
 function authorized(request: Request) {

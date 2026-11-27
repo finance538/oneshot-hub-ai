@@ -126,6 +126,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: 6.1.2
         version: 6.1.2(vite@8.3.4(@types/node@22.20.5)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.1))
+      esbuild:
+        specifier: ^0.28.0
+        version: 0.28.1
       prettier:
         specifier: ^3.9.10
         version: 3.9.10
@@ -3055,7 +3058,6 @@ snapshots:
       '@esbuild/win32-arm64': 0.28.1
       '@esbuild/win32-ia32': 0.28.1
       '@esbuild/win32-x64': 0.28.1
-    optional: true
 
   events-universal@1.0.1:
     dependencies:
